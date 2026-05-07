@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import SplitPanel from './SplitPanel.jsx';
+import { saveCache, loadCache } from '../cache';
 
 const MATTER_FIELDS = {
   '001': [
@@ -65,6 +66,20 @@ export default function ComplianceGeneration() {
   const [error, setError] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  useEffect(() => {
+    const cached = loadCache('generate');
+    if (cached) {
+      if (cached.selectedMatter) setSelectedMatter(cached.selectedMatter);
+      if (cached.result) setResult(cached.result);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (result || selectedMatter) {
+      saveCache('generate', { file: null, result, selectedMatter });
+    }
+  }, [result, selectedMatter]);
 
   function handleMatterChange(e) {
     setSelectedMatter(e.target.value);

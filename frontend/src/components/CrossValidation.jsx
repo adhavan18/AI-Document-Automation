@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import SplitPanel from './SplitPanel.jsx';
+import { saveCache, loadCache } from '../cache';
 
 function UploadIcon() {
   return (
@@ -82,6 +83,21 @@ export default function CrossValidation() {
     };
   }, [previewUrl]);
 
+  useEffect(() => {
+    const cached = loadCache('validate');
+    if (cached) {
+      if (cached.file) setFile(cached.file);
+      if (cached.previewUrl) setPreviewUrl(cached.previewUrl);
+      if (cached.result) setResult(cached.result);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (result || file) {
+      saveCache('validate', { file, result });
+    }
+  }, [result, file]);
+
   function handleFileChange(e) {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
@@ -137,6 +153,7 @@ export default function CrossValidation() {
     setPreviewUrl(null);
     setResult(null);
     setError(null);
+    saveCache('validate', { file: null, result: null });
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 

@@ -3,16 +3,13 @@ import NoticeExtraction from './components/NoticeExtraction.jsx';
 import ComplianceGeneration from './components/ComplianceGeneration.jsx';
 import CrossValidation from './components/CrossValidation.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
-
-const TABS = [
-  { id: 'extract', label: 'Notice Extraction' },
-  { id: 'generate', label: 'Compliance Document' },
-  { id: 'validate', label: 'Cross-Validation' },
-];
+import LoginScreen from './components/LoginScreen.jsx';
+import { loadSession, clearSession } from './auth';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('extract');
   const [showDemoBanner, setShowDemoBanner] = useState(false);
+  const [session, setSession] = useState(() => loadSession());
 
   useEffect(() => {
     const handler = (e) => {
@@ -24,8 +21,15 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
+  if (!session) {
+    return <LoginScreen onLogin={(s) => setSession(s)} />;
+  }
+
   return (
-    <>
+    <div
+      id="root"
+      style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
+    >
       <header
         style={{
           height: 'var(--header-height)',
@@ -37,26 +41,32 @@ export default function App() {
           flexShrink: 0,
         }}
       >
-        <div
+        <h1
           style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 18,
+            fontSize: '18px',
             color: '#fff',
+            fontWeight: 400,
           }}
         >
           AI Document Automation
+        </h1>
+
+        <div className="header-user">
+          <div className="header-user-info">
+            <div className="header-user-name">{session.name}</div>
+            <div className="header-user-role">{session.role}</div>
+          </div>
+          <button
+            className="header-logout"
+            onClick={() => {
+              clearSession();
+              setSession(null);
+            }}
+          >
+            Sign out
+          </button>
         </div>
-        {/* <div
-          style={{
-            background: 'rgba(255,255,255,0.15)',
-            color: '#fff',
-            fontSize: 11,
-            padding: '4px 10px',
-            borderRadius: 20,
-          }}
-        >
-          PoC Demo
-        </div> */}
       </header>
 
       <nav
@@ -65,43 +75,40 @@ export default function App() {
           background: '#fff',
           borderBottom: '1px solid var(--color-border)',
           display: 'flex',
+          alignItems: 'stretch',
           flexShrink: 0,
         }}
       >
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                padding: '0 24px',
-                height: '100%',
-                fontSize: 13,
-                fontWeight: isActive ? 600 : 500,
-                color: isActive ? 'var(--color-blue)' : 'var(--color-text-muted)',
-                borderBottom: isActive
+        {[
+          { key: 'extract', label: 'Notice Extraction' },
+          { key: 'generate', label: 'Compliance Document' },
+          { key: 'validate', label: 'Cross-Validation' },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            style={{
+              padding: '0 24px',
+              height: '100%',
+              fontSize: '13px',
+              fontWeight: activeTab === tab.key ? 600 : 500,
+              color:
+                activeTab === tab.key
+                  ? 'var(--color-blue)'
+                  : 'var(--color-text-muted)',
+              background: 'transparent',
+              border: 'none',
+              borderBottom:
+                activeTab === tab.key
                   ? '2px solid var(--color-blue)'
                   : '2px solid transparent',
-                background: 'transparent',
-                borderRadius: 0,
-                borderTop: 'none',
-                borderLeft: 'none',
-                borderRight: 'none',
-                cursor: 'pointer',
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.color = 'var(--color-text)';
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive)
-                  e.currentTarget.style.color = 'var(--color-text-muted)';
-              }}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
+              cursor: 'pointer',
+              borderRadius: 0,
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
       </nav>
 
       {showDemoBanner && (
@@ -119,10 +126,9 @@ export default function App() {
           }}
         >
           <span>
-            <strong>Demo Flow:</strong>&nbsp;
-            Tab 1: Use Sample I-797 → Extract Fields (8s) &nbsp;·&nbsp;
-            Tab 2: Select Matter 001 → Generate Document &nbsp;·&nbsp;
-            Tab 3: Use Sample Passport → Run Validation
+            <strong>Demo Flow:</strong>&nbsp; Tab 1: Use Sample I-797 → Extract
+            Fields &nbsp;·&nbsp; Tab 2: Select Matter 001 → Generate Document
+            &nbsp;·&nbsp; Tab 3: Use Sample Passport → Run Validation
           </span>
           <span style={{ color: '#92400E', fontWeight: 500 }}>
             Press Ctrl+Shift+D to hide
@@ -130,18 +136,8 @@ export default function App() {
         </div>
       )}
 
-      <main
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          key={activeTab}
-          className="tab-content"
-          style={{ height: '100%' }}
-        >
+      <div style={{ flex: 1, overflow: 'hidden' }}>
+        <div key={activeTab} className="tab-content" style={{ height: '100%' }}>
           {activeTab === 'extract' && (
             <ErrorBoundary>
               <NoticeExtraction />
@@ -158,7 +154,7 @@ export default function App() {
             </ErrorBoundary>
           )}
         </div>
-      </main>
-    </>
+      </div>
+    </div>
   );
 }
