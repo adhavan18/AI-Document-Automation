@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --color-bg: #FFFFFF;
+  --color-panel: #F8F9FA;
+  --color-border: #E5E7EB;
+  --color-navy: #1E3A5F;
+  --color-blue: #2563EB;
+  --color-blue-hover: #1D4ED8;
+  --color-blue-light: #EFF6FF;
+  --color-text: #111827;
+  --color-text-muted: #6B7280;
+  --color-green-bg: #F0FDF4;
+  --color-green-text: #16A34A;
+  --color-green-badge: #DCFCE7;
+  --color-yellow-bg: #FEFCE8;
+  --color-yellow-text: #CA8A04;
+  --color-yellow-badge: #FEF9C3;
+  --color-red-bg: #FEF2F2;
+  --color-red-text: #DC2626;
+  --color-red-badge: #FEE2E2;
+  --color-disabled: #9CA3AF;
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'DM Serif Display', serif;
+  --header-height: 60px;
+  --tabbar-height: 48px;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.5;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  transition: background 0.15s ease;
+}
+
+button.primary {
+  background: var(--color-blue);
+  color: #fff;
+}
+
+button.primary:hover {
+  background: var(--color-blue-hover);
+}
+
+button.primary:disabled {
+  background: var(--color-disabled);
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: var(--color-panel);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+button.secondary:hover {
+  background: var(--color-border);
+}
+
+select {
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  width: 100%;
+  cursor: pointer;
+}
+
+select:focus {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 1px;
+}
+
+/* Fade-in animation for result panels */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-appear {
+  animation: fadeInUp 0.25s ease forwards;
+}
+
+/* Processing state — subtle pulse on the button text */
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.processing-label {
+  animation: pulse-text 1.2s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* Upload zone hover state */
+.upload-zone:hover {
+  border-color: var(--color-blue) !important;
+  background: var(--color-blue-light) !important;
+  cursor: pointer;
+}
+
+/* Smooth tab content transition */
+.tab-content {
+  animation: fadeInUp 0.15s ease forwards;
+}
+
+/* Tooltip for disabled buttons */
+[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1F2937;
+  color: white;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 100;
+}
+
+[title] {
+  position: relative;
+}
