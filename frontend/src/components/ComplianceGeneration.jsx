@@ -60,12 +60,23 @@ function DocIcon() {
   );
 }
 
+function base64ToBlobUrl(base64) {
+  const byteChars = atob(base64);
+  const byteNumbers = new Array(byteChars.length);
+  for (let i = 0; i < byteChars.length; i++) {
+    byteNumbers[i] = byteChars.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: 'application/pdf' });
+  return URL.createObjectURL(blob);
+}
+
 export default function ComplianceGeneration() {
   const [selectedMatter, setSelectedMatter] = useState('');
   const [result, setResult] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState(null);
   const [error, setError] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const cached = loadCache('generate');
@@ -80,6 +91,15 @@ export default function ComplianceGeneration() {
       saveCache('generate', { file: null, result, selectedMatter });
     }
   }, [result, selectedMatter]);
+
+  useEffect(() => {
+    if (result?.pdfBase64) {
+      const url = base64ToBlobUrl(result.pdfBase64);
+      setPdfUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setPdfUrl(null);
+  }, [result]);
 
   function handleMatterChange(e) {
     setSelectedMatter(e.target.value);
@@ -107,37 +127,14 @@ export default function ComplianceGeneration() {
     }
   }
 
-  async function handleDownload() {
-    if (!result?.html) return;
-    setIsDownloading(true);
-
-    try {
-      const response = await axios.post(
-        '/api/generate/pdf',
-        {
-          html: result.html,
-          filename: `compliance-matter-${selectedMatter}`,
-        },
-        { responseType: 'blob' }
-      );
-
-      const url = URL.createObjectURL(
-        new Blob([response.data], { type: 'application/pdf' })
-      );
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `compliance-matter-${selectedMatter}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      const message =
-        err.response?.data?.error || err.message || 'PDF generation failed';
-      setError(message);
-    } finally {
-      setIsDownloading(false);
-    }
+  function handleDownload() {
+    if (!pdfUrl) return;
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = `i129-matter-${selectedMatter}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   const fields = selectedMatter ? MATTER_FIELDS[selectedMatter] : null;
@@ -226,9 +223,9 @@ export default function ComplianceGeneration() {
         onClick={handleGenerate}
       >
         {isGenerating ? (
-          <span className="processing-label">Generating…</span>
+          <span className="processing-label">Generating Form I-129…</span>
         ) : (
-          'Generate Document'
+          'Generate Form I-129'
         )}
       </button>
 
@@ -250,7 +247,7 @@ export default function ComplianceGeneration() {
     </>
   );
 
-  const rightBody = result ? (
+  const rightBody = result && pdfUrl ? (
     <div className="result-appear">
       <div
         style={{
@@ -261,7 +258,7 @@ export default function ComplianceGeneration() {
           marginBottom: 16,
         }}
       >
-        Document generated · {(result.processing_time_ms / 1000).toFixed(1)}s ·{' '}
+        Form I-129 generated · {(result.processing_time_ms / 1000).toFixed(1)}s ·{' '}
         {result.matter.type}
       </div>
 
@@ -274,10 +271,9 @@ export default function ComplianceGeneration() {
         }}
       >
         <iframe
-          srcDoc={result.html}
-          style={{ width: '100%', height: 480, border: 'none' }}
-          title="Generated compliance document"
-          sandbox="allow-same-origin"
+          src={pdfUrl}
+          style={{ width: '100%', height: 600, border: 'none' }}
+          title="Generated Form I-129"
         />
       </div>
 
@@ -285,10 +281,9 @@ export default function ComplianceGeneration() {
         type="button"
         className="primary"
         style={{ width: '100%', marginTop: 12 }}
-        disabled={isDownloading}
         onClick={handleDownload}
       >
-        {isDownloading ? 'Preparing PDF…' : '⬇ Download PDF'}
+        ⬇ Download PDF
       </button>
     </div>
   ) : (
@@ -310,7 +305,7 @@ export default function ComplianceGeneration() {
           marginTop: 12,
         }}
       >
-        Generated document will appear here
+        Generated Form I-129 will appear here
       </div>
       <div
         style={{
@@ -328,7 +323,7 @@ export default function ComplianceGeneration() {
     <SplitPanel
       leftTitle="Matter Details"
       leftBody={leftBody}
-      rightTitle="Generated Document Preview"
+      rightTitle="Form I-129 Preview"
       rightBody={rightBody}
     />
   );

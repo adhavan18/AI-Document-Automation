@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { callWithFallback } from '../lib/ai-with-fallback.js';
+import puppeteer from 'puppeteer';
+import { buildI129HTML } from '../templates/i129-template.js';
 
 const router = Router();
 
@@ -64,6 +65,7 @@ const MATTERS = {
 };
 
 router.post('/', async (req, res) => {
+  let browser;
   try {
     const { matter_id } = req.body;
 
@@ -76,44 +78,46 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ error: `Matter ${matter_id} not found` });
     }
 
-    const prompt = `You are a compliance document generator for US immigration cases. Generate a complete, professional Labor Condition Application (LCA) support letter / compliance document for the following matter.
-
-Matter data:
-${JSON.stringify(matter, null, 2)}
-
-Generate a complete HTML document. Requirements:
-- Use clean, professional HTML with inline CSS only (no external stylesheets, no <link> tags)
-- Include a document header with the law firm name, date (use today's date), and "CONFIDENTIAL" label
-- Include sections: Case Summary, Employer Information, Position Details, Wage Information, Compliance Statement, Attorney Certification
-- The Compliance Statement must assert that the employer will pay the required wage, maintain LCA records, and notify relevant parties of material changes
-- Use a clean serif font (Georgia) for the document body
-- Page-like appearance: white background, max-width 750px, margins, proper heading hierarchy
-- Professional legal document tone throughout
-- Include a signature block at the bottom for the attorney
-
-Respond ONLY with the complete HTML string starting with <div and ending with </div>. No explanation, no markdown, no code fences. Just the HTML.`;
-
     const start = Date.now();
 
-    const { text: html, provider } = await callWithFallback(
-      {
-        model: 'claude-opus-4-5',
-        max_tokens: 4096,
-        messages: [{ role: 'user', content: prompt }],
-      },
-      () => [prompt]
-    );
+    const html = buildI129HTML(matter);
 
+    browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+
+    const pdfBuffer = await page.pdf({
+      format: 'Letter',
+      margin: { top: '0', bottom: '0', left: '0', right: '0' },
+      printBackground: true,
+    });
+
+    await browser.close();
+    browser = null;
+
+    const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
     const elapsed = Date.now() - start;
-    console.log(`[generate] responded via ${provider}`);
+
+    console.log(`[generate] I-129 PDF built for matter ${matter_id} in ${elapsed}ms (${pdfBuffer.length} bytes)`);
 
     res.json({
-      html,
+      pdfBase64,
       matter,
       processing_time_ms: elapsed,
     });
   } catch (err) {
     console.error('[generate] error:', err.message);
+    if (browser) {
+      try {
+        await browser.close();
+      } catch {
+        // ignore
+      }
+    }
     res.status(500).json({ error: err.message });
   }
 });
