@@ -74,13 +74,13 @@ export default function LoginScreen({ onLogin }) {
           </button>
         </form>
 
-        <div className="login-hint">
+        {/* <div className="login-hint">
           <strong>Demo accounts:</strong>
           <br />
           demo@lawfirm.com / demo2024
           <br />
           admin@lawfirm.com / admin2024
-        </div>
+        </div> */}
       </div>
     </div>
   );
