@@ -1,4 +1,4 @@
-# AI Document Automation — PoC Demo
+# Legal Document Intelligence — PoC Demo
 
 3-tab demo app showcasing AI document processing for immigration workflows.
 

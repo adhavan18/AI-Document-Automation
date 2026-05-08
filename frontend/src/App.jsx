@@ -49,7 +49,7 @@ export default function App() {
             fontWeight: 400,
           }}
         >
-          AI Document Automation
+          Legal Document Intelligence
         </h1>
 
         <div className="header-user">

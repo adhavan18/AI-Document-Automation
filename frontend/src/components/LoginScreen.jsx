@@ -29,7 +29,7 @@ export default function LoginScreen({ onLogin }) {
       <div className="login-card">
         <div className="login-header">
           <div className="login-logo">⚖️</div>
-          <h1 className="login-title">AI Document Automation</h1>
+          <h1 className="login-title">Legal Document Intelligence</h1>
           <p className="login-subtitle">Sign in to access the demo workspace</p>
         </div>
 
