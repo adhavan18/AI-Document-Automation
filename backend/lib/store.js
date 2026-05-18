@@ -204,16 +204,7 @@ const SEED_CASE = {
     'Visa Class on Entry':    'H-4',
     'Current Address':        '142 Cypress Ln, Plano TX 75024',
   },
-  rows: [
-    { field: 'Full Legal Name',        questionnaire: 'Priya Subramanian',              extracted: 'Priya Subramanian',                       source: 'Passport · p1',          conf: 0.99, match: true },
-    { field: 'Date of Birth',          questionnaire: '1991-07-12',                     extracted: '1991-07-12',                              source: 'Passport · p1',          conf: 0.99, match: true },
-    { field: 'Passport Number',        questionnaire: 'M9 482 1733',                    extracted: 'M9482 1733',                              source: 'Passport · p1',          conf: 0.95, match: false, severity: 'minor',    note: 'Whitespace mismatch · likely same value' },
-    { field: 'Passport Expiry',        questionnaire: '2031-03-18',                     extracted: '2031-03-18',                              source: 'Passport · p1',          conf: 0.98, match: true },
-    { field: 'Country of Birth',       questionnaire: 'India',                          extracted: 'India',                                   source: 'Passport · p1',          conf: 0.99, match: true },
-    { field: 'Most Recent Entry Date', questionnaire: '2024-08-03',                     extracted: '2024-08-14',                              source: 'I-94 latest entry',      conf: 0.97, match: false, severity: 'blocking', note: 'Applicant entered 2024-08-03 — I-94 shows 2024-08-14. Resolve before save.' },
-    { field: 'Visa Class on Entry',    questionnaire: 'H-4',                            extracted: 'H-4',                                     source: 'I-94 latest entry',      conf: 0.98, match: true },
-    { field: 'Current Address',        questionnaire: '142 Cypress Ln, Plano TX 75024', extracted: '142 Cypress Lane, Plano TX 75024',         source: 'Civil docs · utility bill', conf: 0.88, match: false, severity: 'minor', note: 'Abbreviation only · "Ln" vs "Lane"' },
-  ],
+  rows: [],
   resolved: {},
 };
 

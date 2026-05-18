@@ -199,7 +199,7 @@ export function Uc3CrossValidation() {
             title="Cross-validation report"
             subtitle="Questionnaire entries vs. document extractions"
             right={
-              counts.blocking > 0 && (
+              counts.blocking > 0 && caseData?.rows?.length > 0 && (
                 <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-rose-700 bg-rose-50 px-2 py-1 rounded ring-1 ring-rose-200">
                   <AlertTriangle className="w-3 h-3" />
                   Form save blocked until resolved
@@ -209,6 +209,12 @@ export function Uc3CrossValidation() {
           >
             {error && (
               <div className="mb-3 px-3 py-2 rounded bg-rose-50 ring-1 ring-rose-200 text-xs text-rose-700">{error}</div>
+            )}
+
+            {(!caseData?.rows || caseData.rows.length === 0) && !error && (
+              <div className="py-12 text-center text-sm text-slate-400">
+                Click <span className="font-medium text-slate-600">Run cross-validation</span> to extract data from the documents and compare against the questionnaire.
+              </div>
             )}
 
             <div className="space-y-1">
