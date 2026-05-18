@@ -78,20 +78,71 @@ const SEED_NOTICES = [
   },*/
 ];
 
-// One seeded matter kept as an existing DB record example (no LCA yet)
+// Seeded matters — represent existing DB records with LCA already processed.
+// New matters are added live via LCA upload.
 const SEED_MATTERS = [
   {
     id: 'M-2024-07731',
     employer: 'Northstar Aerospace, Inc.',
     position: 'Senior Avionics Engineer',
     worksite: 'Wichita, KS',
-    lcaCertified: null,
-    status: 'Pending LCA',
-    lcaExtracted: false,
+    lcaCertified: '2026-06-01',
+    status: 'Ready to generate',
+    lcaExtracted: true,
     generatedPdfBase64: null,
     generatedFilename: null,
-    lca: [],
-    computed: [],
+    lca: [
+      { label: 'Occupation Code (SOC)', value: '17-2011.00',           conf: 0.97, source: 'LCA PDF' },
+      { label: 'Wage Range',           value: '$138,000 – $182,000',  conf: 0.95, source: 'LCA PDF' },
+      { label: 'Prevailing Wage',      value: '$131,400 / yr',        conf: 0.94, source: 'LCA PDF' },
+      { label: 'Posting Start',        value: '2026-04-10',           conf: 0.92, source: 'LCA PDF' },
+      { label: 'Posting End',          value: '2026-04-24',           conf: 0.92, source: 'LCA PDF' },
+    ],
+    computed: [
+      { label: 'Retain Until', value: '2030-05-31', source: 'validity_end + 1y' },
+    ],
+  },
+  {
+    id: 'M-2024-09122',
+    employer: 'Pacific Genomics LLC',
+    position: 'Computational Biologist',
+    worksite: 'South San Francisco, CA',
+    lcaCertified: '2026-05-15',
+    status: 'Ready to generate',
+    lcaExtracted: true,
+    generatedPdfBase64: null,
+    generatedFilename: null,
+    lca: [
+      { label: 'Occupation Code (SOC)', value: '15-2041.00',           conf: 0.97, source: 'LCA PDF' },
+      { label: 'Wage Range',           value: '$148,000 – $198,000',  conf: 0.95, source: 'LCA PDF' },
+      { label: 'Prevailing Wage',      value: '$142,500 / yr',        conf: 0.93, source: 'LCA PDF' },
+      { label: 'Posting Start',        value: '2026-04-01',           conf: 0.90, source: 'LCA PDF' },
+      { label: 'Posting End',          value: '2026-04-15',           conf: 0.90, source: 'LCA PDF' },
+    ],
+    computed: [
+      { label: 'Retain Until', value: '2030-05-14', source: 'validity_end + 1y' },
+    ],
+  },
+  {
+    id: 'M-2024-08841',
+    employer: 'Helix Bio Solutions',
+    position: 'Research Scientist III',
+    worksite: 'Cambridge, MA',
+    lcaCertified: '2026-05-20',
+    status: 'Ready to generate',
+    lcaExtracted: true,
+    generatedPdfBase64: null,
+    generatedFilename: null,
+    lca: [
+      { label: 'Occupation Code (SOC)', value: '19-1042.00',           conf: 0.96, source: 'LCA PDF' },
+      { label: 'Wage Range',           value: '$125,000 – $168,000',  conf: 0.94, source: 'LCA PDF' },
+      { label: 'Prevailing Wage',      value: '$119,800 / yr',        conf: 0.92, source: 'LCA PDF' },
+      { label: 'Posting Start',        value: '2026-04-10',           conf: 0.91, source: 'LCA PDF' },
+      { label: 'Posting End',          value: '2026-04-24',           conf: 0.91, source: 'LCA PDF' },
+    ],
+    computed: [
+      { label: 'Retain Until', value: '2030-05-19', source: 'validity_end + 1y' },
+    ],
   },
 ];
 
