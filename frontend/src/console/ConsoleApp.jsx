@@ -9,9 +9,9 @@ import { Uc2ComplianceGeneration } from './modules/Uc2ComplianceGeneration.jsx';
 import { Uc3CrossValidation }      from './modules/Uc3CrossValidation.jsx';
 
 const MODULES = [
-  { id: 'uc1', code: 'UC-01', name: 'Notice Ingestion',  blurb: 'Extract & auto-update',   icon: Inbox,       component: Uc1NoticeIngestion },
-  { id: 'uc2', code: 'UC-02', name: 'Compliance Docs',   blurb: 'Generate from sources',   icon: FileCheck2,  component: Uc2ComplianceGeneration },
-  { id: 'uc3', code: 'UC-03', name: 'AI-Validation',  blurb: 'Forms & mismatch review', icon: ShieldCheck, component: Uc3CrossValidation },
+  { id: 'uc1', code: 'UC-01', name: 'Document Ingestion',  blurb: 'Extract notices & auto-update',   icon: Inbox,       component: Uc1NoticeIngestion },
+  { id: 'uc2', code: 'UC-02', name: 'Form Generation',   blurb: 'Generate compliance documents',   icon: FileCheck2,  component: Uc2ComplianceGeneration },
+  { id: 'uc3', code: 'UC-03', name: 'AI-Validation',  blurb: 'Auto-review & flag data mismatch', icon: ShieldCheck, component: Uc3CrossValidation },
 ];
 
 function getInitials(name) {
@@ -52,9 +52,7 @@ export default function ConsoleApp({ session, onLogout }) {
 
           {/* Nav */}
           <nav className="flex-1 px-3 py-4">
-            <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.1em] px-2 mb-2">
-              Use Cases
-            </div>
+
             {MODULES.map((m) => {
               const Icon   = m.icon;
               const active = activeId === m.id;
@@ -84,10 +82,10 @@ export default function ConsoleApp({ session, onLogout }) {
 
           {/* Footer */}
           <div className="px-5 py-4 border-t border-slate-200/80">
-            <div className="text-[10px] text-slate-400 uppercase tracking-[0.1em] mb-1">Pilot programme</div>
+            {/* <div className="text-[10px] text-slate-400 uppercase tracking-[0.1em] mb-1">Pilot programme</div>
             <div className="text-xs text-slate-600 leading-relaxed">
               $12K total · 4-month compressed delivery · shared Azure + Doc AI infrastructure
-            </div>
+            </div> */}
           </div>
         </aside>
 
