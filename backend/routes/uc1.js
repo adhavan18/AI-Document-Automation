@@ -1,0 +1,212 @@
+import { Router } from 'express';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import multer from 'multer';
+import { callWithFallback } from '../lib/ai-with-fallback.js';
+import { toUnit, isFlagged } from '../lib/confidence.js';
+import {
+  getNotices, getNotice, setNotice, addNotice, recomputeNoticeFlags,
+  store, SAMPLES_DIR,
+} from '../lib/store.js';
+
+const router = Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function buildContentBlock(buffer, mimeType) {
+  const base64 = buffer.toString('base64');
+  if (mimeType === 'application/pdf') {
+    return { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } };
+  }
+  return { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } };
+}
+
+function buildGeminiPart(buffer, mimeType) {
+  return { inlineData: { mimeType, data: buffer.toString('base64') } };
+}
+
+function safeParseJSON(raw) {
+  try { return JSON.parse(raw); } catch {
+    return JSON.parse(raw.replace(/```json|```/g, '').trim());
+  }
+}
+
+async function extractNoticeFields(buffer, mimeType) {
+  const contentBlock = buildContentBlock(buffer, mimeType);
+  const prompt = `You are an AI extraction engine for USCIS immigration notices.
+Extract exactly these 8 fields from the I-797 Notice of Action document:
+1. Receipt Number — the USCIS receipt number (e.g. WAC-26-098-54321)
+2. Receipt Notice Date — the date printed on the notice (ISO format YYYY-MM-DD)
+3. Received-On Date — the date the petition was received (ISO format YYYY-MM-DD)
+4. Receipt Type — the type of notice (e.g. "Receipt Notice")
+5. Government Form — the form type (e.g. "I-797C")
+6. Service Center — the USCIS service center name (e.g. "California Service Center")
+7. Status — the case status (e.g. "Case Received")
+8. Priority Date — the priority date if present (ISO format YYYY-MM-DD)
+
+For each field provide a confidence score 0-100 (how clearly visible and certain the value is).
+
+Respond ONLY with valid JSON, no markdown, no code fences:
+{
+  "fields": [
+    { "label": "Receipt Number",      "value": "<value>", "confidence": <0-100> },
+    { "label": "Receipt Notice Date", "value": "<value>", "confidence": <0-100> },
+    { "label": "Received-On Date",    "value": "<value>", "confidence": <0-100> },
+    { "label": "Receipt Type",        "value": "<value>", "confidence": <0-100> },
+    { "label": "Government Form",     "value": "<value>", "confidence": <0-100> },
+    { "label": "Service Center",      "value": "<value>", "confidence": <0-100> },
+    { "label": "Status",              "value": "<value>", "confidence": <0-100> },
+    { "label": "Priority Date",       "value": "<value>", "confidence": <0-100> }
+  ]
+}
+If a field cannot be found, set value to "Not found" and confidence to 0.`;
+
+  const start = Date.now();
+  const { text: rawText, provider } = await callWithFallback(
+    { model: 'claude-opus-4-5', max_tokens: 1024, messages: [{ role: 'user', content: [contentBlock, { type: 'text', text: prompt }] }] },
+    () => [buildGeminiPart(buffer, mimeType), prompt]
+  );
+  const elapsed = Date.now() - start;
+  console.log(`[uc1/extract] responded via ${provider} in ${elapsed}ms`);
+
+  const parsed = safeParseJSON(rawText);
+  const fields = (parsed.fields || []).map((f) => {
+    const unit = toUnit(f.confidence);
+    return { label: f.label, value: f.value, conf: unit, ...(isFlagged(unit) ? { flagged: true } : {}) };
+  });
+
+  const anyFlagged = fields.some((f) => f.flagged);
+  return { fields, status: anyFlagged ? 'Needs review' : 'Pre-filled', provider, elapsed };
+}
+
+// ─── Routes ───────────────────────────────────────────────────────────────────
+
+// GET /api/uc1/stats
+router.get('/stats', (req, res) => {
+  const notices = getNotices();
+  const covered = notices.filter((n) => n.status !== 'New' && n.fields.length > 0 || n.status === 'Verified').length;
+  const autoFillPct = Math.round((covered / Math.max(notices.length, 1)) * 100);
+
+  res.json({
+    stats: [
+      { label: 'In queue today',     value: String(store.stats.queueTotal), delta: store.stats.queueDelta },
+      { label: 'Auto-fill coverage', value: `${autoFillPct}%`,              delta: store.stats.autoFillTarget },
+      { label: 'Field accuracy',     value: store.stats.fieldAccuracy,      delta: store.stats.fieldAccuracyTarget },
+      { label: 'Duplicate records',  value: store.stats.duplicates,         delta: store.stats.duplicatesDelta },
+    ],
+  });
+});
+
+// GET /api/uc1/notices
+router.get('/notices', (req, res) => {
+  res.json({ notices: getNotices() });
+});
+
+// GET /api/uc1/notices/:id
+router.get('/notices/:id', (req, res) => {
+  const notice = getNotice(req.params.id);
+  if (!notice) return res.status(404).json({ error: 'Notice not found' });
+  res.json({ notice });
+});
+
+// POST /api/uc1/notices/:id/extract  — run AI on the seeded sample file
+router.post('/notices/:id/extract', async (req, res) => {
+  const notice = getNotice(req.params.id);
+  if (!notice) return res.status(404).json({ error: 'Notice not found' });
+
+  try {
+    const samplePath = join(SAMPLES_DIR, 'i797-sample.pdf');
+    const buffer = readFileSync(samplePath);
+
+    const { fields, status, provider } = await extractNoticeFields(buffer, 'application/pdf');
+
+    recomputeNoticeFlags(notice);
+    setNotice(notice.id, {
+      fields,
+      flags: fields.filter((f) => f.flagged).length,
+      status,
+      extractedProvider: provider,
+      record: `Extracted via ${provider} · ${fields.filter((f) => f.flagged).length} flag(s)`,
+    });
+
+    res.json({ notice: getNotice(notice.id) });
+  } catch (err) {
+    console.error('[uc1/extract]', err.message);
+    res.status(502).json({ error: err.message, aiUnavailable: true });
+  }
+});
+
+// POST /api/uc1/notices/:id/verify
+router.post('/notices/:id/verify', (req, res) => {
+  const notice = getNotice(req.params.id);
+  if (!notice) return res.status(404).json({ error: 'Notice not found' });
+
+  setNotice(notice.id, {
+    verifiedFields: notice.fields,
+    fields: [],
+    flags: 0,
+    status: 'Verified',
+    record: 'Saved to case management — record updated',
+  });
+
+  res.json({ notice: getNotice(notice.id) });
+});
+
+// POST /api/uc1/notices/:id/route-manual
+router.post('/notices/:id/route-manual', (req, res) => {
+  const notice = getNotice(req.params.id);
+  if (!notice) return res.status(404).json({ error: 'Notice not found' });
+
+  setNotice(notice.id, {
+    status: 'New',
+    record: 'Routed to manual review queue',
+  });
+
+  res.json({ notice: getNotice(notice.id) });
+});
+
+// POST /api/uc1/notices  — upload a new notice file and extract
+router.post('/notices', upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+  const id = `N-${Date.now().toString().slice(-5)}`;
+  const notice = {
+    id,
+    file: req.file.originalname || `notice_${id}.pdf`,
+    received: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + ' today',
+    beneficiary: 'Processing…',
+    petitioner: 'Processing…',
+    form: 'I-797',
+    status: 'New',
+    flags: 0,
+    matter: '—',
+    record: 'Uploaded — extraction pending',
+    sampleAsset: null,
+    extractedProvider: null,
+    verifiedFields: null,
+    fields: [],
+  };
+  addNotice(notice);
+
+  try {
+    const { fields, status, provider } = await extractNoticeFields(req.file.buffer, req.file.mimetype);
+    const beneficiaryField = fields.find((f) => f.label.toLowerCase().includes('beneficiary'));
+
+    setNotice(id, {
+      fields,
+      flags: fields.filter((f) => f.flagged).length,
+      status,
+      extractedProvider: provider,
+      beneficiary: beneficiaryField?.value || 'Unknown',
+      record: `Extracted via ${provider} · ${fields.filter((f) => f.flagged).length} flag(s)`,
+    });
+  } catch (err) {
+    console.error('[uc1/upload-extract]', err.message);
+    setNotice(id, { record: 'Extraction failed — review manually' });
+  }
+
+  res.status(201).json({ notice: getNotice(id) });
+});
+
+export default router;

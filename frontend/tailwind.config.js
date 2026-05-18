@@ -1,0 +1,17 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{js,jsx}'],
+  corePlugins: {
+    preflight: false,
+  },
+  theme: {
+    extend: {
+      fontFamily: {
+        sans:  ["'IBM Plex Sans'",  'system-ui', '-apple-system', 'sans-serif'],
+        mono:  ["'IBM Plex Mono'",  'ui-monospace', 'monospace'],
+        serif: ["'IBM Plex Serif'", 'Georgia', 'serif'],
+      },
+    },
+  },
+  plugins: [],
+};

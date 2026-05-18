@@ -2,20 +2,14 @@ import './lib/env.js';
 
 import express from 'express';
 import cors from 'cors';
-import multer from 'multer';
 
-import extractRouter from './routes/extract.js';
-import generateRouter from './routes/generate.js';
+import uc1Router from './routes/uc1.js';
+import uc2Router from './routes/uc2.js';
+import uc3Router from './routes/uc3.js';
 import generatePdfRouter from './routes/generate-pdf.js';
-import validateRouter from './routes/validate.js';
 
 const app = express();
-const port = process.env.PORT || 3001;
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 },
-});
+const port = process.env.PORT || 3002;
 
 app.use(cors());
 
@@ -36,10 +30,10 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.use('/api/extract', upload.single('file'), extractRouter);
+app.use('/api/uc1', uc1Router);
+app.use('/api/uc2', uc2Router);
+app.use('/api/uc3', uc3Router);
 app.use('/api/generate/pdf', generatePdfRouter);
-app.use('/api/generate', generateRouter);
-app.use('/api/validate', upload.single('file'), validateRouter);
 
 if (!process.env.ANTHROPIC_API_KEY) {
   console.warn('⚠️  WARNING: ANTHROPIC_API_KEY is not set. Claude calls will fail.');
@@ -50,4 +44,5 @@ if (!process.env.GOOGLE_GEMINI_API_KEY) {
 
 app.listen(port, () => {
   console.log(`Backend listening on port ${port}`);
+  console.log('NOTE: Use "npm start" for demos — "npm run dev" resets the in-memory store on file saves.');
 });
