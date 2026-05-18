@@ -5,7 +5,7 @@ import { StatusPill } from '../primitives/StatusPill.jsx';
 import { FieldRow }   from '../primitives/FieldRow.jsx';
 import { uc1 }        from '../api.js';
 
-export function Uc1NoticeIngestion() {
+export function Uc1NoticeIngestion({ search = '' }) {
   const [notices,    setNotices]    = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [uploading,  setUploading]  = useState(false);
@@ -13,6 +13,14 @@ export function Uc1NoticeIngestion() {
   const [error,      setError]      = useState(null);
   const fileInputRef = useRef(null);
 
+  const q        = search.toLowerCase();
+  const filtered = q
+    ? notices.filter((n) =>
+        n.beneficiary?.toLowerCase().includes(q) ||
+        n.petitioner?.toLowerCase().includes(q) ||
+        n.file?.toLowerCase().includes(q)
+      )
+    : notices;
   const selected = notices.find((n) => n.id === selectedId);
 
   async function handleUpload(e) {
@@ -90,9 +98,9 @@ export function Uc1NoticeIngestion() {
 
           {/* Queue */}
           {notices.length > 0 && (
-            <Section title="Processed notices" subtitle={`${notices.length} in session`}>
+            <Section title="Processed notices" subtitle={q ? `${filtered.length} of ${notices.length} match` : `${notices.length} in session`}>
               <div className="space-y-1.5">
-                {notices.map((n) => (
+                {filtered.map((n) => (
                   <button
                     key={n.id}
                     onClick={() => setSelectedId(n.id)}

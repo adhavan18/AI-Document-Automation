@@ -5,7 +5,7 @@ import { StatusPill }      from '../primitives/StatusPill.jsx';
 import { ConfidenceBadge } from '../primitives/ConfidenceBadge.jsx';
 import { uc2, pdfBlobUrl } from '../api.js';
 
-export function Uc2ComplianceGeneration() {
+export function Uc2ComplianceGeneration({ search = '' }) {
   const [matters,    setMatters]    = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [detail,     setDetail]     = useState(null);
@@ -83,6 +83,15 @@ export function Uc2ComplianceGeneration() {
     }
   }
 
+  const q          = search.toLowerCase();
+  const filtered   = q
+    ? matters.filter((m) =>
+        m.employer?.toLowerCase().includes(q) ||
+        m.position?.toLowerCase().includes(q) ||
+        m.worksite?.toLowerCase().includes(q)
+      )
+    : matters;
+
   const generated = (detail?.status === 'Generated' || detail?.status === 'Approved') && !!pdfUrl;
   const approved  = detail?.status === 'Approved';
 
@@ -122,9 +131,9 @@ export function Uc2ComplianceGeneration() {
 
           {/* Matters list */}
           {matters.length > 0 && (
-            <Section title="Matters" subtitle="LCA extracted · ready for I-129 petition">
+            <Section title="Matters" subtitle={q ? `${filtered.length} of ${matters.length} match` : 'LCA extracted · ready for I-129 petition'}>
               <div className="space-y-1.5">
-                {matters.map((m) => (
+                {filtered.map((m) => (
                   <button
                     key={m.id}
                     onClick={() => setSelectedId(m.id)}

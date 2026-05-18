@@ -5,7 +5,7 @@ import { StatusPill }      from '../primitives/StatusPill.jsx';
 import { ConfidenceBadge } from '../primitives/ConfidenceBadge.jsx';
 import { uc3 }            from '../api.js';
 
-export function Uc3CrossValidation() {
+export function Uc3CrossValidation({ search = '' }) {
   const [caseData,   setCaseData]   = useState(null);
   const [counts,     setCounts]     = useState({ blocking: 0, minor: 0, verified: 0 });
   const [status,     setStatus]     = useState('Loading…');
@@ -71,7 +71,15 @@ export function Uc3CrossValidation() {
     }
   }
 
-  const resolved = caseData?.resolved || {};
+  const resolved     = caseData?.resolved || {};
+  const q            = search.toLowerCase();
+  const filteredRows = q
+    ? (caseData?.rows || []).filter((r) =>
+        r.field?.toLowerCase().includes(q) ||
+        r.questionnaire?.toLowerCase().includes(q) ||
+        r.extracted?.toLowerCase().includes(q)
+      )
+    : (caseData?.rows || []);
 
   return (
     <div className="space-y-4">
@@ -198,7 +206,7 @@ export function Uc3CrossValidation() {
         <div className="col-span-9">
           <Section
             title="AI-Validation report"
-            subtitle="Questionnaire entries vs. document extractions"
+            subtitle={q && caseData?.rows?.length ? `${filteredRows.length} of ${caseData.rows.length} fields match` : 'Questionnaire entries vs. document extractions'}
             right={
               counts.blocking > 0 && caseData?.rows?.length > 0 && (
                 <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-rose-700 bg-rose-50 px-2 py-1 rounded ring-1 ring-rose-200">
@@ -219,7 +227,7 @@ export function Uc3CrossValidation() {
             )}
 
             <div className="space-y-1">
-              {(caseData?.rows || []).map((row) => {
+              {filteredRows.map((row) => {
                 const isResolved   = resolved[row.field];
                 const showBlocking = !row.match && row.severity === 'blocking' && !isResolved;
                 const showMinor    = !row.match && row.severity === 'minor'    && !isResolved;
