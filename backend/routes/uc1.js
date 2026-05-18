@@ -42,21 +42,25 @@ function safeParseJSON(raw) {
 async function extractNoticeFields(buffer, mimeType) {
   const contentBlock = buildContentBlock(buffer, mimeType);
   const prompt = `You are an AI extraction engine for USCIS immigration notices.
-Extract exactly these 8 fields from the I-797 Notice of Action document:
-1. Receipt Number — the USCIS receipt number (e.g. WAC-26-098-54321)
-2. Receipt Notice Date — the date printed on the notice (ISO format YYYY-MM-DD)
-3. Received-On Date — the date the petition was received (ISO format YYYY-MM-DD)
-4. Receipt Type — the type of notice (e.g. "Receipt Notice")
-5. Government Form — the form type (e.g. "I-797C")
-6. Service Center — the USCIS service center name (e.g. "California Service Center")
-7. Status — the case status (e.g. "Case Received")
-8. Priority Date — the priority date if present (ISO format YYYY-MM-DD)
+Extract exactly these 10 fields from the I-797 Notice of Action document:
+1. Beneficiary — the beneficiary's full name (last, first format or as printed)
+2. Petitioner — the petitioner company or individual name
+3. Receipt Number — the USCIS receipt number (e.g. WAC-26-098-54321)
+4. Receipt Notice Date — the date printed on the notice (ISO format YYYY-MM-DD)
+5. Received-On Date — the date the petition was received (ISO format YYYY-MM-DD)
+6. Receipt Type — the type of notice (e.g. "Receipt Notice")
+7. Government Form — the form type (e.g. "I-797C")
+8. Service Center — the USCIS service center name (e.g. "California Service Center")
+9. Status — the case status (e.g. "Case Received")
+10. Priority Date — the priority date if present (ISO format YYYY-MM-DD)
 
 For each field provide a confidence score 0-100 (how clearly visible and certain the value is).
 
 Respond ONLY with valid JSON, no markdown, no code fences:
 {
   "fields": [
+    { "label": "Beneficiary",         "value": "<value>", "confidence": <0-100> },
+    { "label": "Petitioner",          "value": "<value>", "confidence": <0-100> },
     { "label": "Receipt Number",      "value": "<value>", "confidence": <0-100> },
     { "label": "Receipt Notice Date", "value": "<value>", "confidence": <0-100> },
     { "label": "Received-On Date",    "value": "<value>", "confidence": <0-100> },
@@ -78,13 +82,27 @@ If a field cannot be found, set value to "Not found" and confidence to 0.`;
   console.log(`[uc1/extract] responded via ${provider} in ${elapsed}ms`);
 
   const parsed = safeParseJSON(rawText);
-  const fields = (parsed.fields || []).map((f) => {
-    const unit = toUnit(f.confidence);
-    return { label: f.label, value: f.value, conf: unit, ...(isFlagged(unit) ? { flagged: true } : {}) };
-  });
+
+  // Separate identity fields from displayed fields
+  const beneficiaryField = parsed.fields?.find((f) => f.label === 'Beneficiary');
+  const petitionerField  = parsed.fields?.find((f) => f.label === 'Petitioner');
+
+  const fields = (parsed.fields || [])
+    .filter((f) => f.label !== 'Beneficiary' && f.label !== 'Petitioner')
+    .map((f) => {
+      const unit = toUnit(f.confidence);
+      return { label: f.label, value: f.value, conf: unit, ...(isFlagged(unit) ? { flagged: true } : {}) };
+    });
 
   const anyFlagged = fields.some((f) => f.flagged);
-  return { fields, status: anyFlagged ? 'Needs review' : 'Pre-filled', provider, elapsed };
+  return {
+    fields,
+    status:      anyFlagged ? 'Needs review' : 'Pre-filled',
+    provider,
+    elapsed,
+    beneficiary: beneficiaryField?.value || null,
+    petitioner:  petitionerField?.value  || null,
+  };
 }
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
@@ -129,14 +147,16 @@ router.post('/notices/:id/extract', async (req, res) => {
     const buffer   = readFileSync(join(SAMPLES_DIR, filename));
     const mimeType = detectMime(buffer);
 
-    const { fields, status, provider } = await extractNoticeFields(buffer, mimeType);
+    const { fields, status, provider, beneficiary, petitioner } = await extractNoticeFields(buffer, mimeType);
 
     setNotice(notice.id, {
       fields,
-      flags: fields.filter((f) => f.flagged).length,
+      flags:             fields.filter((f) => f.flagged).length,
       status,
       extractedProvider: provider,
-      record: `Extracted via ${provider} · ${fields.filter((f) => f.flagged).length} flag(s)`,
+      record:            `Extracted via ${provider} · ${fields.filter((f) => f.flagged).length} flag(s)`,
+      ...(beneficiary ? { beneficiary } : {}),
+      ...(petitioner  ? { petitioner  } : {}),
     });
 
     res.json({ notice: getNotice(notice.id) });
@@ -199,16 +219,16 @@ router.post('/notices', upload.single('file'), async (req, res) => {
   addNotice(notice);
 
   try {
-    const { fields, status, provider } = await extractNoticeFields(req.file.buffer, detectMime(req.file.buffer));
-    const beneficiaryField = fields.find((f) => f.label.toLowerCase().includes('beneficiary'));
+    const { fields, status, provider, beneficiary, petitioner } = await extractNoticeFields(req.file.buffer, detectMime(req.file.buffer));
 
     setNotice(id, {
       fields,
-      flags: fields.filter((f) => f.flagged).length,
+      flags:             fields.filter((f) => f.flagged).length,
       status,
       extractedProvider: provider,
-      beneficiary: beneficiaryField?.value || 'Unknown',
-      record: `Extracted via ${provider} · ${fields.filter((f) => f.flagged).length} flag(s)`,
+      beneficiary:       beneficiary || 'Unknown',
+      petitioner:        petitioner  || 'Unknown',
+      record:            `Extracted via ${provider} · ${fields.filter((f) => f.flagged).length} flag(s)`,
     });
   } catch (err) {
     console.error('[uc1/upload-extract]', err.message);
