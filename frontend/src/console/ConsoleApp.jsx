@@ -40,7 +40,7 @@ export default function ConsoleApp({ session, onLogout }) {
             <img
               src="https://gip-us.com/wp-content/uploads/2023/12/gipuheader.png"
               alt="GIP"
-              className="h-9 w-auto object-contain"
+              className="h-12 w-auto object-contain"
             />
             <div className="text-[10px] text-slate-500 uppercase tracking-[0.1em] mt-2">
               {session?.role ?? 'Immigration · Reviewer'}
