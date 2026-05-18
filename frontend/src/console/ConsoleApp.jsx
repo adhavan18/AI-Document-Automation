@@ -11,7 +11,7 @@ import { Uc3CrossValidation }      from './modules/Uc3CrossValidation.jsx';
 const MODULES = [
   { id: 'uc1', code: 'UC-01', name: 'Notice Ingestion',  blurb: 'Extract & auto-update',   icon: Inbox,       component: Uc1NoticeIngestion },
   { id: 'uc2', code: 'UC-02', name: 'Compliance Docs',   blurb: 'Generate from sources',   icon: FileCheck2,  component: Uc2ComplianceGeneration },
-  { id: 'uc3', code: 'UC-03', name: 'Cross-Validation',  blurb: 'Forms & mismatch review', icon: ShieldCheck, component: Uc3CrossValidation },
+  { id: 'uc3', code: 'UC-03', name: 'AI-Validation',  blurb: 'Forms & mismatch review', icon: ShieldCheck, component: Uc3CrossValidation },
 ];
 
 function getInitials(name) {

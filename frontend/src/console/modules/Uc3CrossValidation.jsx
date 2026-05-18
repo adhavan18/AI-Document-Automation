@@ -125,7 +125,7 @@ export function Uc3CrossValidation() {
                     disabled={running}
                     className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded disabled:opacity-40 whitespace-nowrap"
                   >
-                    {running ? 'Validating…' : 'Run cross-validation'}
+                    {running ? 'Validating…' : 'Run AI-Validation'}
                   </button>
                   <input
                     ref={fileInputRef}
@@ -196,7 +196,7 @@ export function Uc3CrossValidation() {
         {/* Mismatch report */}
         <div className="col-span-9">
           <Section
-            title="Cross-validation report"
+            title="AI-Validation report"
             subtitle="Questionnaire entries vs. document extractions"
             right={
               counts.blocking > 0 && caseData?.rows?.length > 0 && (
@@ -213,7 +213,7 @@ export function Uc3CrossValidation() {
 
             {(!caseData?.rows || caseData.rows.length === 0) && !error && (
               <div className="py-12 text-center text-sm text-slate-400">
-                Click <span className="font-medium text-slate-600">Run cross-validation</span> to extract data from the documents and compare against the questionnaire.
+                Click <span className="font-medium text-slate-600">Run AI-Validation</span> to extract data from the documents and compare against the questionnaire.
               </div>
             )}
 
