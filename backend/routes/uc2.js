@@ -4,7 +4,7 @@ import puppeteer from 'puppeteer';
 import { callWithFallback } from '../lib/ai-with-fallback.js';
 import { toUnit } from '../lib/confidence.js';
 import { getMatters, getMatter, setMatter, addMatter } from '../lib/store.js';
-import { buildPublicAccessFileHTML } from '../templates/public-access-file.js';
+import { buildI129HTML } from '../templates/i129-template.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -155,7 +155,7 @@ router.post('/matters/:id/generate', async (req, res) => {
   let browser;
   try {
     const start   = Date.now();
-    const html    = buildPublicAccessFileHTML(matter);
+    const html    = buildI129HTML(matter);
     browser       = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page    = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
@@ -168,7 +168,7 @@ router.post('/matters/:id/generate', async (req, res) => {
     browser = null;
 
     const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
-    const filename  = `Compliance_File_${matter.id}.pdf`;
+    const filename  = `Form_I-129_${matter.employer?.replace(/[^a-zA-Z0-9]/g, '_') || matter.id}.pdf`;
     const elapsed   = Date.now() - start;
 
     setMatter(matter.id, { status: 'Generated', generatedPdfBase64: pdfBase64, generatedFilename: filename });

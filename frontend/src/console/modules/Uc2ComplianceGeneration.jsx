@@ -122,7 +122,7 @@ export function Uc2ComplianceGeneration() {
 
           {/* Matters list */}
           {matters.length > 0 && (
-            <Section title="Matters" subtitle="LCA extracted · ready for compliance file">
+            <Section title="Matters" subtitle="LCA extracted · ready for I-129 petition">
               <div className="space-y-1.5">
                 {matters.map((m) => (
                   <button
@@ -169,7 +169,7 @@ export function Uc2ComplianceGeneration() {
                       }`}
                     >
                       <Sparkles className="w-3 h-3" />
-                      {generating ? 'Generating…' : generated ? 'Regenerate' : 'Generate compliance file'}
+                      {generating ? 'Generating…' : generated ? 'Regenerate' : 'Generate I-129'}
                     </button>
                   )
                 }
@@ -178,7 +178,7 @@ export function Uc2ComplianceGeneration() {
                   <div className="py-10 text-center text-sm text-slate-400">
                     <div className="inline-flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 text-amber-400" />
-                      Upload an LCA document to extract fields and generate the compliance file
+                      Upload an LCA document to extract fields and generate the I-129 petition
                     </div>
                   </div>
                 ) : (
@@ -224,8 +224,8 @@ export function Uc2ComplianceGeneration() {
 
               {/* PDF preview */}
               <Section
-                title="Compliance file preview"
-                subtitle={generated ? `Compliance_File_${detail.id}.pdf · ready for review` : 'Awaiting generation'}
+                title="Form I-129 preview"
+                subtitle={generated ? `Form_I-129_${detail.employer?.replace(/[^a-zA-Z0-9]/g, '_')}.pdf · ready for review` : 'Awaiting generation'}
                 right={
                   generated && !approved && (
                     <button
@@ -245,12 +245,12 @@ export function Uc2ComplianceGeneration() {
                       src={pdfUrl}
                       className="w-full rounded border border-slate-200"
                       style={{ height: '480px' }}
-                      title="Compliance file preview"
+                      title="Form I-129 preview"
                     />
                     <div className="flex justify-end">
                       <a
                         href={pdfUrl}
-                        download={`Compliance_File_${detail.id}.pdf`}
+                        download={`Form_I-129_${detail.employer?.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`}
                         className="px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:ring-slate-300 rounded"
                       >
                         Download PDF
@@ -263,8 +263,8 @@ export function Uc2ComplianceGeneration() {
                       <span className="text-slate-500">Generating PDF…</span>
                     ) : detail.lcaExtracted ? (
                       <>Click <span className="font-medium text-slate-600">
-                        {generated ? 'Regenerate' : 'Generate compliance file'}
-                      </span> to assemble the document</>
+                        {generated ? 'Regenerate' : 'Generate I-129'}
+                      </span> to assemble the petition</>
                     ) : (
                       'Upload an LCA document first'
                     )}

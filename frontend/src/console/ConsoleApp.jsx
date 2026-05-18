@@ -10,7 +10,7 @@ import { Uc3CrossValidation }      from './modules/Uc3CrossValidation.jsx';
 
 const MODULES = [
   { id: 'uc1', name: 'Document Ingestion', blurb: 'Extract notices & auto-update',   icon: Inbox,       component: Uc1NoticeIngestion },
-  { id: 'uc2', name: 'Form Generation',   blurb: 'Generate compliance documents',   icon: FileCheck2,  component: Uc2ComplianceGeneration },
+  { id: 'uc2', name: 'Form Generation',   blurb: 'Generate I-129 petitions',   icon: FileCheck2,  component: Uc2ComplianceGeneration },
   { id: 'uc3', name: 'AI-Validation',     blurb: 'Auto-review & flag data mismatch', icon: ShieldCheck, component: Uc3CrossValidation },
 ];
 
