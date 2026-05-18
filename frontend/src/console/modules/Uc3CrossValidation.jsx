@@ -13,6 +13,7 @@ export function Uc3CrossValidation() {
   const [resolving,  setResolving]  = useState(null);
   const [saving,     setSaving]     = useState(false);
   const [error,      setError]      = useState(null);
+  const [previewDoc, setPreviewDoc] = useState(null);
   const fileInputRef = useRef(null);
 
   function applyResponse({ case: c, counts: ct, status: st }) {
@@ -140,17 +141,56 @@ export function Uc3CrossValidation() {
         </div>
 
         {/* Documents column */}
-        <div className="col-span-3">
-          <Section title="Uploaded document set" subtitle="Source of truth">
-            <div className="space-y-2">
-              {(caseData?.documents || []).map((doc) => (
-                <div key={doc.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-50 cursor-pointer">
-                  <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="text-xs text-slate-700 truncate">{doc.label}</span>
-                </div>
-              ))}
+        <div className="col-span-3 space-y-3">
+          <Section title="Uploaded document set" subtitle="Click to preview">
+            <div className="space-y-1">
+              {(caseData?.documents || []).map((doc) => {
+                const active = previewDoc?.id === doc.id;
+                return (
+                  <button
+                    key={doc.id}
+                    onClick={() => setPreviewDoc(active ? null : doc)}
+                    className={`w-full flex items-center gap-2 p-2 rounded-md text-left transition-all ${
+                      active
+                        ? 'bg-slate-900 text-white'
+                        : doc.sampleAsset
+                          ? 'hover:bg-slate-50 cursor-pointer'
+                          : 'opacity-50 cursor-default'
+                    }`}
+                    disabled={!doc.sampleAsset}
+                    title={doc.sampleAsset ? 'Click to preview' : 'No sample available'}
+                  >
+                    <FileText className={`w-3.5 h-3.5 shrink-0 ${active ? 'text-white' : 'text-slate-400'}`} />
+                    <span className={`text-xs truncate ${active ? 'text-white' : 'text-slate-700'}`}>{doc.label}</span>
+                    {doc.sampleAsset && (
+                      <Eye className={`w-3 h-3 ml-auto shrink-0 ${active ? 'text-slate-300' : 'text-slate-300'}`} />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </Section>
+
+          {/* Inline document preview */}
+          {previewDoc?.sampleAsset && (
+            <Section title="Preview" subtitle={previewDoc.label}>
+              {previewDoc.sampleAsset.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                <img
+                  src={previewDoc.sampleAsset}
+                  alt={previewDoc.label}
+                  className="w-full rounded border border-slate-200 object-contain"
+                  style={{ maxHeight: '320px' }}
+                />
+              ) : (
+                <iframe
+                  src={previewDoc.sampleAsset}
+                  className="w-full rounded border border-slate-200"
+                  style={{ height: '320px' }}
+                  title={previewDoc.label}
+                />
+              )}
+            </Section>
+          )}
         </div>
 
         {/* Mismatch report */}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Activity, Eye, FolderOpen, CheckCircle2, Clock, Mail, Flag } from 'lucide-react';
+import { Activity, Eye, FolderOpen, CheckCircle2, Clock, Mail, Flag, FileText } from 'lucide-react';
 import { Section }        from '../primitives/Section.jsx';
 import { StatusPill }     from '../primitives/StatusPill.jsx';
 import { FieldRow }       from '../primitives/FieldRow.jsx';
@@ -257,6 +257,32 @@ export function Uc1NoticeIngestion({ search }) {
                   </div>
                 )}
               </Section>
+
+              {/* Inline document preview */}
+              {selected.sampleAsset && (
+                <Section
+                  title="Document preview"
+                  subtitle={selected.file}
+                  right={
+                    <a
+                      href={selected.sampleAsset}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-slate-500 hover:text-slate-900 inline-flex items-center gap-1"
+                    >
+                      <Eye className="w-3 h-3" />
+                      Open full
+                    </a>
+                  }
+                >
+                  <iframe
+                    src={selected.sampleAsset}
+                    className="w-full rounded border border-slate-200"
+                    style={{ height: '340px' }}
+                    title={selected.file}
+                  />
+                </Section>
+              )}
 
               <Section title="Phase 2 — Email pre-staging" subtitle="Manual today">
                 <div className="flex items-center justify-between text-xs text-slate-500">
