@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FileText, Database, AlertTriangle, CheckCircle2, X, ArrowUpRight } from 'lucide-react';
+import { FileText, Database, AlertTriangle, CheckCircle2, X, ArrowUpRight, Eye } from 'lucide-react';
 import { Section }         from '../primitives/Section.jsx';
 import { StatusPill }      from '../primitives/StatusPill.jsx';
 import { ConfidenceBadge } from '../primitives/ConfidenceBadge.jsx';
