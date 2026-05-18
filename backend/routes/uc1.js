@@ -14,6 +14,13 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+function detectMime(buffer) {
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) return 'image/png';
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8) return 'image/jpeg';
+  if (buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46) return 'application/pdf';
+  return 'application/octet-stream';
+}
+
 function buildContentBlock(buffer, mimeType) {
   const base64 = buffer.toString('base64');
   if (mimeType === 'application/pdf') {
@@ -110,18 +117,20 @@ router.get('/notices/:id', (req, res) => {
   res.json({ notice });
 });
 
-// POST /api/uc1/notices/:id/extract  — run AI on the seeded sample file
+// POST /api/uc1/notices/:id/extract  — run AI on the notice's own document
 router.post('/notices/:id/extract', async (req, res) => {
   const notice = getNotice(req.params.id);
   if (!notice) return res.status(404).json({ error: 'Notice not found' });
+  if (!notice.sampleAsset) return res.status(400).json({ error: 'No document on file for this notice — upload one first' });
 
   try {
-    const samplePath = join(SAMPLES_DIR, 'i797-sample.pdf');
-    const buffer = readFileSync(samplePath);
+    // sampleAsset is a public URL path like /samples/filename.png — resolve to filesystem
+    const filename = notice.sampleAsset.replace('/samples/', '');
+    const buffer   = readFileSync(join(SAMPLES_DIR, filename));
+    const mimeType = detectMime(buffer);
 
-    const { fields, status, provider } = await extractNoticeFields(buffer, 'application/pdf');
+    const { fields, status, provider } = await extractNoticeFields(buffer, mimeType);
 
-    recomputeNoticeFlags(notice);
     setNotice(notice.id, {
       fields,
       flags: fields.filter((f) => f.flagged).length,
@@ -190,7 +199,7 @@ router.post('/notices', upload.single('file'), async (req, res) => {
   addNotice(notice);
 
   try {
-    const { fields, status, provider } = await extractNoticeFields(req.file.buffer, req.file.mimetype);
+    const { fields, status, provider } = await extractNoticeFields(req.file.buffer, detectMime(req.file.buffer));
     const beneficiaryField = fields.find((f) => f.label.toLowerCase().includes('beneficiary'));
 
     setNotice(id, {
