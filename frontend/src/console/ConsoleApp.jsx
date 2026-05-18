@@ -29,12 +29,12 @@ export default function ConsoleApp({ session, onLogout }) {
 
   return (
     <div
-      className="min-h-screen bg-slate-100/60 text-slate-900"
+      className="h-screen overflow-hidden bg-slate-100/60 text-slate-900"
       style={{ fontFamily: "'IBM Plex Sans', system-ui, -apple-system, sans-serif" }}
     >
-      <div className="flex">
+      <div className="flex h-full">
         {/* ── Sidebar ──────────────────────────────────────────────────── */}
-        <aside className="w-64 shrink-0 min-h-screen bg-white border-r border-slate-200/80 flex flex-col">
+        <aside className="w-64 shrink-0 h-full bg-white border-r border-slate-200/80 flex flex-col overflow-y-auto">
           {/* Brand */}
           <div className="px-5 py-5 border-b border-slate-200/80">
             <div className="flex items-center gap-2">
@@ -92,9 +92,9 @@ export default function ConsoleApp({ session, onLogout }) {
         </aside>
 
         {/* ── Main ─────────────────────────────────────────────────────── */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 flex flex-col min-h-screen">
           {/* Header */}
-          <header className="bg-white border-b border-slate-200/80 px-6 py-4 flex items-center justify-between">
+          <header className="sticky top-0 z-10 bg-white border-b border-slate-200/80 px-6 py-4 flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 text-[11px] text-slate-500">
                 <span>Pilot Console</span>
@@ -131,7 +131,7 @@ export default function ConsoleApp({ session, onLogout }) {
             </div>
           </header>
 
-          <div className="p-6">
+          <div className="p-6 flex-1 overflow-y-auto">
             <ErrorBoundary>
               <Active key={activeId} search={search} />
             </ErrorBoundary>

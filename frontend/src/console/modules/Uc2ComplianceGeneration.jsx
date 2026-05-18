@@ -42,7 +42,8 @@ export function Uc2ComplianceGeneration({ search }) {
       )
     : matters;
 
-  const generated = detail?.status === 'Generated' || detail?.status === 'Approved';
+  const generated = (detail?.status === 'Generated' || detail?.status === 'Approved') && !!pdfUrl;
+  const approved  = detail?.status === 'Approved';
 
   async function handleExtractLca(file) {
     if (!selectedId) return;
@@ -149,15 +150,15 @@ export function Uc2ComplianceGeneration({ search }) {
                     )}
                     <button
                       onClick={handleGenerate}
-                      disabled={generated || generating}
+                      disabled={generating || approved}
                       className={`px-3 py-1.5 text-xs font-medium rounded inline-flex items-center gap-1.5 ${
-                        generated || generating
+                        generating || approved
                           ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                           : 'bg-slate-900 hover:bg-slate-800 text-white'
                       }`}
                     >
                       <Sparkles className="w-3 h-3" />
-                      {generating ? 'Generating…' : generated ? 'Generated' : 'Generate compliance file'}
+                      {generating ? 'Generating…' : generated ? 'Regenerate' : 'Generate compliance file'}
                     </button>
                   </div>
                 }
@@ -242,7 +243,7 @@ export function Uc2ComplianceGeneration({ search }) {
                 title="Generated document preview"
                 subtitle={generated ? `Compliance_File_${detail.id}.pdf · ready for review` : 'Awaiting generation'}
                 right={
-                  generated && detail.status !== 'Approved' && (
+                  generated && !approved && (
                     <button
                       onClick={handleApprove}
                       disabled={approving}
@@ -272,11 +273,17 @@ export function Uc2ComplianceGeneration({ search }) {
                       </a>
                     </div>
                   </div>
-                ) : generated ? (
-                  <div className="py-8 text-center text-sm text-slate-400">Loading preview…</div>
                 ) : (
                   <div className="py-12 text-center text-sm text-slate-400">
-                    Click <span className="font-medium text-slate-600">Generate compliance file</span> to assemble the document
+                    {generating ? (
+                      <span className="text-slate-500">Generating PDF…</span>
+                    ) : (
+                      <>Click <span className="font-medium text-slate-600">
+                        {detail?.status === 'Generated' || detail?.status === 'Approved'
+                          ? 'Regenerate'
+                          : 'Generate compliance file'}
+                      </span> to assemble the document</>
+                    )}
                   </div>
                 )}
               </Section>
