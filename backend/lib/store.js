@@ -78,90 +78,20 @@ const SEED_NOTICES = [
   },*/
 ];
 
+// One seeded matter kept as an existing DB record example (no LCA yet)
 const SEED_MATTERS = [
   {
     id: 'M-2024-07731',
     employer: 'Northstar Aerospace, Inc.',
     position: 'Senior Avionics Engineer',
     worksite: 'Wichita, KS',
-    lcaCertified: '2026-05-09',
-    status: 'Ready to generate',
+    lcaCertified: null,
+    status: 'Pending LCA',
     lcaExtracted: false,
     generatedPdfBase64: null,
     generatedFilename: null,
-    inserts: 'Certified LCA pages · Prevailing-wage chart (cached for 17-2011.00)',
-    cms: [
-      { label: 'Company Name',   value: 'Northstar Aerospace, Inc.', source: 'CMS · DB' },
-      { label: 'Position Title', value: 'Senior Avionics Engineer',  source: 'CMS · DB' },
-      { label: 'Worksite City',  value: 'Wichita',                   source: 'CMS · DB' },
-      { label: 'Worksite State', value: 'KS',                        source: 'CMS · DB' },
-      { label: 'Validity Start', value: '2026-06-01',                source: 'CMS · DB' },
-      { label: 'Validity End',   value: '2029-05-31',                source: 'CMS · DB' },
-    ],
     lca: [],
-    computed: [
-      { label: 'Retain Until', value: '2030-05-31', source: 'validity_end + 1y' },
-    ],
-  },
-  {
-    id: 'M-2024-09122',
-    employer: 'Pacific Genomics LLC',
-    position: 'Computational Biologist',
-    worksite: 'South San Francisco, CA',
-    lcaCertified: '2026-05-12',
-    status: 'Generated',
-    lcaExtracted: true,
-    generatedPdfBase64: null,
-    generatedFilename: 'Compliance_File_M-2024-09122.pdf',
-    inserts: 'Certified LCA pages · Prevailing-wage chart (cached for 15-2041.00)',
-    cms: [
-      { label: 'Company Name',   value: 'Pacific Genomics LLC',       source: 'CMS · DB' },
-      { label: 'Position Title', value: 'Computational Biologist',    source: 'CMS · DB' },
-      { label: 'Worksite City',  value: 'South San Francisco',        source: 'CMS · DB' },
-      { label: 'Worksite State', value: 'CA',                         source: 'CMS · DB' },
-      { label: 'Validity Start', value: '2026-05-15',                 source: 'CMS · DB' },
-      { label: 'Validity End',   value: '2029-05-14',                 source: 'CMS · DB' },
-    ],
-    lca: [
-      { label: 'Occupation Code (SOC)', value: '15-2041.00',           conf: 0.97, source: 'LCA PDF' },
-      { label: 'Wage Range',           value: '$148,000 – $198,000',  conf: 0.95, source: 'LCA PDF' },
-      { label: 'Prevailing Wage',      value: '$142,500 / yr',        conf: 0.93, source: 'LCA PDF' },
-      { label: 'Posting Start',        value: '2026-04-01',           conf: 0.90, source: 'LCA PDF' },
-      { label: 'Posting End',          value: '2026-04-15',           conf: 0.90, source: 'LCA PDF' },
-    ],
-    computed: [
-      { label: 'Retain Until', value: '2030-05-14', source: 'validity_end + 1y' },
-    ],
-  },
-  {
-    id: 'M-2024-08841',
-    employer: 'Helix Bio Solutions',
-    position: 'Research Scientist III',
-    worksite: 'Cambridge, MA',
-    lcaCertified: '2026-05-10',
-    status: 'Generated',
-    lcaExtracted: true,
-    generatedPdfBase64: null,
-    generatedFilename: 'Compliance_File_M-2024-08841.pdf',
-    inserts: 'Certified LCA pages · Prevailing-wage chart (cached for 19-1042.00)',
-    cms: [
-      { label: 'Company Name',   value: 'Helix Bio Solutions',    source: 'CMS · DB' },
-      { label: 'Position Title', value: 'Research Scientist III', source: 'CMS · DB' },
-      { label: 'Worksite City',  value: 'Cambridge',              source: 'CMS · DB' },
-      { label: 'Worksite State', value: 'MA',                     source: 'CMS · DB' },
-      { label: 'Validity Start', value: '2026-05-20',             source: 'CMS · DB' },
-      { label: 'Validity End',   value: '2029-05-19',             source: 'CMS · DB' },
-    ],
-    lca: [
-      { label: 'Occupation Code (SOC)', value: '19-1042.00',          conf: 0.96, source: 'LCA PDF' },
-      { label: 'Wage Range',           value: '$125,000 – $168,000', conf: 0.94, source: 'LCA PDF' },
-      { label: 'Prevailing Wage',      value: '$119,800 / yr',       conf: 0.92, source: 'LCA PDF' },
-      { label: 'Posting Start',        value: '2026-04-10',          conf: 0.91, source: 'LCA PDF' },
-      { label: 'Posting End',          value: '2026-04-24',          conf: 0.91, source: 'LCA PDF' },
-    ],
-    computed: [
-      { label: 'Retain Until', value: '2030-05-19', source: 'validity_end + 1y' },
-    ],
+    computed: [],
   },
 ];
 
@@ -253,6 +183,10 @@ export function setMatter(id, patch) {
   if (idx === -1) return null;
   Object.assign(store.matters[idx], patch);
   return store.matters[idx];
+}
+
+export function addMatter(matter) {
+  store.matters.push(matter);
 }
 
 // ─── Validation case helpers ──────────────────────────────────────────────────

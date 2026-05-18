@@ -30,20 +30,17 @@ export const uc1 = {
 // ─── UC-02 ────────────────────────────────────────────────────────────────────
 
 export const uc2 = {
-  listMatters:   ()         => http.get('/uc2/matters').then((r) => r.data),
-  getMatter:     (id)       => http.get(`/uc2/matters/${id}`).then((r) => r.data),
-  extractLca:    (id, file) => {
-    if (file) {
-      const fd = new FormData();
-      fd.append('file', file);
-      return http.post(`/uc2/matters/${id}/extract-lca`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }).then((r) => r.data);
-    }
-    return http.post(`/uc2/matters/${id}/extract-lca`).then((r) => r.data);
+  listMatters: ()     => http.get('/uc2/matters').then((r) => r.data),
+  getMatter:   (id)   => http.get(`/uc2/matters/${id}`).then((r) => r.data),
+  uploadLca:   (file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return http.post('/uc2/matters/upload-lca', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((r) => r.data);
   },
-  generate:      (id)       => http.post(`/uc2/matters/${id}/generate`).then((r) => r.data),
-  approve:       (id)       => http.post(`/uc2/matters/${id}/approve`).then((r) => r.data),
+  generate: (id) => http.post(`/uc2/matters/${id}/generate`).then((r) => r.data),
+  approve:  (id) => http.post(`/uc2/matters/${id}/approve`).then((r) => r.data),
 };
 
 // ─── UC-03 ────────────────────────────────────────────────────────────────────

@@ -1,21 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
-import { Database, FileText, Activity, FolderOpen, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Upload, FileText, Activity, CheckCircle2, Sparkles, AlertTriangle } from 'lucide-react';
 import { Section }         from '../primitives/Section.jsx';
 import { StatusPill }      from '../primitives/StatusPill.jsx';
 import { ConfidenceBadge } from '../primitives/ConfidenceBadge.jsx';
 import { uc2, pdfBlobUrl } from '../api.js';
 
-export function Uc2ComplianceGeneration({ search }) {
-  const [matters,      setMatters]     = useState([]);
-  const [selectedId,   setSelectedId]  = useState(null);
-  const [detail,       setDetail]      = useState(null);
-  const [pdfUrl,       setPdfUrl]      = useState(null);
-  const [extracting,   setExtracting]  = useState(false);
-  const [generating,   setGenerating]  = useState(false);
-  const [approving,    setApproving]   = useState(false);
-  const [error,        setError]       = useState(null);
-  const lcaFileRef = useRef(null);
+export function Uc2ComplianceGeneration() {
+  const [matters,    setMatters]    = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [detail,     setDetail]     = useState(null);
+  const [pdfUrl,     setPdfUrl]     = useState(null);
+  const [uploading,  setUploading]  = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [approving,  setApproving]  = useState(false);
+  const [error,      setError]      = useState(null);
+  const fileInputRef = useRef(null);
 
+  // Load seeded matters on mount
   useEffect(() => {
     uc2.listMatters().then((d) => {
       setMatters(d.matters);
@@ -23,40 +24,31 @@ export function Uc2ComplianceGeneration({ search }) {
     }).catch(() => {});
   }, []);
 
+  // Load detail when selection changes
   useEffect(() => {
     if (!selectedId) return;
     setPdfUrl(null);
     setError(null);
     uc2.getMatter(selectedId).then((d) => {
       setDetail(d.matter);
-      if (d.matter.generatedPdfBase64) {
-        setPdfUrl(pdfBlobUrl(d.matter.generatedPdfBase64));
-      }
+      if (d.matter.generatedPdfBase64) setPdfUrl(pdfBlobUrl(d.matter.generatedPdfBase64));
     }).catch(() => {});
   }, [selectedId]);
 
-  const filtered = search
-    ? matters.filter((m) =>
-        [m.id, m.employer, m.position, m.worksite]
-          .some((v) => v?.toLowerCase().includes(search.toLowerCase()))
-      )
-    : matters;
-
-  const generated = (detail?.status === 'Generated' || detail?.status === 'Approved') && !!pdfUrl;
-  const approved  = detail?.status === 'Approved';
-
-  async function handleExtractLca(file) {
-    if (!selectedId) return;
-    setExtracting(true);
+  async function handleUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
     setError(null);
     try {
-      const { matter } = await uc2.extractLca(selectedId, file || null);
-      setDetail(matter);
-      setMatters((prev) => prev.map((m) => m.id === matter.id ? { ...m, lcaExtracted: matter.lcaExtracted } : m));
-    } catch (e) {
-      setError(e?.response?.data?.error || e.message);
+      const { matter } = await uc2.uploadLca(file);
+      setMatters((prev) => [...prev, matter]);
+      setSelectedId(matter.id);
+    } catch (err) {
+      setError(err?.response?.data?.error || err.message || 'Upload failed');
     } finally {
-      setExtracting(false);
+      setUploading(false);
+      e.target.value = '';
     }
   }
 
@@ -70,8 +62,8 @@ export function Uc2ComplianceGeneration({ search }) {
       const { matter } = await uc2.getMatter(selectedId);
       setDetail(matter);
       setMatters((prev) => prev.map((m) => m.id === matter.id ? { ...m, status: matter.status } : m));
-    } catch (e) {
-      setError(e?.response?.data?.error || e.message);
+    } catch (err) {
+      setError(err?.response?.data?.error || err.message);
     } finally {
       setGenerating(false);
     }
@@ -84,75 +76,95 @@ export function Uc2ComplianceGeneration({ search }) {
       const { matter } = await uc2.approve(selectedId);
       setDetail(matter);
       setMatters((prev) => prev.map((m) => m.id === matter.id ? { ...m, status: matter.status } : m));
-    } catch (e) {
-      setError(e?.response?.data?.error || e.message);
+    } catch (err) {
+      setError(err?.response?.data?.error || err.message);
     } finally {
       setApproving(false);
     }
   }
 
+  const generated = (detail?.status === 'Generated' || detail?.status === 'Approved') && !!pdfUrl;
+  const approved  = detail?.status === 'Approved';
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-12 gap-4">
-        {/* Matter list */}
-        <div className="col-span-4">
-          <Section title="Matters · LCA certified" subtitle="Ready for compliance file generation">
-            <div className="space-y-1.5">
-              {filtered.map((m) => (
-                <button
-                  key={m.id}
-                  onClick={() => setSelectedId(m.id)}
-                  className={`w-full text-left p-3 rounded-md border transition-all ${
-                    selectedId === m.id
-                      ? 'border-slate-900 bg-slate-50 shadow-sm'
-                      : 'border-slate-200 hover:border-slate-300 bg-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[11px] font-mono text-slate-400">{m.id}</span>
-                    <StatusPill status={m.status} />
-                  </div>
-                  <div className="text-sm font-medium text-slate-900 truncate">{m.employer}</div>
-                  <div className="text-xs text-slate-500 truncate">{m.position}</div>
-                  <div className="text-[10px] text-slate-400 mt-1">LCA certified {m.lcaCertified}</div>
-                </button>
-              ))}
+
+        {/* Left — upload + matters list */}
+        <div className="col-span-4 space-y-3">
+
+          {/* Drop zone */}
+          <div
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+              uploading
+                ? 'border-slate-300 bg-slate-50 cursor-wait'
+                : 'border-slate-200 hover:border-slate-400 hover:bg-slate-50 cursor-pointer'
+            }`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,image/*"
+              className="hidden"
+              onChange={handleUpload}
+            />
+            <Upload className={`w-5 h-5 mx-auto mb-2 ${uploading ? 'text-slate-300 animate-pulse' : 'text-slate-400'}`} />
+            <div className="text-sm font-medium text-slate-700">
+              {uploading ? 'Extracting LCA…' : 'Upload LCA Document'}
             </div>
-          </Section>
+            <div className="text-xs text-slate-400 mt-1">PDF or image · click to browse</div>
+          </div>
+
+          {error && (
+            <div className="px-3 py-2 rounded bg-rose-50 ring-1 ring-rose-200 text-xs text-rose-700">{error}</div>
+          )}
+
+          {/* Matters list */}
+          {matters.length > 0 && (
+            <Section title="Matters" subtitle="LCA extracted · ready for compliance file">
+              <div className="space-y-1.5">
+                {matters.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => setSelectedId(m.id)}
+                    className={`w-full text-left p-3 rounded-md border transition-all ${
+                      selectedId === m.id
+                        ? 'border-slate-900 bg-slate-50 shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[11px] font-mono text-slate-400">{m.id}</span>
+                      <StatusPill status={m.status} />
+                    </div>
+                    <div className="text-sm font-medium text-slate-900 truncate">{m.employer}</div>
+                    <div className="text-xs text-slate-500 truncate">{m.position}</div>
+                    {m.lcaCertified && (
+                      <div className="text-[10px] text-slate-400 mt-1">LCA from {m.lcaCertified}</div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </Section>
+          )}
         </div>
 
-        {/* Binding + generation */}
+        {/* Right — detail + generate */}
         <div className="col-span-8 space-y-4">
           {detail ? (
             <>
+              {/* Extracted fields */}
               <Section
-                title="Data binding · sources"
-                subtitle="Fields resolved from CMS, LCA PDF, and computation"
+                title="Extracted from LCA"
+                subtitle={`${detail.employer} · ${detail.position} · ${detail.worksite}`}
                 right={
-                  <div className="flex items-center gap-2">
-                    {!detail.lcaExtracted && (
-                      <>
-                        <button
-                          onClick={() => lcaFileRef.current?.click()}
-                          disabled={extracting}
-                          className="px-3 py-1.5 text-xs font-medium rounded ring-1 ring-slate-200 hover:ring-slate-300 text-slate-600 disabled:opacity-40"
-                        >
-                          {extracting ? 'Extracting…' : 'Extract LCA'}
-                        </button>
-                        <input
-                          ref={lcaFileRef}
-                          type="file"
-                          accept=".pdf,image/*"
-                          className="hidden"
-                          onChange={(e) => { handleExtractLca(e.target.files?.[0]); e.target.value = ''; }}
-                        />
-                      </>
-                    )}
+                  !approved && (
                     <button
                       onClick={handleGenerate}
-                      disabled={generating || approved}
+                      disabled={generating || !detail.lcaExtracted}
                       className={`px-3 py-1.5 text-xs font-medium rounded inline-flex items-center gap-1.5 ${
-                        generating || approved
+                        generating || !detail.lcaExtracted
                           ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                           : 'bg-slate-900 hover:bg-slate-800 text-white'
                       }`}
@@ -160,40 +172,26 @@ export function Uc2ComplianceGeneration({ search }) {
                       <Sparkles className="w-3 h-3" />
                       {generating ? 'Generating…' : generated ? 'Regenerate' : 'Generate compliance file'}
                     </button>
-                  </div>
+                  )
                 }
               >
-                {error && (
-                  <div className="mb-3 px-3 py-2 rounded bg-rose-50 ring-1 ring-rose-200 text-xs text-rose-700">
-                    {error}
-                  </div>
-                )}
-                <div className="grid grid-cols-3 gap-4">
-                  {/* CMS */}
-                  <div>
-                    <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.08em] mb-2">
-                      <Database className="w-3 h-3" />
-                      CMS database
-                    </div>
-                    <div className="space-y-1.5">
-                      {(detail.cms || []).map((f) => (
-                        <div key={f.label}>
-                          <div className="text-[10px] text-slate-400">{f.label}</div>
-                          <div className="text-xs font-mono text-slate-800">{f.value}</div>
-                        </div>
-                      ))}
+                {!detail.lcaExtracted ? (
+                  <div className="py-10 text-center text-sm text-slate-400">
+                    <div className="inline-flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-400" />
+                      Upload an LCA document to extract fields and generate the compliance file
                     </div>
                   </div>
-
-                  {/* LCA */}
-                  <div>
-                    <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.08em] mb-2">
-                      <FileText className="w-3 h-3" />
-                      Doc AI · LCA PDF
-                    </div>
-                    {detail.lca?.length > 0 ? (
-                      <div className="space-y-1.5">
-                        {detail.lca.map((f) => (
+                ) : (
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* LCA fields */}
+                    <div>
+                      <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.08em] mb-3">
+                        <FileText className="w-3 h-3" />
+                        LCA fields
+                      </div>
+                      <div className="space-y-2">
+                        {(detail.lca || []).map((f) => (
                           <div key={f.label}>
                             <div className="flex items-center justify-between gap-2">
                               <div className="text-[10px] text-slate-400">{f.label}</div>
@@ -203,44 +201,31 @@ export function Uc2ComplianceGeneration({ search }) {
                           </div>
                         ))}
                       </div>
-                    ) : (
-                      <div className="text-[11px] text-slate-400 italic">
-                        Click "Extract LCA" to run AI extraction, or use a sample.
-                      </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Computed */}
-                  <div>
-                    <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.08em] mb-2">
-                      <Activity className="w-3 h-3" />
-                      Computed
-                    </div>
-                    <div className="space-y-1.5">
-                      {(detail.computed || []).map((f) => (
-                        <div key={f.label}>
-                          <div className="text-[10px] text-slate-400">{f.label}</div>
-                          <div className="text-xs font-mono text-slate-800">{f.value}</div>
-                          <div className="text-[9px] text-slate-400 italic mt-0.5">{f.source}</div>
-                        </div>
-                      ))}
-                    </div>
-                    {detail.inserts && (
-                      <div className="mt-4 p-2 bg-violet-50/50 ring-1 ring-violet-100 rounded-md">
-                        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-violet-700 uppercase tracking-[0.08em] mb-1">
-                          <FolderOpen className="w-3 h-3" />
-                          Inserts
-                        </div>
-                        <div className="text-[11px] text-violet-900 leading-relaxed">{detail.inserts}</div>
+                    {/* Computed */}
+                    <div>
+                      <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.08em] mb-3">
+                        <Activity className="w-3 h-3" />
+                        Computed
                       </div>
-                    )}
+                      <div className="space-y-2">
+                        {(detail.computed || []).map((f) => (
+                          <div key={f.label}>
+                            <div className="text-[10px] text-slate-400">{f.label}</div>
+                            <div className="text-xs font-mono text-slate-800">{f.value}</div>
+                            <div className="text-[9px] text-slate-400 italic mt-0.5">{f.source}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </Section>
 
-              {/* Document preview */}
+              {/* PDF preview */}
               <Section
-                title="Generated document preview"
+                title="Compliance file preview"
                 subtitle={generated ? `Compliance_File_${detail.id}.pdf · ready for review` : 'Awaiting generation'}
                 right={
                   generated && !approved && (
@@ -277,19 +262,21 @@ export function Uc2ComplianceGeneration({ search }) {
                   <div className="py-12 text-center text-sm text-slate-400">
                     {generating ? (
                       <span className="text-slate-500">Generating PDF…</span>
-                    ) : (
+                    ) : detail.lcaExtracted ? (
                       <>Click <span className="font-medium text-slate-600">
-                        {detail?.status === 'Generated' || detail?.status === 'Approved'
-                          ? 'Regenerate'
-                          : 'Generate compliance file'}
+                        {generated ? 'Regenerate' : 'Generate compliance file'}
                       </span> to assemble the document</>
+                    ) : (
+                      'Upload an LCA document first'
                     )}
                   </div>
                 )}
               </Section>
             </>
           ) : (
-            <div className="py-16 text-center text-sm text-slate-400">Select a matter to view data binding</div>
+            <div className="py-24 text-center text-sm text-slate-400">
+              Upload an LCA to create a matter, or select one from the list
+            </div>
           )}
         </div>
       </div>
