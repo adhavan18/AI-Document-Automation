@@ -188,7 +188,7 @@ const SEED_CASE = {
   primary: 'Karthik Subramanian',
   intake: '2026-05-16 14:22',
   documents: [
-    { id: 'doc-1', label: 'Passport (32 pp)',             sampleAsset: '/samples/passport-sample.jpg' },
+    { id: 'doc-1', label: 'Passport (32 pp)',             sampleAsset: null },
     { id: 'doc-2', label: 'I-94 latest entry',            sampleAsset: null },
     { id: 'doc-3', label: 'Prior approval notice',        sampleAsset: null },
     { id: 'doc-4', label: 'Marriage certificate',         sampleAsset: null },
