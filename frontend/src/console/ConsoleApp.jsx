@@ -9,9 +9,9 @@ import { Uc2ComplianceGeneration } from './modules/Uc2ComplianceGeneration.jsx';
 import { Uc3CrossValidation }      from './modules/Uc3CrossValidation.jsx';
 
 const MODULES = [
-  { id: 'uc1', code: 'UC-01', name: 'Document Ingestion',  blurb: 'Extract notices & auto-update',   icon: Inbox,       component: Uc1NoticeIngestion },
-  { id: 'uc2', code: 'UC-02', name: 'Form Generation',   blurb: 'Generate compliance documents',   icon: FileCheck2,  component: Uc2ComplianceGeneration },
-  { id: 'uc3', code: 'UC-03', name: 'AI-Validation',  blurb: 'Auto-review & flag data mismatch', icon: ShieldCheck, component: Uc3CrossValidation },
+  { id: 'uc1', name: 'Document Ingestion', blurb: 'Extract notices & auto-update',   icon: Inbox,       component: Uc1NoticeIngestion },
+  { id: 'uc2', name: 'Form Generation',   blurb: 'Generate compliance documents',   icon: FileCheck2,  component: Uc2ComplianceGeneration },
+  { id: 'uc3', name: 'AI-Validation',     blurb: 'Auto-review & flag data mismatch', icon: ShieldCheck, component: Uc3CrossValidation },
 ];
 
 function getInitials(name) {
@@ -66,10 +66,7 @@ export default function ConsoleApp({ session, onLogout }) {
                 >
                   <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-slate-500 group-hover:text-slate-700'}`} />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-[10px] font-mono text-slate-400">{m.code}</span>
-                      <span className="text-sm font-medium truncate">{m.name}</span>
-                    </div>
+                    <div className="text-sm font-medium truncate">{m.name}</div>
                     <div className={`text-[10px] truncate ${active ? 'text-slate-400' : 'text-slate-500'}`}>
                       {m.blurb}
                     </div>
@@ -100,7 +97,7 @@ export default function ConsoleApp({ session, onLogout }) {
                 <span className="text-slate-900 font-medium">{active.name}</span>
               </div>
               <h1 className="text-xl font-semibold text-slate-900 mt-0.5 tracking-tight">
-                {active.code} · {active.name}
+                {active.name}
               </h1>
             </div>
             <div className="flex items-center gap-3">

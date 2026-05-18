@@ -135,7 +135,6 @@ export function Uc2ComplianceGeneration() {
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[11px] font-mono text-slate-400">{m.id}</span>
                       <StatusPill status={m.status} />
                     </div>
                     <div className="text-sm font-medium text-slate-900 truncate">{m.employer}</div>

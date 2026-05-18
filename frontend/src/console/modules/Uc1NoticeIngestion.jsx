@@ -105,7 +105,6 @@ export function Uc1NoticeIngestion() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-mono text-slate-400">{n.id}</span>
                           <StatusPill status={n.status} />
                           {n.flags > 0 && (
                             <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-700">
@@ -130,7 +129,7 @@ export function Uc1NoticeIngestion() {
           {selected ? (
             <>
               <Section
-                title={`Record · ${selected.id}`}
+                title="Record"
                 subtitle={selected.record}
                 right={
                   <div className="flex items-center gap-2">

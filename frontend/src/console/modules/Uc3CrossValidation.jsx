@@ -84,7 +84,6 @@ export function Uc3CrossValidation() {
                 {caseData ? (
                   <>
                     <div className="flex items-center gap-3">
-                      <span className="text-[11px] font-mono text-slate-400">{caseData.id}</span>
                       <StatusPill status={status} />
                     </div>
                     <div className="mt-1.5 text-lg font-semibold text-slate-900">{caseData.applicant}</div>
