@@ -1,45 +1,36 @@
-import { useState, useEffect, useRef } from 'react';
-import { Activity, Eye, FolderOpen, CheckCircle2, Clock, Mail, Flag, FileText } from 'lucide-react';
-import { Section }        from '../primitives/Section.jsx';
-import { StatusPill }     from '../primitives/StatusPill.jsx';
-import { FieldRow }       from '../primitives/FieldRow.jsx';
-import { uc1 }           from '../api.js';
-import { useAsync }      from '../useAsync.js';
+import { useState, useRef } from 'react';
+import { Eye, FolderOpen, CheckCircle2, Clock, Flag, Upload } from 'lucide-react';
+import { Section }    from '../primitives/Section.jsx';
+import { StatusPill } from '../primitives/StatusPill.jsx';
+import { FieldRow }   from '../primitives/FieldRow.jsx';
+import { uc1 }        from '../api.js';
 
-export function Uc1NoticeIngestion({ search }) {
-  const [notices,     setNotices]     = useState([]);
-  const [stats,       setStats]       = useState([]);
-  const [selectedId,  setSelectedId]  = useState(null);
-  const [extracting,  setExtracting]  = useState(false);
-  const [mutating,    setMutating]    = useState(false);
+export function Uc1NoticeIngestion() {
+  const [notices,    setNotices]    = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [uploading,  setUploading]  = useState(false);
+  const [mutating,   setMutating]   = useState(false);
+  const [error,      setError]      = useState(null);
   const fileInputRef = useRef(null);
-
-  useEffect(() => {
-    uc1.getStats().then((d) => setStats(d.stats)).catch(() => {});
-    uc1.listNotices().then((d) => {
-      setNotices(d.notices);
-      if (!selectedId && d.notices.length > 0) setSelectedId(d.notices[0].id);
-    }).catch(() => {});
-  }, []);
 
   const selected = notices.find((n) => n.id === selectedId);
 
-  const filtered = search
-    ? notices.filter((n) =>
-        [n.id, n.beneficiary, n.petitioner, n.file, n.matter]
-          .some((v) => v?.toLowerCase().includes(search.toLowerCase()))
-      )
-    : notices;
-
-  async function handleExtract(id) {
-    setExtracting(true);
+  async function handleUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    const fd = new FormData();
+    fd.append('file', file);
     try {
-      const { notice } = await uc1.extract(id);
-      setNotices((prev) => prev.map((n) => (n.id === id ? notice : n)));
-    } catch (e) {
-      console.error(e);
+      const { notice } = await uc1.uploadNotice(fd);
+      setNotices((prev) => [...prev, notice]);
+      setSelectedId(notice.id);
+    } catch (err) {
+      setError(err?.response?.data?.error || err.message || 'Upload failed');
     } finally {
-      setExtracting(false);
+      setUploading(false);
+      e.target.value = '';
     }
   }
 
@@ -63,93 +54,78 @@ export function Uc1NoticeIngestion({ search }) {
     }
   }
 
-  async function handleUpload(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const fd = new FormData();
-    fd.append('file', file);
-    try {
-      const { notice } = await uc1.uploadNotice(fd);
-      setNotices((prev) => [...prev, notice]);
-      setSelectedId(notice.id);
-    } catch (err) {
-      console.error(err);
-    }
-    e.target.value = '';
-  }
-
   return (
     <div className="space-y-4">
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-3">
-        {stats.map((s) => (
-          <div key={s.label} className="bg-white border border-slate-200/80 rounded-lg p-3">
-            <div className="text-[10px] text-slate-500 uppercase tracking-[0.08em] font-semibold">{s.label}</div>
-            <div className="mt-1.5 flex items-baseline gap-2">
-              <div className="text-2xl font-semibold text-slate-900 tabular-nums tracking-tight">{s.value}</div>
-              <div className="text-[11px] text-slate-500">{s.delta}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
       <div className="grid grid-cols-12 gap-4">
-        {/* Queue */}
-        <div className="col-span-5">
-          <Section
-            title="Inbound notice queue"
-            subtitle="Files dropped on the network drive · auto-classified"
-            right={
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                  <Activity className="w-3 h-3" />
-                  live
-                </div>
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-[11px] text-slate-600 hover:text-slate-900 px-2 py-1 rounded ring-1 ring-slate-200 hover:ring-slate-300"
-                >
-                  + Upload
-                </button>
-                <input ref={fileInputRef} type="file" accept=".pdf,image/*" className="hidden" onChange={handleUpload} />
-              </div>
-            }
+
+        {/* Upload + queue */}
+        <div className="col-span-5 space-y-3">
+
+          {/* Drop zone */}
+          <div
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              uploading
+                ? 'border-slate-300 bg-slate-50 cursor-wait'
+                : 'border-slate-200 hover:border-slate-400 hover:bg-slate-50 cursor-pointer'
+            }`}
           >
-            <div className="space-y-1.5">
-              {filtered.map((n) => (
-                <button
-                  key={n.id}
-                  onClick={() => setSelectedId(n.id)}
-                  className={`w-full text-left p-3 rounded-md border transition-all ${
-                    selectedId === n.id
-                      ? 'border-slate-900 bg-slate-50 shadow-sm'
-                      : 'border-slate-200 hover:border-slate-300 bg-white'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-mono text-slate-400">{n.id}</span>
-                        <StatusPill status={n.status} />
-                        {n.flags > 0 && (
-                          <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-700">
-                            <Flag className="w-2.5 h-2.5" />{n.flags}
-                          </span>
-                        )}
-                      </div>
-                      <div className="mt-1.5 text-sm font-medium text-slate-900 truncate">{n.beneficiary}</div>
-                      <div className="text-xs text-slate-500 truncate">{n.petitioner} · {n.form}</div>
-                      <div className="mt-1 text-[10px] text-slate-400 font-mono truncate">{n.file}</div>
-                    </div>
-                    <div className="text-[10px] text-slate-400 whitespace-nowrap">{n.received}</div>
-                  </div>
-                </button>
-              ))}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,image/*"
+              className="hidden"
+              onChange={handleUpload}
+            />
+            <Upload className={`w-6 h-6 mx-auto mb-2 ${uploading ? 'text-slate-300 animate-pulse' : 'text-slate-400'}`} />
+            <div className="text-sm font-medium text-slate-700">
+              {uploading ? 'Extracting via AI…' : 'Upload I-797 Notice'}
             </div>
-          </Section>
+            <div className="text-xs text-slate-400 mt-1">PDF or image · click to browse</div>
+          </div>
+
+          {error && (
+            <div className="px-3 py-2 rounded bg-rose-50 ring-1 ring-rose-200 text-xs text-rose-700">{error}</div>
+          )}
+
+          {/* Queue */}
+          {notices.length > 0 && (
+            <Section title="Processed notices" subtitle={`${notices.length} in session`}>
+              <div className="space-y-1.5">
+                {notices.map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() => setSelectedId(n.id)}
+                    className={`w-full text-left p-3 rounded-md border transition-all ${
+                      selectedId === n.id
+                        ? 'border-slate-900 bg-slate-50 shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-mono text-slate-400">{n.id}</span>
+                          <StatusPill status={n.status} />
+                          {n.flags > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-700">
+                              <Flag className="w-2.5 h-2.5" />{n.flags}
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-1 text-sm font-medium text-slate-900 truncate">{n.beneficiary}</div>
+                        <div className="text-xs text-slate-500 truncate">{n.petitioner}</div>
+                      </div>
+                      <div className="text-[10px] text-slate-400 whitespace-nowrap">{n.received}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </Section>
+          )}
         </div>
 
-        {/* Detail */}
+        {/* Detail panel */}
         <div className="col-span-7 space-y-4">
           {selected ? (
             <>
@@ -166,14 +142,21 @@ export function Uc1NoticeIngestion({ search }) {
                         className="text-[11px] text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 px-2 py-1 rounded ring-1 ring-slate-200 hover:ring-slate-300"
                       >
                         <Eye className="w-3 h-3" />
-                        View PDF
+                        View
                       </a>
                     )}
                     <StatusPill status={selected.status} />
                   </div>
                 }
               >
-                {selected.fields.length > 0 ? (
+                {selected.status === 'Verified' ? (
+                  <div className="py-10 text-center">
+                    <div className="inline-flex items-center gap-2 text-emerald-600 text-sm">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Record verified and saved to case management
+                    </div>
+                  </div>
+                ) : selected.fields.length > 0 ? (
                   <>
                     <div className="grid grid-cols-3 gap-3 mb-4 text-xs">
                       <div>
@@ -224,78 +207,32 @@ export function Uc1NoticeIngestion({ search }) {
                     </div>
                   </>
                 ) : (
-                  <div className="py-12 text-center text-sm text-slate-400">
-                    {selected.status === 'Verified' ? (
-                      <div className="inline-flex items-center gap-2 text-emerald-600">
-                        <CheckCircle2 className="w-4 h-4" />
-                        Record verified and saved to case management
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="inline-flex items-center gap-2 text-slate-400">
-                          <Clock className="w-4 h-4" />
-                          Awaiting extraction
-                        </div>
-                        <div>
-                          <button
-                            disabled={extracting}
-                            onClick={() => handleExtract(selected.id)}
-                            className="px-4 py-2 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded inline-flex items-center gap-2 disabled:opacity-40"
-                          >
-                            {extracting ? (
-                              <>
-                                <Clock className="w-3 h-3 animate-pulse" />
-                                Extracting via AI…
-                              </>
-                            ) : (
-                              'Extract now'
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                  <div className="py-10 text-center">
+                    <div className="inline-flex items-center gap-2 text-slate-400 text-sm">
+                      <Clock className="w-4 h-4 animate-pulse" />
+                      Extraction in progress…
+                    </div>
                   </div>
                 )}
               </Section>
 
-              {/* Inline document preview */}
-              {selected.sampleAsset && (
-                <Section
-                  title="Document preview"
-                  subtitle={selected.file}
-                  right={
-                    <a
-                      href={selected.sampleAsset}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[11px] text-slate-500 hover:text-slate-900 inline-flex items-center gap-1"
-                    >
-                      <Eye className="w-3 h-3" />
-                      Open full
-                    </a>
-                  }
-                >
-                  <iframe
+              {/* Inline preview for uploaded images */}
+              {selected.sampleAsset && selected.fields.length > 0 && (
+                <Section title="Document preview" subtitle={selected.file}>
+                  <img
                     src={selected.sampleAsset}
-                    className="w-full rounded border border-slate-200"
-                    style={{ height: '340px' }}
-                    title={selected.file}
+                    alt={selected.file}
+                    className="w-full rounded border border-slate-200 object-contain"
+                    style={{ maxHeight: '400px' }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
                   />
                 </Section>
               )}
-
-              <Section title="Phase 2 — Email pre-staging" subtitle="Manual today">
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <div className="inline-flex items-center gap-2">
-                    <Mail className="w-3.5 h-3.5" />
-                    Draft client email — workflow trigger deferred to Phase 2 SOW
-                  </div>
-                  <span className="text-[10px] uppercase tracking-wider text-slate-400">Out of pilot</span>
-                </div>
-              </Section>
             </>
           ) : (
-            <div className="py-16 text-center text-sm text-slate-400">Select a notice to view details</div>
+            <div className="py-24 text-center text-sm text-slate-400">
+              Upload an I-797 notice to begin extraction
+            </div>
           )}
         </div>
       </div>

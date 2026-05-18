@@ -10,7 +10,9 @@ export const SAMPLES_DIR = join(__dirname, '../../frontend/public/samples');
 // ─── Seed data (mirrors ImmigrationAIPilot.jsx verbatim) ─────────────────────
 
 const SEED_NOTICES = [
-  {
+  // Empty — notices are added live via upload
+  // Kept as array for future seeding if needed
+  /*{
     id: 'N-24891',
     file: 'I797_RECEIPT_2026-05-17_0834.pdf',
     received: '08:34 today',
@@ -73,7 +75,7 @@ const SEED_NOTICES = [
     extractedProvider: null,
     verifiedFields: null,
     fields: [],
-  },
+  },*/
 ];
 
 const SEED_MATTERS = [
