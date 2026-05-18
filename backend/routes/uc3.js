@@ -36,34 +36,28 @@ router.get('/case', (req, res) => {
 });
 
 // ─── POST /api/uc3/case/run ───────────────────────────────────────────────────
-// Runs real AI on passport document (uploaded or sample), recomputes passport rows,
-// keeps I-94 / utility-bill rows from the current store state (hybrid approach).
+// Runs real AI extraction against passport, I-94, and utility bill samples,
+// then compares every extracted field against the questionnaire.
 router.post('/case/run', upload.single('file'), async (req, res) => {
   try {
-    let buffer, mimeType;
+    const c = getCase();
+
+    // ── 1. Passport (uploaded override or Priya's sample) ──────────────────
+    let passportBuffer, passportMime;
     if (req.file) {
-      buffer   = req.file.buffer;
-      mimeType = req.file.mimetype;
+      passportBuffer = req.file.buffer;
+      passportMime   = req.file.mimetype;
     } else {
-      buffer   = readFileSync(join(SAMPLES_DIR, 'passport-sample.jpg'));
-      mimeType = 'image/jpeg';
+      passportBuffer = readFileSync(join(SAMPLES_DIR, 'priya-passport.jpg'));
+      passportMime   = 'image/jpeg';
     }
 
-    const base64 = buffer.toString('base64');
-    const contentBlock = mimeType === 'application/pdf'
-      ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } }
-      : { type: 'image',    source: { type: 'base64', media_type: mimeType,           data: base64 } };
+    const passportB64 = passportBuffer.toString('base64');
+    const passportBlock = passportMime === 'application/pdf'
+      ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: passportB64 } }
+      : { type: 'image',    source: { type: 'base64', media_type: passportMime,       data: passportB64 } };
 
-    const prompt = `You are an AI document extraction engine. Extract exactly these 5 fields from the passport document:
-1. Full Legal Name — full name as printed (usually all caps in MRZ)
-2. Date of Birth — date of birth exactly as printed
-3. Passport Number — passport number as printed
-4. Passport Expiry — expiry date as printed
-5. Country of Birth — nationality/country of birth as printed
-
-For each field provide a confidence score 0-100.
-
-Respond ONLY with valid JSON, no markdown:
+    const passportPrompt = `Extract exactly these 5 fields from this passport image and return ONLY valid JSON, no markdown:
 {
   "fields": [
     { "label": "Full Legal Name",  "value": "<value>", "confidence": <0-100> },
@@ -73,49 +67,89 @@ Respond ONLY with valid JSON, no markdown:
     { "label": "Country of Birth", "value": "<value>", "confidence": <0-100> }
   ]
 }
-If a field cannot be found, use "Not found" and confidence 0.`;
+Format dates as YYYY-MM-DD. If a field is not found use "Not found" and confidence 0.`;
 
+    // ── 2. I-94 sample ─────────────────────────────────────────────────────
+    const i94Buffer = readFileSync(join(SAMPLES_DIR, 'priya-i94.jpg'));
+    const i94B64    = i94Buffer.toString('base64');
+    const i94Block  = { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: i94B64 } };
+    const i94Prompt = `Extract exactly these 2 fields from this I-94 document and return ONLY valid JSON, no markdown:
+{
+  "fields": [
+    { "label": "Most Recent Entry Date", "value": "<value>", "confidence": <0-100> },
+    { "label": "Visa Class on Entry",    "value": "<value>", "confidence": <0-100> }
+  ]
+}
+Format dates as YYYY-MM-DD. "Most Recent Entry Date" is the latest arrival date. "Visa Class on Entry" is the class of admission (e.g. H-4). If not found use "Not found" and confidence 0.`;
+
+    // ── 3. Utility bill sample ─────────────────────────────────────────────
+    const utilBuffer = readFileSync(join(SAMPLES_DIR, 'priya-utility-bill.jpg'));
+    const utilB64    = utilBuffer.toString('base64');
+    const utilBlock  = { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: utilB64 } };
+    const utilPrompt = `Extract exactly 1 field from this utility bill and return ONLY valid JSON, no markdown:
+{
+  "fields": [
+    { "label": "Current Address", "value": "<full service address>", "confidence": <0-100> }
+  ]
+}
+Include street, city, state, and ZIP. If not found use "Not found" and confidence 0.`;
+
+    // ── Run all three extractions in parallel ──────────────────────────────
     const start = Date.now();
-    const { text: rawText, provider } = await callWithFallback(
-      { model: 'claude-opus-4-5', max_tokens: 512, messages: [{ role: 'user', content: [contentBlock, { type: 'text', text: prompt }] }] },
-      () => [{ inlineData: { mimeType, data: base64 } }, prompt]
-    );
+    const [passportResult, i94Result, utilResult] = await Promise.all([
+      callWithFallback(
+        { model: 'claude-opus-4-5', max_tokens: 512, messages: [{ role: 'user', content: [passportBlock, { type: 'text', text: passportPrompt }] }] },
+        () => [{ inlineData: { mimeType: passportMime, data: passportB64 } }, passportPrompt]
+      ),
+      callWithFallback(
+        { model: 'claude-opus-4-5', max_tokens: 256, messages: [{ role: 'user', content: [i94Block, { type: 'text', text: i94Prompt }] }] },
+        () => [{ inlineData: { mimeType: 'image/jpeg', data: i94B64 } }, i94Prompt]
+      ),
+      callWithFallback(
+        { model: 'claude-opus-4-5', max_tokens: 256, messages: [{ role: 'user', content: [utilBlock, { type: 'text', text: utilPrompt }] }] },
+        () => [{ inlineData: { mimeType: 'image/jpeg', data: utilB64 } }, utilPrompt]
+      ),
+    ]);
     const elapsed = Date.now() - start;
-    console.log(`[uc3/run] responded via ${provider} in ${elapsed}ms`);
+    console.log(`[uc3/run] 3 extractions via ${passportResult.provider} in ${elapsed}ms`);
 
-    const parsed = safeParseJSON(rawText);
-    const c = getCase();
-
-    // Build updated passport rows from real AI
-    const passportRows = (parsed.fields || []).map((f) => {
+    // ── Build rows from all extracted fields ───────────────────────────────
+    function makeRow(f, source) {
       const questionnaire = c.questionnaire[f.label] ?? '';
       const extracted     = f.value;
       const unit          = toUnit(f.confidence);
       const match         = normalize(extracted) === normalize(questionnaire);
       const severity      = severityFor(match, unit, f.label);
       return {
-        field:         f.label,
+        field: f.label,
         questionnaire,
         extracted,
-        source:        'Passport · p1',
-        conf:          unit,
+        source,
+        conf: unit,
         match,
         ...(severity ? { severity } : {}),
         ...(!match && severity ? { note: noteFor({ field: f.label, extracted, questionnaire, severity }) } : {}),
       };
-    });
+    }
 
-    // Keep non-passport rows from the current store (I-94, utility bill, etc.)
-    const keptRows = c.rows.filter((r) => !PASSPORT_FIELDS.includes(r.field));
+    const passportFields = (safeParseJSON(passportResult.text).fields || [])
+      .map((f) => makeRow(f, 'Passport · p1'));
+    const i94Fields = (safeParseJSON(i94Result.text).fields || [])
+      .map((f) => makeRow(f, 'I-94 latest entry'));
+    const utilFields = (safeParseJSON(utilResult.text).fields || [])
+      .map((f) => makeRow(f, 'Civil docs · utility bill'));
 
-    // Re-merge: passport rows first (same order), then kept rows
-    const merged = [
-      ...PASSPORT_FIELDS.map((f) => passportRows.find((r) => r.field === f)).filter(Boolean),
-      ...keptRows,
+    // Merge in display order
+    const FIELD_ORDER = [
+      'Full Legal Name', 'Date of Birth', 'Passport Number', 'Passport Expiry', 'Country of Birth',
+      'Most Recent Entry Date', 'Visa Class on Entry', 'Current Address',
     ];
+    const allExtracted = [...passportFields, ...i94Fields, ...utilFields];
+    const merged = FIELD_ORDER
+      .map((f) => allExtracted.find((r) => r.field === f))
+      .filter(Boolean);
 
     setCaseRows(merged);
-
     const counts = computeCaseCounts();
     res.json({ case: getCase(), counts, status: counts.status, processing_time_ms: elapsed });
   } catch (err) {

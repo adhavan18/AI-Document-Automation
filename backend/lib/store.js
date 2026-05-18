@@ -188,11 +188,11 @@ const SEED_CASE = {
   primary: 'Karthik Subramanian',
   intake: '2026-05-16 14:22',
   documents: [
-    { id: 'doc-1', label: 'Passport (32 pp)',             sampleAsset: null },
-    { id: 'doc-2', label: 'I-94 latest entry',            sampleAsset: null },
-    { id: 'doc-3', label: 'Prior approval notice',        sampleAsset: null },
-    { id: 'doc-4', label: 'Marriage certificate',         sampleAsset: null },
-    { id: 'doc-5', label: 'Utility bill (proof of addr)', sampleAsset: null },
+    { id: 'doc-1', label: 'Passport (32 pp)',             sampleAsset: '/samples/priya-passport.jpg' },
+    { id: 'doc-2', label: 'I-94 latest entry',            sampleAsset: '/samples/priya-i94.jpg' },
+    { id: 'doc-3', label: 'Prior approval notice',        sampleAsset: '/samples/priya-approval-notice.jpg' },
+    { id: 'doc-4', label: 'Marriage certificate',         sampleAsset: '/samples/priya-marriage-cert.jpg' },
+    { id: 'doc-5', label: 'Utility bill (proof of addr)', sampleAsset: '/samples/priya-utility-bill.jpg' },
   ],
   questionnaire: {
     'Full Legal Name':        'Priya Subramanian',
