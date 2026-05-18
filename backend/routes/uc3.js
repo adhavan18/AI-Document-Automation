@@ -10,6 +10,15 @@ import { getCase, setCaseRows, setCaseResolved, computeCaseCounts, SAMPLES_DIR }
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
+// Detect actual image mime type from magic bytes — ignores file extension
+function detectMime(buffer) {
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) return 'image/png';
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8) return 'image/jpeg';
+  if (buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46) return 'application/pdf';
+  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) return 'image/gif';
+  return 'image/jpeg'; // fallback
+}
+
 const PASSPORT_FIELDS = [
   'Full Legal Name',
   'Date of Birth',
@@ -46,10 +55,10 @@ router.post('/case/run', upload.single('file'), async (req, res) => {
     let passportBuffer, passportMime;
     if (req.file) {
       passportBuffer = req.file.buffer;
-      passportMime   = req.file.mimetype;
+      passportMime   = detectMime(req.file.buffer);
     } else {
       passportBuffer = readFileSync(join(SAMPLES_DIR, 'priya-passport.jpg'));
-      passportMime   = 'image/jpeg';
+      passportMime   = detectMime(passportBuffer);
     }
 
     const passportB64 = passportBuffer.toString('base64');
@@ -71,8 +80,9 @@ Format dates as YYYY-MM-DD. If a field is not found use "Not found" and confiden
 
     // ── 2. I-94 sample ─────────────────────────────────────────────────────
     const i94Buffer = readFileSync(join(SAMPLES_DIR, 'priya-i94.jpg'));
+    const i94Mime   = detectMime(i94Buffer);
     const i94B64    = i94Buffer.toString('base64');
-    const i94Block  = { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: i94B64 } };
+    const i94Block  = { type: 'image', source: { type: 'base64', media_type: i94Mime, data: i94B64 } };
     const i94Prompt = `Extract exactly these 2 fields from this I-94 document and return ONLY valid JSON, no markdown:
 {
   "fields": [
@@ -84,8 +94,9 @@ Format dates as YYYY-MM-DD. "Most Recent Entry Date" is the latest arrival date.
 
     // ── 3. Utility bill sample ─────────────────────────────────────────────
     const utilBuffer = readFileSync(join(SAMPLES_DIR, 'priya-utility-bill.jpg'));
+    const utilMime   = detectMime(utilBuffer);
     const utilB64    = utilBuffer.toString('base64');
-    const utilBlock  = { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: utilB64 } };
+    const utilBlock  = { type: 'image', source: { type: 'base64', media_type: utilMime, data: utilB64 } };
     const utilPrompt = `Extract exactly 1 field from this utility bill and return ONLY valid JSON, no markdown:
 {
   "fields": [
