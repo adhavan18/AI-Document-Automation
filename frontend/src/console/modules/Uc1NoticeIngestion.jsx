@@ -197,7 +197,8 @@ export function Uc1NoticeIngestion() {
                         <button
                           disabled={mutating}
                           onClick={() => handleVerify(selected.id)}
-                          className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded inline-flex items-center gap-1.5 disabled:opacity-40"
+                          className="px-3 py-1.5 text-xs font-medium text-white rounded inline-flex items-center gap-1.5 disabled:opacity-40"
+                          style={{ backgroundColor: '#204496' }}
                         >
                           <CheckCircle2 className="w-3 h-3" />
                           Verify &amp; save

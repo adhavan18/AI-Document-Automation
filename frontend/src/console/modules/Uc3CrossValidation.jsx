@@ -122,7 +122,8 @@ export function Uc3CrossValidation() {
                   <button
                     onClick={() => handleRun(null)}
                     disabled={running}
-                    className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded disabled:opacity-40 whitespace-nowrap"
+                    className="px-3 py-1.5 text-xs font-medium text-white rounded disabled:opacity-40 whitespace-nowrap"
+                    style={{ backgroundColor: '#204496' }}
                   >
                     {running ? 'Validating…' : 'Run AI-Validation'}
                   </button>
@@ -149,9 +150,10 @@ export function Uc3CrossValidation() {
                   <button
                     key={doc.id}
                     onClick={() => setPreviewDoc(active ? null : doc)}
+                    style={active ? { backgroundColor: '#204496' } : {}}
                     className={`w-full flex items-center gap-2 p-2 rounded-md text-left transition-all ${
                       active
-                        ? 'bg-slate-900 text-white'
+                        ? 'text-white'
                         : doc.sampleAsset
                           ? 'hover:bg-slate-50 cursor-pointer'
                           : 'opacity-50 cursor-default'
@@ -278,7 +280,8 @@ export function Uc3CrossValidation() {
                           <button
                             onClick={() => handleResolve(row.field, 'document')}
                             disabled={!!isResolving}
-                            className="px-2 py-1 text-[10px] font-medium text-white bg-slate-900 hover:bg-slate-800 rounded whitespace-nowrap disabled:opacity-40"
+                            className="px-2 py-1 text-[10px] font-medium text-white rounded whitespace-nowrap disabled:opacity-40"
+                            style={{ backgroundColor: '#204496' }}
                           >
                             Use doc
                           </button>
@@ -305,10 +308,11 @@ export function Uc3CrossValidation() {
               <button
                 onClick={handleSave}
                 disabled={counts.blocking > 0 || saving}
+                style={counts.blocking > 0 || saving ? {} : { backgroundColor: '#204496' }}
                 className={`px-3 py-1.5 text-xs font-medium rounded inline-flex items-center gap-1.5 ${
                   counts.blocking > 0 || saving
                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                    : 'bg-slate-900 hover:bg-slate-800 text-white'
+                    : 'text-white'
                 }`}
               >
                 {saving ? 'Generating…' : 'Save & generate application form'}

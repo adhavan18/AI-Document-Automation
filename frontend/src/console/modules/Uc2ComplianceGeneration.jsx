@@ -162,10 +162,11 @@ export function Uc2ComplianceGeneration() {
                     <button
                       onClick={handleGenerate}
                       disabled={generating || !detail.lcaExtracted}
+                      style={generating || !detail.lcaExtracted ? {} : { backgroundColor: '#204496' }}
                       className={`px-3 py-1.5 text-xs font-medium rounded inline-flex items-center gap-1.5 ${
                         generating || !detail.lcaExtracted
                           ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                          : 'bg-slate-900 hover:bg-slate-800 text-white'
+                          : 'text-white'
                       }`}
                     >
                       <Sparkles className="w-3 h-3" />
