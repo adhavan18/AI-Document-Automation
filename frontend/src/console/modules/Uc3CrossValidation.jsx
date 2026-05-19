@@ -133,7 +133,7 @@ export function Uc3CrossValidation({ search = '' }) {
                     className="px-3 py-1.5 text-xs font-medium text-white rounded disabled:opacity-40 whitespace-nowrap"
                     style={{ backgroundColor: '#204496' }}
                   >
-                    {running ? 'Validating…' : 'Valid Data'}
+                    {running ? 'Validating…' : 'Validate Data'}
                   </button>
                   <input
                     ref={fileInputRef}
@@ -221,7 +221,7 @@ export function Uc3CrossValidation({ search = '' }) {
 
             {(!caseData?.rows || caseData.rows.length === 0) && !error && (
               <div className="py-12 text-center text-sm text-slate-400">
-                Click <span className="font-medium text-slate-600">Valid Data</span> to extract data from the documents and compare against the questionnaire.
+                Click <span className="font-medium text-slate-600">Validate Data</span> to extract data from the documents and compare against the questionnaire.
               </div>
             )}
 
