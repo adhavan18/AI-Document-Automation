@@ -5,8 +5,8 @@ import multer from 'multer';
 import { callWithFallback } from '../lib/ai-with-fallback.js';
 import { toUnit, severityFor, noteFor } from '../lib/confidence.js';
 import { getCase, setCaseRows, setCaseResolved, computeCaseCounts, SAMPLES_DIR } from '../lib/store.js';
-import { stampPdf } from '../lib/pdf-fill.js';
-import { buildI765Placements } from '../templates/fill-i765.js';
+import puppeteer from 'puppeteer';
+import { buildI765Html } from '../templates/i765-html.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -188,15 +188,21 @@ router.post('/case/save', async (req, res) => {
     return res.status(409).json({ error: 'Cannot save — blocking mismatches remain unresolved', counts });
   }
 
+  let browser;
   try {
-    const c = getCase();
-    const start = Date.now();
-    const calibrate = !!(req.query.calibrate || req.body?.calibrate);
-
-    const placements = buildI765Placements(c);
-    const pdfBuffer  = await stampPdf('i765.pdf', placements, { calibrate });
-    const elapsed    = Date.now() - start;
-    console.log(`[uc3/save] I-765 stamped in ${elapsed}ms${calibrate ? ' (calibration grid)' : ''}`);
+    const c       = getCase();
+    const start   = Date.now();
+    const html    = buildI765Html(c);
+    browser       = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const pg      = await browser.newPage();
+    await pg.setContent(html, { waitUntil: 'networkidle0' });
+    const pdfBuffer = Buffer.from(await pg.pdf({
+      format: 'Letter',
+      margin: { top: '0', bottom: '0', left: '0', right: '0' },
+      printBackground: true,
+    }));
+    const elapsed = Date.now() - start;
+    console.log(`[uc3/save] I-765 rendered in ${elapsed}ms`);
 
     res.set('Content-Type', 'application/pdf');
     res.set('Content-Disposition', `attachment; filename="Form_I-765_${c.id}.pdf"`);
@@ -204,21 +210,8 @@ router.post('/case/save', async (req, res) => {
   } catch (err) {
     console.error('[uc3/save]', err.message);
     res.status(500).json({ error: err.message });
-  }
-});
-
-// ─── GET /api/uc3/case/calibrate ──────────────────────────────────────────────
-// Open in a browser to download the I-765 with a coordinate ruler grid.
-router.get('/case/calibrate', async (req, res) => {
-  try {
-    const placements = buildI765Placements(getCase());
-    const pdfBuffer  = await stampPdf('i765.pdf', placements, { calibrate: true });
-    res.set('Content-Type', 'application/pdf');
-    res.set('Content-Disposition', 'inline; filename="I-765_calibration.pdf"');
-    res.send(pdfBuffer);
-  } catch (err) {
-    console.error('[uc3/calibrate]', err.message);
-    res.status(500).json({ error: err.message });
+  } finally {
+    if (browser) await browser.close();
   }
 });
 
