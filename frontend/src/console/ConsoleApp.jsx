@@ -4,14 +4,14 @@ import {
   ChevronRight, Search,
 } from 'lucide-react';
 import ErrorBoundary from '../components/ErrorBoundary.jsx';
-import { Uc1NoticeIngestion }      from './modules/Uc1NoticeIngestion.jsx';
+import { Uc1NoticeIngestion } from './modules/Uc1NoticeIngestion.jsx';
 import { Uc2ComplianceGeneration } from './modules/Uc2ComplianceGeneration.jsx';
-import { Uc3CrossValidation }      from './modules/Uc3CrossValidation.jsx';
+import { Uc3CrossValidation } from './modules/Uc3CrossValidation.jsx';
 
 const MODULES = [
-  { id: 'uc1', name: 'Document Ingestion', blurb: 'Extract notices & auto-update',   icon: Inbox,       component: Uc1NoticeIngestion },
-  { id: 'uc2', name: 'Form Generation',   blurb: 'Generate H-1B compliance files', icon: FileCheck2,  component: Uc2ComplianceGeneration },
-  { id: 'uc3', name: 'AI-Validation',     blurb: 'Auto-review & flag data mismatch', icon: ShieldCheck, component: Uc3CrossValidation },
+  { id: 'uc1', name: 'Notice Processing', blurb: 'Extract notices & auto-update', icon: Inbox, component: Uc1NoticeIngestion },
+  { id: 'uc2', name: 'Compliance Doc (PAF)', blurb: 'Generate H-1B compliance files', icon: FileCheck2, component: Uc2ComplianceGeneration },
+  { id: 'uc3', name: 'Automate Filing (H4 EAD)', blurb: 'Auto-review & flag data mismatch', icon: ShieldCheck, component: Uc3CrossValidation },
 ];
 
 function getInitials(name) {
@@ -22,7 +22,7 @@ function getInitials(name) {
 
 export default function ConsoleApp({ session, onLogout }) {
   const [activeId, setActiveId] = useState('uc1');
-  const [search,   setSearch]   = useState('');
+  const [search, setSearch] = useState('');
 
   const active = MODULES.find((m) => m.id === activeId);
   const Active = active.component;
@@ -51,16 +51,15 @@ export default function ConsoleApp({ session, onLogout }) {
           <nav className="flex-1 px-3 py-4">
 
             {MODULES.map((m) => {
-              const Icon   = m.icon;
+              const Icon = m.icon;
               const active = activeId === m.id;
               return (
                 <button
                   key={m.id}
                   onClick={() => { setActiveId(m.id); setSearch(''); }}
                   style={active ? { backgroundColor: '#204496' } : {}}
-                  className={`w-full flex items-center gap-3 px-2 py-2.5 rounded-md mb-1 transition-all text-left group ${
-                    active ? 'text-white' : 'text-slate-700 hover:bg-slate-100'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-2 py-2.5 rounded-md mb-1 transition-all text-left group ${active ? 'text-white' : 'text-slate-700 hover:bg-slate-100'
+                    }`}
                 >
                   <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-slate-500 group-hover:text-slate-700'}`} />
                   <div className="flex-1 min-w-0">

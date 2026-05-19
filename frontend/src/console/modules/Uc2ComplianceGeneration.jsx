@@ -1,19 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { Upload, FileText, Activity, CheckCircle2, Sparkles, AlertTriangle } from 'lucide-react';
-import { Section }         from '../primitives/Section.jsx';
-import { StatusPill }      from '../primitives/StatusPill.jsx';
+import { Section } from '../primitives/Section.jsx';
+import { StatusPill } from '../primitives/StatusPill.jsx';
 import { ConfidenceBadge } from '../primitives/ConfidenceBadge.jsx';
 import { uc2, pdfBlobUrl } from '../api.js';
 
 export function Uc2ComplianceGeneration({ search = '' }) {
-  const [matters,    setMatters]    = useState([]);
+  const [matters, setMatters] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
-  const [detail,     setDetail]     = useState(null);
-  const [pdfUrl,     setPdfUrl]     = useState(null);
-  const [uploading,  setUploading]  = useState(false);
+  const [detail, setDetail] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [approving,  setApproving]  = useState(false);
-  const [error,      setError]      = useState(null);
+  const [approving, setApproving] = useState(false);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
   // Load seeded matters on mount
@@ -21,7 +21,7 @@ export function Uc2ComplianceGeneration({ search = '' }) {
     uc2.listMatters().then((d) => {
       setMatters(d.matters);
       if (d.matters.length > 0) setSelectedId(d.matters[0].id);
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   // Load detail when selection changes
@@ -32,7 +32,7 @@ export function Uc2ComplianceGeneration({ search = '' }) {
     uc2.getMatter(selectedId).then((d) => {
       setDetail(d.matter);
       if (d.matter.generatedPdfBase64) setPdfUrl(pdfBlobUrl(d.matter.generatedPdfBase64));
-    }).catch(() => {});
+    }).catch(() => { });
   }, [selectedId]);
 
   async function handleUpload(e) {
@@ -83,17 +83,17 @@ export function Uc2ComplianceGeneration({ search = '' }) {
     }
   }
 
-  const q          = search.toLowerCase();
-  const filtered   = q
+  const q = search.toLowerCase();
+  const filtered = q
     ? matters.filter((m) =>
-        m.employer?.toLowerCase().includes(q) ||
-        m.position?.toLowerCase().includes(q) ||
-        m.worksite?.toLowerCase().includes(q)
-      )
+      m.employer?.toLowerCase().includes(q) ||
+      m.position?.toLowerCase().includes(q) ||
+      m.worksite?.toLowerCase().includes(q)
+    )
     : matters;
 
   const generated = (detail?.status === 'Generated' || detail?.status === 'Approved') && !!pdfUrl;
-  const approved  = detail?.status === 'Approved';
+  const approved = detail?.status === 'Approved';
 
   return (
     <div className="space-y-4">
@@ -105,11 +105,10 @@ export function Uc2ComplianceGeneration({ search = '' }) {
           {/* Drop zone */}
           <div
             onClick={() => !uploading && fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-              uploading
+            className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${uploading
                 ? 'border-slate-300 bg-slate-50 cursor-wait'
                 : 'border-slate-200 hover:border-slate-400 hover:bg-slate-50 cursor-pointer'
-            }`}
+              }`}
           >
             <input
               ref={fileInputRef}
@@ -131,17 +130,16 @@ export function Uc2ComplianceGeneration({ search = '' }) {
 
           {/* Matters list */}
           {matters.length > 0 && (
-            <Section title="Matters" subtitle={q ? `${filtered.length} of ${matters.length} match` : 'LCA extracted · ready for I-129 petition'}>
+            <Section title="Matters" subtitle={q ? `${filtered.length} of ${matters.length} match` : 'LCA extracted · ready for PAF Generation'}>
               <div className="space-y-1.5">
                 {filtered.map((m) => (
                   <button
                     key={m.id}
                     onClick={() => setSelectedId(m.id)}
-                    className={`w-full text-left p-3 rounded-md border transition-all ${
-                      selectedId === m.id
+                    className={`w-full text-left p-3 rounded-md border transition-all ${selectedId === m.id
                         ? 'border-slate-900 bg-slate-50 shadow-sm'
                         : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <StatusPill status={m.status} />
@@ -172,11 +170,10 @@ export function Uc2ComplianceGeneration({ search = '' }) {
                       onClick={handleGenerate}
                       disabled={generating || !detail.lcaExtracted}
                       style={generating || !detail.lcaExtracted ? {} : { backgroundColor: '#204496' }}
-                      className={`px-3 py-1.5 text-xs font-medium rounded inline-flex items-center gap-1.5 ${
-                        generating || !detail.lcaExtracted
+                      className={`px-3 py-1.5 text-xs font-medium rounded inline-flex items-center gap-1.5 ${generating || !detail.lcaExtracted
                           ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                           : 'text-white'
-                      }`}
+                        }`}
                     >
                       <Sparkles className="w-3 h-3" />
                       {generating ? 'Generating…' : generated ? 'Regenerate' : 'Generate PAF'}

@@ -38,8 +38,8 @@ Backend health: http://localhost:3001/health
 5. Click "Download PDF" to show the downloadable output
    - Talking point: "Every field on this PDF came from data that already existed. No reviewer typed anything."
 
-**Tab 3 — AI-Validation (3 min)**
-1. Click "AI-Validation" tab
+**Tab 3 — Automate Filing (H4 EAD) (3 min)**
+1. Click "Automate Filing (H4 EAD)" tab
 2. Click "Use Sample Passport"
 3. Click "Run Validation"
 4. Walk through the comparison table — point out the 3 red mismatch rows

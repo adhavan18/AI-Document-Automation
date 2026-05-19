@@ -1,18 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { FileText, Database, AlertTriangle, CheckCircle2, X, ArrowUpRight, Eye } from 'lucide-react';
-import { Section }         from '../primitives/Section.jsx';
-import { StatusPill }      from '../primitives/StatusPill.jsx';
+import { Section } from '../primitives/Section.jsx';
+import { StatusPill } from '../primitives/StatusPill.jsx';
 import { ConfidenceBadge } from '../primitives/ConfidenceBadge.jsx';
-import { uc3 }            from '../api.js';
+import { uc3 } from '../api.js';
 
 export function Uc3CrossValidation({ search = '' }) {
-  const [caseData,   setCaseData]   = useState(null);
-  const [counts,     setCounts]     = useState({ blocking: 0, minor: 0, verified: 0 });
-  const [status,     setStatus]     = useState('Loading…');
-  const [running,    setRunning]    = useState(false);
-  const [resolving,  setResolving]  = useState(null);
-  const [saving,     setSaving]     = useState(false);
-  const [error,      setError]      = useState(null);
+  const [caseData, setCaseData] = useState(null);
+  const [counts, setCounts] = useState({ blocking: 0, minor: 0, verified: 0 });
+  const [status, setStatus] = useState('Loading…');
+  const [running, setRunning] = useState(false);
+  const [resolving, setResolving] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
   const [previewDoc, setPreviewDoc] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -23,7 +23,7 @@ export function Uc3CrossValidation({ search = '' }) {
   }
 
   useEffect(() => {
-    uc3.getCase().then(applyResponse).catch(() => {});
+    uc3.getCase().then(applyResponse).catch(() => { });
   }, []);
 
   async function handleRun(file) {
@@ -57,9 +57,9 @@ export function Uc3CrossValidation({ search = '' }) {
     setError(null);
     try {
       const blob = await uc3.save();
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href     = url;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
       a.download = `Application_${caseData?.id || 'form'}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
@@ -71,14 +71,14 @@ export function Uc3CrossValidation({ search = '' }) {
     }
   }
 
-  const resolved     = caseData?.resolved || {};
-  const q            = search.toLowerCase();
+  const resolved = caseData?.resolved || {};
+  const q = search.toLowerCase();
   const filteredRows = q
     ? (caseData?.rows || []).filter((r) =>
-        r.field?.toLowerCase().includes(q) ||
-        r.questionnaire?.toLowerCase().includes(q) ||
-        r.extracted?.toLowerCase().includes(q)
-      )
+      r.field?.toLowerCase().includes(q) ||
+      r.questionnaire?.toLowerCase().includes(q) ||
+      r.extracted?.toLowerCase().includes(q)
+    )
     : (caseData?.rows || []);
 
   return (
@@ -107,7 +107,7 @@ export function Uc3CrossValidation({ search = '' }) {
                 <div className="flex gap-4">
                   {[
                     { label: 'Blocking', value: counts.blocking, color: 'text-rose-600' },
-                    { label: 'Minor',    value: counts.minor,    color: 'text-amber-600' },
+                    { label: 'Minor', value: counts.minor, color: 'text-amber-600' },
                     { label: 'Verified', value: counts.verified, color: 'text-emerald-600' },
                   ].map(({ label, value, color }, i) => (
                     <div key={label} className="flex items-center gap-3">
@@ -133,7 +133,7 @@ export function Uc3CrossValidation({ search = '' }) {
                     className="px-3 py-1.5 text-xs font-medium text-white rounded disabled:opacity-40 whitespace-nowrap"
                     style={{ backgroundColor: '#204496' }}
                   >
-                    {running ? 'Validating…' : 'Run AI-Validation'}
+                    {running ? 'Validating…' : 'Valid Data'}
                   </button>
                   <input
                     ref={fileInputRef}
@@ -159,13 +159,12 @@ export function Uc3CrossValidation({ search = '' }) {
                     key={doc.id}
                     onClick={() => setPreviewDoc(active ? null : doc)}
                     style={active ? { backgroundColor: '#204496' } : {}}
-                    className={`w-full flex items-center gap-2 p-2 rounded-md text-left transition-all ${
-                      active
-                        ? 'text-white'
-                        : doc.sampleAsset
-                          ? 'hover:bg-slate-50 cursor-pointer'
-                          : 'opacity-50 cursor-default'
-                    }`}
+                    className={`w-full flex items-center gap-2 p-2 rounded-md text-left transition-all ${active
+                      ? 'text-white'
+                      : doc.sampleAsset
+                        ? 'hover:bg-slate-50 cursor-pointer'
+                        : 'opacity-50 cursor-default'
+                      }`}
                     disabled={!doc.sampleAsset}
                     title={doc.sampleAsset ? 'Click to preview' : 'No sample available'}
                   >
@@ -205,7 +204,7 @@ export function Uc3CrossValidation({ search = '' }) {
         {/* Mismatch report */}
         <div className="col-span-9">
           <Section
-            title="AI-Validation report"
+            title="Automate Filing (H4 EAD) report"
             subtitle={q && caseData?.rows?.length ? `${filteredRows.length} of ${caseData.rows.length} fields match` : 'Questionnaire entries vs. document extractions'}
             right={
               counts.blocking > 0 && caseData?.rows?.length > 0 && (
@@ -222,27 +221,26 @@ export function Uc3CrossValidation({ search = '' }) {
 
             {(!caseData?.rows || caseData.rows.length === 0) && !error && (
               <div className="py-12 text-center text-sm text-slate-400">
-                Click <span className="font-medium text-slate-600">Run AI-Validation</span> to extract data from the documents and compare against the questionnaire.
+                Click <span className="font-medium text-slate-600">Valid Data</span> to extract data from the documents and compare against the questionnaire.
               </div>
             )}
 
             <div className="space-y-1">
               {filteredRows.map((row) => {
-                const isResolved   = resolved[row.field];
+                const isResolved = resolved[row.field];
                 const showBlocking = !row.match && row.severity === 'blocking' && !isResolved;
-                const showMinor    = !row.match && row.severity === 'minor'    && !isResolved;
-                const isResolving  = resolving === row.field;
+                const showMinor = !row.match && row.severity === 'minor' && !isResolved;
+                const isResolving = resolving === row.field;
 
                 return (
                   <div
                     key={row.field}
-                    className={`rounded-md p-3 border ${
-                      showBlocking
-                        ? 'border-rose-200 bg-rose-50/40'
-                        : showMinor
-                          ? 'border-amber-200 bg-amber-50/30'
-                          : 'border-slate-100 bg-white'
-                    }`}
+                    className={`rounded-md p-3 border ${showBlocking
+                      ? 'border-rose-200 bg-rose-50/40'
+                      : showMinor
+                        ? 'border-amber-200 bg-amber-50/30'
+                        : 'border-slate-100 bg-white'
+                      }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex-1 min-w-0">
@@ -317,11 +315,10 @@ export function Uc3CrossValidation({ search = '' }) {
                 onClick={handleSave}
                 disabled={counts.blocking > 0 || saving}
                 style={counts.blocking > 0 || saving ? {} : { backgroundColor: '#204496' }}
-                className={`px-3 py-1.5 text-xs font-medium rounded inline-flex items-center gap-1.5 ${
-                  counts.blocking > 0 || saving
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                    : 'text-white'
-                }`}
+                className={`px-3 py-1.5 text-xs font-medium rounded inline-flex items-center gap-1.5 ${counts.blocking > 0 || saving
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : 'text-white'
+                  }`}
               >
                 {saving ? 'Generating…' : 'Save & generate Form I-765'}
                 <ArrowUpRight className="w-3 h-3" />

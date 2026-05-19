@@ -1,25 +1,25 @@
 import { useState, useRef } from 'react';
 import { Eye, FolderOpen, CheckCircle2, Clock, Flag, Upload } from 'lucide-react';
-import { Section }    from '../primitives/Section.jsx';
+import { Section } from '../primitives/Section.jsx';
 import { StatusPill } from '../primitives/StatusPill.jsx';
-import { FieldRow }   from '../primitives/FieldRow.jsx';
-import { uc1 }        from '../api.js';
+import { FieldRow } from '../primitives/FieldRow.jsx';
+import { uc1 } from '../api.js';
 
 export function Uc1NoticeIngestion({ search = '' }) {
-  const [notices,    setNotices]    = useState([]);
+  const [notices, setNotices] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
-  const [uploading,  setUploading]  = useState(false);
-  const [mutating,   setMutating]   = useState(false);
-  const [error,      setError]      = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [mutating, setMutating] = useState(false);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
-  const q        = search.toLowerCase();
+  const q = search.toLowerCase();
   const filtered = q
     ? notices.filter((n) =>
-        n.beneficiary?.toLowerCase().includes(q) ||
-        n.petitioner?.toLowerCase().includes(q) ||
-        n.file?.toLowerCase().includes(q)
-      )
+      n.beneficiary?.toLowerCase().includes(q) ||
+      n.petitioner?.toLowerCase().includes(q) ||
+      n.file?.toLowerCase().includes(q)
+    )
     : notices;
   const selected = notices.find((n) => n.id === selectedId);
 
@@ -72,11 +72,10 @@ export function Uc1NoticeIngestion({ search = '' }) {
           {/* Drop zone */}
           <div
             onClick={() => !uploading && fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-              uploading
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${uploading
                 ? 'border-slate-300 bg-slate-50 cursor-wait'
                 : 'border-slate-200 hover:border-slate-400 hover:bg-slate-50 cursor-pointer'
-            }`}
+              }`}
           >
             <input
               ref={fileInputRef}
@@ -87,7 +86,7 @@ export function Uc1NoticeIngestion({ search = '' }) {
             />
             <Upload className={`w-6 h-6 mx-auto mb-2 ${uploading ? 'text-slate-300 animate-pulse' : 'text-slate-400'}`} />
             <div className="text-sm font-medium text-slate-700">
-              {uploading ? 'Extracting via AI…' : 'Upload I-797 Notice'}
+              {uploading ? 'Extracting via AI…' : 'Upload Notice'}
             </div>
             <div className="text-xs text-slate-400 mt-1">PDF or image · click to browse</div>
           </div>
@@ -104,11 +103,10 @@ export function Uc1NoticeIngestion({ search = '' }) {
                   <button
                     key={n.id}
                     onClick={() => setSelectedId(n.id)}
-                    className={`w-full text-left p-3 rounded-md border transition-all ${
-                      selectedId === n.id
+                    className={`w-full text-left p-3 rounded-md border transition-all ${selectedId === n.id
                         ? 'border-slate-900 bg-slate-50 shadow-sm'
                         : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
@@ -239,7 +237,7 @@ export function Uc1NoticeIngestion({ search = '' }) {
             </>
           ) : (
             <div className="py-24 text-center text-sm text-slate-400">
-              Upload an I-797 notice to begin extraction
+              {/* Upload an I-797 notice to begin extraction */}
             </div>
           )}
         </div>
