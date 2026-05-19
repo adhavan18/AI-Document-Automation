@@ -166,9 +166,10 @@ export function Uc3CrossValidation({ search = '' }) {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={running}
-              className="mt-2 w-full px-3 py-1.5 text-xs font-medium rounded ring-1 ring-slate-200 hover:ring-slate-300 text-slate-600 disabled:opacity-40 whitespace-nowrap"
+              className="mt-2 w-full px-3 py-1.5 text-xs font-medium text-white rounded disabled:opacity-40 whitespace-nowrap"
+              style={{ backgroundColor: '#204496' }}
             >
-              Upload passport
+              Upload document
             </button>
             <input
               ref={fileInputRef}
@@ -320,7 +321,7 @@ export function Uc3CrossValidation({ search = '' }) {
                   : 'text-white'
                   }`}
               >
-                {saving ? 'Generating…' : 'Save & generate Form I-765'}
+                {saving ? 'Generating…' : 'Save changes'}
                 <ArrowUpRight className="w-3 h-3" />
               </button>
             </div>
