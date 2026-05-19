@@ -35,6 +35,9 @@ export function buildPafPlacements(matter) {
 
   return [
     // ── PAGE 0 · Cover ─────────────────────────────────────────────────────
+    // Erase template demo values (measured: baseline y≈490, ascenders to y≈498)
+    { page: 0, whiteout: true, x:  58, y: 482, width: 155, height: 20 }, // "PAF-H1B-___"
+    { page: 0, whiteout: true, x: 228, y: 482, width: 170, height: 20 }, // "West Virginia, USA"
     // Labels row at y≈500; value line is below it at y≈470
     // Document Reference value
     { page: 0, x: 116, y: 470, text: matter.id ?? '',  size: 9 },
@@ -44,6 +47,9 @@ export function buildPafPlacements(matter) {
     { page: 0, x: 490, y: 470, text: today(),           size: 9 },
 
     // ── PAGE 1 · Section 01 — Employer Information ─────────────────────────
+    // Erase template demo values ("Acme Resources" baseline y≈638, address y≈602)
+    { page: 1, whiteout: true, x:  57, y: 630, width: 250, height: 18 }, // "Acme Resources" incl. ascenders
+    { page: 1, whiteout: true, x:  57, y: 595, width: 500, height: 16 }, // long address line
     // Employer Name (cal: y≈638; labels row just above)
     { page: 1, x: 57,  y: 638, text: employer,  size: 9, bold: true },
     // Registered Business Address / worksite used as address approximation (cal: y≈595)

@@ -104,6 +104,12 @@ export async function stampPdf(filename, placements, opts = {}) {
     const page = pages[p.page];
     if (!page) { console.warn(`[pdf-stamp] no page[${p.page}]`); continue; }
 
+    // Whiteout: draw a filled white rectangle to erase pre-existing template text.
+    if (p.whiteout) {
+      page.drawRectangle({ x: p.x, y: p.y, width: p.width ?? 200, height: p.height ?? 14, color: rgb(1, 1, 1), borderWidth: 0 });
+      continue;
+    }
+
     if (p.check) {
       page.drawText('X', { x: p.x, y: p.y, size: p.size ?? 8, font: helvBold, color: black });
       stamped++;
