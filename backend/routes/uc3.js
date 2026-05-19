@@ -6,6 +6,7 @@ import puppeteer from 'puppeteer';
 import { callWithFallback } from '../lib/ai-with-fallback.js';
 import { toUnit, severityFor, noteFor } from '../lib/confidence.js';
 import { getCase, setCaseRows, setCaseResolved, computeCaseCounts, SAMPLES_DIR } from '../lib/store.js';
+import { buildI765HTML } from '../templates/i765-template.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -192,7 +193,7 @@ router.post('/case/save', async (req, res) => {
     const c = getCase();
     const start = Date.now();
 
-    const html = buildApplicationSummaryHTML(c);
+    const html = buildI765HTML(c);
     browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
@@ -205,10 +206,10 @@ router.post('/case/save', async (req, res) => {
     browser = null;
 
     const elapsed = Date.now() - start;
-    console.log(`[uc3/save] application form PDF built in ${elapsed}ms`);
+    console.log(`[uc3/save] I-765 PDF built in ${elapsed}ms`);
 
     res.set('Content-Type', 'application/pdf');
-    res.set('Content-Disposition', `attachment; filename="Application_${c.id}.pdf"`);
+    res.set('Content-Disposition', `attachment; filename="Form_I-765_${c.id}.pdf"`);
     res.send(Buffer.from(pdfBuffer));
   } catch (err) {
     console.error('[uc3/save]', err.message);
@@ -217,30 +218,5 @@ router.post('/case/save', async (req, res) => {
   }
 });
 
-function buildApplicationSummaryHTML(c) {
-  const rows = c.rows.map((r) => {
-    const finalValue = c.resolved[r.field]
-      ? (c.resolved[r.field] === 'document' ? r.extracted : r.questionnaire)
-      : r.extracted;
-    return `<tr><td class="lbl">${r.field}</td><td class="val">${finalValue}</td></tr>`;
-  }).join('');
-
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: Arial, sans-serif; font-size: 11pt; color: #111; }
-  .page { width:8.5in; min-height:11in; padding: 1in 1.1in; }
-  h1 { font-size:16pt; margin-bottom:6px; }
-  .meta { font-size:9pt; color:#555; margin-bottom:24px; }
-  table { width:100%; border-collapse:collapse; }
-  td { padding:7px 0; border-bottom:1px solid #eee; font-size:10pt; vertical-align:top; }
-  .lbl { width:45%; color:#555; }
-  .val { font-weight:600; }
-</style></head><body><div class="page">
-  <h1>Application Summary — ${c.id}</h1>
-  <div class="meta">${c.applicant} · ${c.type} · dependent of ${c.primary} · intake ${c.intake}</div>
-  <table>${rows}</table>
-</div></body></html>`;
-}
 
 export default router;

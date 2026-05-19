@@ -323,7 +323,7 @@ export function Uc3CrossValidation({ search = '' }) {
                     : 'text-white'
                 }`}
               >
-                {saving ? 'Generating…' : 'Save & generate application form'}
+                {saving ? 'Generating…' : 'Save & generate Form I-765'}
                 <ArrowUpRight className="w-3 h-3" />
               </button>
             </div>
