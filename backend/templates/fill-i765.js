@@ -45,16 +45,16 @@ export function buildI765Placements(c) {
 
   return [
     // ── PAGE 0 · Part 1 — Reason for Applying ─────────────────────────────
-    // 1.a "Initial permission to accept employment" checkbox (cal: y=422)
-    { page: 0, x: 82,  y: 422, check: true, size: 8 },
+    // 1.a "Initial permission to accept employment" checkbox (cal: box x=68-77, center y=412)
+    { page: 0, x: 71,  y: 412, check: true, size: 8 },
 
     // ── PAGE 0 · Part 2 — Your Full Legal Name (bottom of page) ───────────
-    // 1.a Family Name input box (cal: y=130; Part 2 header at y=200)
-    { page: 0, x: 190, y: 130, text: name.last,   size: 9 },
-    // 1.b Given Name input box (cal: y=107)
-    { page: 0, x: 190, y: 107, text: name.first,  size: 9 },
-    // 1.c Middle Name input box (cal: y=83)
-    { page: 0, x: 190, y:  83, text: name.middle, size: 9 },
+    // 1.a Family Name input box (cal: box y=133–142 → baseline y=135)
+    { page: 0, x: 190, y: 135, text: name.last,   size: 9 },
+    // 1.b Given Name input box (cal: box y=108–118 → baseline y=110)
+    { page: 0, x: 190, y: 110, text: name.first,  size: 9 },
+    // 1.c Middle Name input box (cal: box y=83–93 → baseline y=85)
+    { page: 0, x: 190, y:  85, text: name.middle, size: 9 },
 
     // ── PAGE 1 · Part 2 — U.S. Mailing Address ────────────────────────────
     // 5.b Street Number and Name (cal: 5.b label at y=625-650 → box at y=637)

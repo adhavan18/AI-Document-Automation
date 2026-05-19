@@ -11,7 +11,7 @@ import { readFileSync, existsSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, PDFName } from 'pdf-lib';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const FORMS_DIR = join(__dirname, '../templates/forms');
@@ -52,6 +52,11 @@ async function loadPdfDoc(filename) {
     const flat = flattenPath(filename);
     if (!existsSync(flat)) {
       flattenWithGs(filePath, flat);
+      // Strip page annotations so our content-stream stamps aren't painted over.
+      const flatBytes = readFileSync(flat);
+      const flatDoc = await PDFDocument.load(flatBytes, { ignoreEncryption: true, throwOnInvalidObject: false });
+      for (const page of flatDoc.getPages()) page.node.delete(PDFName.of('Annots'));
+      writeFileSync(flat, await flatDoc.save());
     }
     bytes = readFileSync(flat);
     doc   = await PDFDocument.load(bytes, { ignoreEncryption: true, throwOnInvalidObject: false });
