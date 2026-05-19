@@ -1,7 +1,9 @@
-// Field map for the H-1B Public Access File (PAF) template PDF.
-// Field names must match the AcroForm fields in your PAF template PDF.
-// Drop your template at backend/templates/forms/paf.pdf and restart —
-// the server log will print every available field name on first generate.
+// Coordinate placements for the saved Public Access File (PAF) PDF.
+//
+// pdf-lib origin = BOTTOM-LEFT, US Letter = 612 x 792 pt.
+// STARTER coordinates — tune by hitting /api/uc2/matters/:id/generate
+// with the calibration grid (see uc2.js), open the PDF, read the ruler,
+// and adjust x / y / page below.
 
 function lca(arr, label) {
   return arr?.find((f) => f.label === label)?.value ?? '—';
@@ -17,27 +19,24 @@ function deriveValidityEnd(matter) {
   } catch { return '—'; }
 }
 
-export function buildPafFieldMap(matter) {
-  const startDate  = matter.lcaCertified ?? '—';
-  const endDate    = deriveValidityEnd(matter);
+export function buildPafPlacements(matter) {
+  const startDate   = matter.lcaCertified ?? '—';
+  const endDate     = deriveValidityEnd(matter);
   const retainUntil = lca(matter.computed, 'Retain Until');
 
-  // ── Field names must match the AcroForm fields in paf.pdf.
-  // ── The server log prints every available name when the PDF is first loaded.
-  return {
-    // Employer / position
-    'EmployerName':        matter.employer   ?? '—',
-    'JobTitle':            matter.position   ?? '—',
-    'Worksite':            matter.worksite   ?? '—',
+  // page = 0-based page index. x from left, y from bottom.
+  return [
+    { page: 0, x: 180, y: 640, text: matter.employer ?? '—', bold: true },
+    { page: 0, x: 180, y: 612, text: matter.position ?? '—' },
+    { page: 0, x: 180, y: 584, text: matter.worksite ?? '—' },
 
-    // LCA fields
-    'SOCCode':             lca(matter.lca, 'Occupation Code (SOC)'),
-    'WageRange':           lca(matter.lca, 'Wage Range'),
-    'PrevailingWage':      lca(matter.lca, 'Prevailing Wage'),
-    'LCAValidityStart':    startDate,
-    'LCAValidityEnd':      endDate,
-    'PostingStart':        lca(matter.lca, 'Posting Start'),
-    'PostingEnd':          lca(matter.lca, 'Posting End'),
-    'RetainUntil':         retainUntil,
-  };
+    { page: 1, x: 200, y: 660, text: lca(matter.lca, 'Occupation Code (SOC)') },
+    { page: 1, x: 200, y: 632, text: lca(matter.lca, 'Wage Range') },
+    { page: 1, x: 200, y: 604, text: lca(matter.lca, 'Prevailing Wage') },
+    { page: 1, x: 200, y: 576, text: startDate },
+    { page: 1, x: 200, y: 548, text: endDate },
+    { page: 1, x: 200, y: 520, text: lca(matter.lca, 'Posting Start') },
+    { page: 1, x: 200, y: 492, text: lca(matter.lca, 'Posting End') },
+    { page: 1, x: 200, y: 464, text: retainUntil },
+  ];
 }

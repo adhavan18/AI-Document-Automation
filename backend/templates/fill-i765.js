@@ -1,7 +1,9 @@
-// Field map for USCIS Form I-765 (Application for Employment Authorization).
-// Field names match the AcroForm fields in the official USCIS PDF (Edition 04/01/24).
-// If a field name is wrong for your copy of the PDF, check the server log on first
-// generate — [pdf-fill] prints every available field name.
+// Coordinate placements for the saved USCIS Form I-765 PDF.
+//
+// pdf-lib origin = BOTTOM-LEFT, US Letter = 612 x 792 pt.
+// These are STARTER coordinates for the standard I-765 (Edition 04/01/24).
+// To tune them: hit /api/uc3/case/save?calibrate=1 once, open the PDF, read
+// the ruler grid, and adjust x / y / page below. y grows upward.
 
 function resolvedValue(c, field) {
   const choice = c.resolved?.[field];
@@ -31,7 +33,7 @@ function fmtDate(iso) {
   return `${String(d.getUTCMonth() + 1).padStart(2, '0')}/${String(d.getUTCDate()).padStart(2, '0')}/${d.getUTCFullYear()}`;
 }
 
-export function buildI765FieldMap(c) {
+export function buildI765Placements(c) {
   const name       = parseName(resolvedValue(c, 'Full Legal Name') || c.applicant);
   const dob        = fmtDate(resolvedValue(c, 'Date of Birth'));
   const cob        = resolvedValue(c, 'Country of Birth');
@@ -40,47 +42,33 @@ export function buildI765FieldMap(c) {
   const addr       = parseAddress(resolvedValue(c, 'Current Address'));
   const passportNo = resolvedValue(c, 'Passport Number');
 
-  // ── Field names are the AcroForm names from the official USCIS I-765 PDF.
-  // ── The server log prints every available name when the PDF is first loaded.
-  return {
-    // Part 1 — Reason for Applying
-    'Pt1Line1a_Checkbox[0]':  true,   // Initial permission
-    'Pt1Line1b_Checkbox[0]':  false,  // Renewal
-    'Pt1Line1c_Checkbox[0]':  false,  // Replacement
-    'Pt1Line2_EligibilityCategory[0]': '(c)(26)',
+  // page = 0-based page index. x from left, y from bottom.
+  return [
+    // ── Page 1 · Part 1 — Reason for Applying ──
+    { page: 0, x: 56,  y: 612, check: true },                 // 1.a Initial permission
+    { page: 0, x: 250, y: 556, text: '(c)(26)' },             // Eligibility category
 
-    // Part 2 — Applicant info
-    'Pt2Line1a_FamilyName[0]':     name.last,
-    'Pt2Line1b_GivenName[0]':      name.first,
-    'Pt2Line1c_MiddleName[0]':     name.middle,
+    // ── Page 1 · Part 2 — Applicant info ──
+    { page: 0, x: 70,  y: 470, text: name.last },             // Family Name
+    { page: 0, x: 300, y: 470, text: name.first },            // Given Name
+    { page: 0, x: 470, y: 470, text: name.middle },           // Middle Name
 
-    'Pt2Line9_DateofBirth[0]':     dob,
-    'Pt2Line10_CountryofBirth[0]': cob,
-    'Pt2Line11_CountryofCitizenship[0]': cob,
+    { page: 0, x: 70,  y: 300, text: dob },                   // Date of Birth
+    { page: 0, x: 300, y: 300, text: cob },                   // Country of Birth
+    { page: 0, x: 470, y: 300, text: cob },                   // Country of Citizenship
 
-    // Gender — Female
-    'Pt2Line12_Gender[0]': false,  // Male
-    'Pt2Line12_Gender[1]': true,   // Female
+    { page: 0, x: 70,  y: 210, text: addr.street },           // Street
+    { page: 0, x: 70,  y: 165, text: addr.city },             // City
+    { page: 0, x: 330, y: 165, text: addr.state },            // State
+    { page: 0, x: 420, y: 165, text: addr.zip },              // ZIP
 
-    // Marital status — Married
-    'Pt2Line13_MaritalStatus[0]': false, // Single
-    'Pt2Line13_MaritalStatus[1]': true,  // Married
-    'Pt2Line13_MaritalStatus[2]': false, // Divorced
-    'Pt2Line13_MaritalStatus[3]': false, // Widowed
+    // ── Page 2 · Part 2 continued ──
+    { page: 1, x: 70,  y: 600, text: passportNo },            // Admission/petition nbr
+    { page: 1, x: 330, y: 600, text: entryDate },             // Date of last entry
+    { page: 1, x: 70,  y: 540, text: visaClass },             // Status at last entry
+    { page: 1, x: 330, y: 540, text: visaClass },             // Current immigration status
 
-    // Entry / status
-    'Pt2Line15_AlienAdmissionOrPetitionNbr[0]': passportNo ? `Passport: ${passportNo}` : '',
-    'Pt2Line16a_DateofLastEntry[0]':    entryDate,
-    'Pt2Line18_StatusAtLastEntry[0]':   visaClass,
-    'Pt2Line19_CurrentImmigrationStatus[0]': visaClass,
-
-    // Mailing address
-    'Pt2Line22a_StreetNumberName[0]': addr.street,
-    'Pt2Line22b_CityOrTown[0]':       addr.city,
-    'Pt2Line22c_State[0]':            addr.state,
-    'Pt2Line22d_ZipCode[0]':          addr.zip,
-
-    // Part 3 — Certification
-    'Pt3Line1_Checkbox[0]': true,   // Can read English
-  };
+    // ── Page 2 · Part 3 — Certification signature/date ──
+    { page: 1, x: 400, y: 110, text: fmtDate(new Date().toISOString().split('T')[0]) },
+  ];
 }

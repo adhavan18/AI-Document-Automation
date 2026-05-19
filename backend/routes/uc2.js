@@ -3,8 +3,8 @@ import multer from 'multer';
 import { callWithFallback } from '../lib/ai-with-fallback.js';
 import { toUnit } from '../lib/confidence.js';
 import { getMatters, getMatter, setMatter, addMatter } from '../lib/store.js';
-import { fillPdf } from '../lib/pdf-fill.js';
-import { buildPafFieldMap } from '../templates/fill-paf.js';
+import { stampPdf } from '../lib/pdf-fill.js';
+import { buildPafPlacements } from '../templates/fill-paf.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -153,19 +153,37 @@ router.post('/matters/:id/generate', async (req, res) => {
   if (!matter.lcaExtracted) return res.status(409).json({ error: 'Upload and extract an LCA before generating' });
 
   try {
-    const start     = Date.now();
-    const fieldMap  = buildPafFieldMap(matter);
-    const pdfBuffer = await fillPdf('paf.pdf', fieldMap);
-    const pdfBase64 = pdfBuffer.toString('base64');
-    const filename  = `Public_Access_File_${matter.employer?.replace(/[^a-zA-Z0-9]/g, '_') || matter.id}.pdf`;
-    const elapsed   = Date.now() - start;
+    const start      = Date.now();
+    const calibrate  = !!(req.query.calibrate || req.body?.calibrate);
+    const placements = buildPafPlacements(matter);
+    const pdfBuffer  = await stampPdf('paf.pdf', placements, { calibrate });
+    const pdfBase64  = pdfBuffer.toString('base64');
+    const filename   = `Public_Access_File_${matter.employer?.replace(/[^a-zA-Z0-9]/g, '_') || matter.id}.pdf`;
+    const elapsed    = Date.now() - start;
 
     setMatter(matter.id, { status: 'Generated', generatedPdfBase64: pdfBase64, generatedFilename: filename });
-    console.log(`[uc2/generate] PAF filled for ${matter.id} in ${elapsed}ms`);
+    console.log(`[uc2/generate] PAF stamped for ${matter.id} in ${elapsed}ms${calibrate ? ' (calibration grid)' : ''}`);
 
     res.json({ pdfBase64, filename, processing_time_ms: elapsed });
   } catch (err) {
     console.error('[uc2/generate]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/uc2/matters/:id/calibrate ──────────────────────────────────────
+// Open in a browser to download the PAF with a coordinate ruler grid.
+router.get('/matters/:id/calibrate', async (req, res) => {
+  const matter = getMatter(req.params.id);
+  if (!matter) return res.status(404).json({ error: 'Matter not found' });
+  try {
+    const placements = buildPafPlacements(matter);
+    const pdfBuffer  = await stampPdf('paf.pdf', placements, { calibrate: true });
+    res.set('Content-Type', 'application/pdf');
+    res.set('Content-Disposition', 'inline; filename="PAF_calibration.pdf"');
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error('[uc2/calibrate]', err.message);
     res.status(500).json({ error: err.message });
   }
 });
