@@ -1,29 +1,37 @@
 // PDF text-overlay engine.
-// Neither the USCIS I-765 (an XFA dynamic form) nor the flat PAF design
-// expose fillable AcroForm fields, so we stamp values directly onto the
-// saved PDF at fixed coordinates instead of filling form fields.
+// Stamps text/checkmarks onto the saved PDF canvas at fixed coordinates.
+// XFA PDFs (like the USCIS I-765) are automatically flattened via Ghostscript
+// before loading — the flattened copy is cached as <name>_flat.pdf.
 //
-// pdf-lib coordinate space: origin is BOTTOM-LEFT, units are points.
-// US Letter = 612 x 792 pt.
+// pdf-lib coordinate space: origin = BOTTOM-LEFT, units = points (pt).
+// US Letter = 612 x 792 pt. At 72 DPI: 1 pixel = 1 pt.
+// Rendering formula: PDF_y = page_height - image_y_from_top
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const FORMS_DIR = join(__dirname, '../templates/forms');
 
-/**
- * Stamp text onto an existing PDF.
- *
- * @param {string} filename — file inside backend/templates/forms/
- * @param {Array<{page:number,x:number,y:number,text:any,size?:number,
- *                bold?:boolean,check?:boolean}>} placements
- * @param {{calibrate?:boolean}} opts — calibrate:true overlays a coordinate grid
- * @returns {Promise<Buffer>}
- */
-export async function stampPdf(filename, placements, opts = {}) {
+function flattenPath(filename) {
+  const base = filename.replace(/\.pdf$/i, '');
+  return join(FORMS_DIR, `${base}_flat.pdf`);
+}
+
+// Run Ghostscript to convert XFA / incompatible PDFs to static pdfwrite output.
+function flattenWithGs(inputPath, outputPath) {
+  console.log(`[pdf-stamp] flattening XFA with Ghostscript: ${inputPath}`);
+  execSync(
+    `gs -dBATCH -dNOPAUSE -dQUIET -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -sOutputFile="${outputPath}" "${inputPath}"`,
+    { stdio: 'inherit' }
+  );
+}
+
+// Load the PDF, auto-flattening with Ghostscript if the page tree is unreadable.
+async function loadPdfDoc(filename) {
   const filePath = join(FORMS_DIR, filename);
   if (!existsSync(filePath)) {
     throw new Error(
@@ -32,58 +40,72 @@ export async function stampPdf(filename, placements, opts = {}) {
     );
   }
 
-  const bytes  = readFileSync(filePath);
-  // throwOnInvalidObject:false → tolerate the XFA object-ref warnings the
-  // USCIS form produces; we never touch the form, only the page canvas.
-  const pdfDoc = await PDFDocument.load(bytes, {
-    ignoreEncryption: true,
-    throwOnInvalidObject: false,
-    updateMetadata: false,
-  });
+  let bytes = readFileSync(filePath);
+  let doc = await PDFDocument.load(bytes, { ignoreEncryption: true, throwOnInvalidObject: false });
 
+  // Try getPages() — XFA forms throw "Expected instance of PDFDict" here.
+  try {
+    doc.getPages();
+    return doc;
+  } catch {
+    // Flatten with Ghostscript and reload.
+    const flat = flattenPath(filename);
+    if (!existsSync(flat)) {
+      flattenWithGs(filePath, flat);
+    }
+    bytes = readFileSync(flat);
+    doc   = await PDFDocument.load(bytes, { ignoreEncryption: true, throwOnInvalidObject: false });
+    return doc;
+  }
+}
+
+/**
+ * Stamp text/checkmarks onto an existing PDF.
+ *
+ * @param {string} filename — file inside backend/templates/forms/
+ * @param {Array<{page:number, x:number, y:number, text?:any,
+ *                size?:number, bold?:boolean, check?:boolean}>} placements
+ * @param {{calibrate?:boolean}} opts
+ * @returns {Promise<Buffer>}
+ */
+export async function stampPdf(filename, placements, opts = {}) {
+  const pdfDoc   = await loadPdfDoc(filename);
   const helv     = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const helvBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const pages    = pdfDoc.getPages();
   const black    = rgb(0, 0, 0);
 
-  console.log(`[pdf-stamp] ${filename} — ${pages.length} pages, ${placements.length} placements${opts.calibrate ? ' (CALIBRATION GRID)' : ''}`);
+  console.log(`[pdf-stamp] ${filename} — ${pages.length} pages, ${placements.length} placements${opts.calibrate ? ' [CALIBRATION]' : ''}`);
 
-  // ── Calibration grid: ruler ticks every 50pt, light lines every 25pt ──
+  // ── Calibration grid ──────────────────────────────────────────────────────
   if (opts.calibrate) {
     pages.forEach((page, pi) => {
       const { width, height } = page.getSize();
       for (let x = 0; x <= width; x += 25) {
         page.drawLine({ start: { x, y: 0 }, end: { x, y: height },
-          thickness: x % 50 === 0 ? 0.4 : 0.15,
-          color: rgb(0.6, 0.7, 1), opacity: 0.5 });
-        if (x % 50 === 0) {
+          thickness: x % 50 === 0 ? 0.5 : 0.2, color: rgb(0.55, 0.7, 1), opacity: 0.6 });
+        if (x % 50 === 0)
           page.drawText(String(x), { x: x + 1, y: 3, size: 5, font: helv, color: rgb(0, 0, 0.8) });
-          page.drawText(String(x), { x: x + 1, y: height - 8, size: 5, font: helv, color: rgb(0, 0, 0.8) });
-        }
       }
       for (let y = 0; y <= height; y += 25) {
         page.drawLine({ start: { x: 0, y }, end: { x: width, y },
-          thickness: y % 50 === 0 ? 0.4 : 0.15,
-          color: rgb(1, 0.7, 0.6), opacity: 0.5 });
-        if (y % 50 === 0) {
+          thickness: y % 50 === 0 ? 0.5 : 0.2, color: rgb(1, 0.7, 0.55), opacity: 0.6 });
+        if (y % 50 === 0)
           page.drawText(String(y), { x: 2, y: y + 1, size: 5, font: helv, color: rgb(0.8, 0, 0) });
-          page.drawText(String(y), { x: width - 18, y: y + 1, size: 5, font: helv, color: rgb(0.8, 0, 0) });
-        }
       }
-      page.drawText(`PAGE INDEX ${pi}  (size ${Math.round(width)} x ${Math.round(height)} pt)`,
-        { x: width / 2 - 80, y: height / 2, size: 9, font: helvBold, color: rgb(0.8, 0, 0.8) });
+      page.drawText(`p${pi}  ${Math.round(width)}×${Math.round(height)}pt`,
+        { x: width / 2 - 40, y: height / 2, size: 10, font: helvBold, color: rgb(0.7, 0, 0.8) });
     });
   }
 
-  // ── Stamp the actual values ──
+  // ── Stamp values ──────────────────────────────────────────────────────────
   let stamped = 0;
   for (const p of placements) {
     const page = pages[p.page];
-    if (!page) { console.warn(`[pdf-stamp] no page index ${p.page}`); continue; }
+    if (!page) { console.warn(`[pdf-stamp] no page[${p.page}]`); continue; }
 
     if (p.check) {
-      page.drawText('X', { x: p.x, y: p.y, size: p.size ?? 10,
-        font: helvBold, color: black });
+      page.drawText('X', { x: p.x, y: p.y, size: p.size ?? 8, font: helvBold, color: black });
       stamped++;
       continue;
     }
@@ -97,19 +119,6 @@ export async function stampPdf(filename, placements, opts = {}) {
     stamped++;
   }
 
-  console.log(`[pdf-stamp] stamped ${stamped}/${placements.length} placements`);
+  console.log(`[pdf-stamp] stamped ${stamped}/${placements.filter(p => p.check || (p.text != null && String(p.text))).length}`);
   return Buffer.from(await pdfDoc.save());
-}
-
-/** Diagnostic — page count and per-page dimensions in points. */
-export async function pdfPageSizes(filename) {
-  const filePath = join(FORMS_DIR, filename);
-  if (!existsSync(filePath)) return [];
-  const doc = await PDFDocument.load(readFileSync(filePath), {
-    ignoreEncryption: true, throwOnInvalidObject: false,
-  });
-  return doc.getPages().map((p, i) => {
-    const { width, height } = p.getSize();
-    return { page: i, width: Math.round(width), height: Math.round(height) };
-  });
 }
