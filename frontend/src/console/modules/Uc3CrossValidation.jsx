@@ -7,7 +7,7 @@ import { uc3 } from '../api.js';
 
 export function Uc3CrossValidation({ search = '' }) {
   const [caseData, setCaseData] = useState(null);
-  const [counts, setCounts] = useState({ blocking: 0, minor: 0, verified: 0 });
+  const [counts, setCounts] = useState({ Error: 0, Review: 0, verified: 0 });
   const [status, setStatus] = useState('Loading…');
   const [running, setRunning] = useState(false);
   const [resolving, setResolving] = useState(null);
@@ -106,8 +106,8 @@ export function Uc3CrossValidation({ search = '' }) {
               <div className="flex items-center gap-4">
                 <div className="flex gap-4">
                   {[
-                    { label: 'Blocking', value: counts.blocking, color: 'text-rose-600' },
-                    { label: 'Minor', value: counts.minor, color: 'text-amber-600' },
+                    { label: 'Error', value: counts.Error, color: 'text-rose-600' },
+                    { label: 'Review', value: counts.Review, color: 'text-amber-600' },
                     { label: 'Verified', value: counts.verified, color: 'text-emerald-600' },
                   ].map(({ label, value, color }, i) => (
                     <div key={label} className="flex items-center gap-3">
@@ -119,7 +119,7 @@ export function Uc3CrossValidation({ search = '' }) {
                     </div>
                   ))}
                 </div>
-                <div className="flex flex-col gap-1.5">
+                {/* <div className="flex flex-col gap-1.5">
                   <button
                     onClick={() => handleRun(null)}
                     disabled={running}
@@ -128,7 +128,7 @@ export function Uc3CrossValidation({ search = '' }) {
                   >
                     {running ? 'Validating…' : 'Validate Data'}
                   </button>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -208,12 +208,28 @@ export function Uc3CrossValidation({ search = '' }) {
             title="Automate Filing (H4 EAD)"
             subtitle={q && caseData?.rows?.length ? `${filteredRows.length} of ${caseData.rows.length} fields match` : 'Questionnaire entries vs. document extractions'}
             right={
-              counts.blocking > 0 && caseData?.rows?.length > 0 && (
-                <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-rose-700 bg-rose-50 px-2 py-1 rounded ring-1 ring-rose-200">
-                  <AlertTriangle className="w-3 h-3" />
-                  Form save blocked until resolved
-                </div>
-              )
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleRun(null)}
+                  disabled={running}
+                  className="px-3 py-1.5 text-xs font-medium text-white rounded disabled:opacity-40 whitespace-nowrap"
+                  style={{ backgroundColor: '#204496' }}
+                >
+                  {running ? 'Validating…' : 'Validate Data'}
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={counts.blocking > 0 || saving}
+                  style={counts.blocking > 0 || saving ? {} : { backgroundColor: '#204496' }}
+                  className={`px-3 py-1.5 text-xs font-medium rounded inline-flex items-center gap-1.5 ${counts.blocking > 0 || saving
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    : 'text-white'
+                    }`}
+                >
+                  {saving ? 'Generating…' : 'Generate Form'}
+                  <ArrowUpRight className="w-3 h-3" />
+                </button>
+              </div>
             }
           >
             {error && (
@@ -229,16 +245,16 @@ export function Uc3CrossValidation({ search = '' }) {
             <div className="space-y-1">
               {filteredRows.map((row) => {
                 const isResolved = resolved[row.field];
-                const showBlocking = !row.match && row.severity === 'blocking' && !isResolved;
-                const showMinor = !row.match && row.severity === 'minor' && !isResolved;
+                const showError = !row.match && row.severity === 'Error' && !isResolved;
+                const showReview = !row.match && row.severity === 'Review' && !isResolved;
                 const isResolving = resolving === row.field;
 
                 return (
                   <div
                     key={row.field}
-                    className={`rounded-md p-3 border ${showBlocking
+                    className={`rounded-md p-3 border ${showError
                       ? 'border-rose-200 bg-rose-50/40'
-                      : showMinor
+                      : showReview
                         ? 'border-amber-200 bg-amber-50/30'
                         : 'border-slate-100 bg-white'
                       }`}
@@ -248,7 +264,7 @@ export function Uc3CrossValidation({ search = '' }) {
                         <div className="flex items-center gap-2 mb-1.5">
                           {row.match || isResolved ? (
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                          ) : row.severity === 'blocking' ? (
+                          ) : row.severity === 'Error' ? (
                             <X className="w-3.5 h-3.5 text-rose-600" />
                           ) : (
                             <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
@@ -269,7 +285,7 @@ export function Uc3CrossValidation({ search = '' }) {
                         </div>
 
                         {row.note && !isResolved && (
-                          <div className={`mt-2 pl-5 text-[11px] ${row.severity === 'blocking' ? 'text-rose-700' : 'text-amber-700'}`}>
+                          <div className={`mt-2 pl-5 text-[11px] ${row.severity === 'Error' ? 'text-rose-700' : 'text-amber-700'}`}>
                             {row.note}
                           </div>
                         )}
@@ -321,8 +337,7 @@ export function Uc3CrossValidation({ search = '' }) {
                   : 'text-white'
                   }`}
               >
-                {saving ? 'Generating…' : 'Save changes'}
-                <ArrowUpRight className="w-3 h-3" />
+                {saving ? 'Generating…' : 'Save & Train'}
               </button>
             </div>
           </Section>

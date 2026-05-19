@@ -184,8 +184,8 @@ router.post('/case/resolve', (req, res) => {
 // ─── POST /api/uc3/case/save ──────────────────────────────────────────────────
 router.post('/case/save', async (req, res) => {
   const counts = computeCaseCounts();
-  if (counts.blocking > 0) {
-    return res.status(409).json({ error: 'Cannot save — blocking mismatches remain unresolved', counts });
+  if (counts.Error > 0) {
+    return res.status(409).json({ error: 'Cannot save — Error mismatches remain unresolved', counts });
   }
 
   try {

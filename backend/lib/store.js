@@ -255,9 +255,9 @@ export function setCaseResolved(field, choice) {
 
 export function computeCaseCounts() {
   const { rows, resolved } = store.validationCase;
-  const blocking = rows.filter((r) => !r.match && r.severity === 'blocking' && !resolved[r.field]).length;
-  const minor    = rows.filter((r) => !r.match && r.severity === 'minor'    && !resolved[r.field]).length;
+  const Error = rows.filter((r) => !r.match && r.severity === 'Error' && !resolved[r.field]).length;
+  const Review    = rows.filter((r) => !r.match && r.severity === 'Review'    && !resolved[r.field]).length;
   const verified = rows.filter((r) => r.match).length + Object.keys(resolved).length;
-  const status   = blocking > 0 ? 'Mismatches' : minor > 0 ? 'Needs review' : 'Cleared';
-  return { blocking, minor, verified, status };
+  const status   = Error > 0 ? 'Mismatches' : Review > 0 ? 'Needs review' : 'Review';
+  return { Error, Review, verified, status };
 }

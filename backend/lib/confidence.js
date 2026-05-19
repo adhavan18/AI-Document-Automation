@@ -9,7 +9,7 @@ export function isFlagged(unit) {
   return unit < 0.75;
 }
 
-const BLOCKING_FIELDS = new Set([
+const Error_FIELDS = new Set([
   'Full Legal Name',
   'Date of Birth',
   'Passport Expiry',
@@ -22,9 +22,9 @@ function normalize(str) {
 
 export function severityFor(match, unit, field) {
   if (match) return undefined;
-  if (BLOCKING_FIELDS.has(field)) return 'blocking';
-  if (unit >= 0.9) return 'blocking';
-  return 'minor';
+  if (Error_FIELDS.has(field)) return 'Error';
+  if (unit >= 0.9) return 'Error';
+  return 'Review';
 }
 
 export function noteFor({ field, extracted, questionnaire, severity }) {
@@ -37,7 +37,7 @@ export function noteFor({ field, extracted, questionnaire, severity }) {
   if (normDoc.startsWith(normQ) || normQ.startsWith(normDoc)) {
     return `Abbreviation only · "${extracted}" vs "${questionnaire}"`;
   }
-  if (severity === 'blocking') {
+  if (severity === 'Error') {
     return `Document shows "${extracted}" — questionnaire states "${questionnaire}". Resolve before save.`;
   }
   return `Value mismatch · "${extracted}" vs "${questionnaire}"`;
