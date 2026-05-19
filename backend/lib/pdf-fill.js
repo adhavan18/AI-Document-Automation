@@ -1,22 +1,37 @@
-// Generic PDF template filler using pdf-lib AcroForm field filling.
-// Loads a base PDF from backend/templates/forms/<filename>,
-// fills every field in fieldMap by name, flattens, and returns a Buffer.
+// PDF text-overlay engine.
+// Stamps text/checkmarks onto the saved PDF canvas at fixed coordinates.
+// XFA PDFs (like the USCIS I-765) are automatically flattened via Ghostscript
+// before loading — the flattened copy is cached as <name>_flat.pdf.
+//
+// pdf-lib coordinate space: origin = BOTTOM-LEFT, units = points (pt).
+// US Letter = 612 x 792 pt. At 72 DPI: 1 pixel = 1 pt.
+// Rendering formula: PDF_y = page_height - image_y_from_top
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { PDFDocument } from 'pdf-lib';
+import { execSync } from 'child_process';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const FORMS_DIR = join(__dirname, '../templates/forms');
 
-/**
- * @param {string} filename  — file inside backend/templates/forms/
- * @param {Record<string, string|boolean>} fieldMap  — { "AcroFieldName": value }
- * @param {boolean} flatten  — flatten form after filling (default true)
- * @returns {Promise<Buffer>}
- */
-export async function fillPdf(filename, fieldMap, flatten = true) {
+function flattenPath(filename) {
+  const base = filename.replace(/\.pdf$/i, '');
+  return join(FORMS_DIR, `${base}_flat.pdf`);
+}
+
+// Run Ghostscript to convert XFA / incompatible PDFs to static pdfwrite output.
+function flattenWithGs(inputPath, outputPath) {
+  console.log(`[pdf-stamp] flattening XFA with Ghostscript: ${inputPath}`);
+  execSync(
+    `gs -dBATCH -dNOPAUSE -dQUIET -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -sOutputFile="${outputPath}" "${inputPath}"`,
+    { stdio: 'inherit' }
+  );
+}
+
+// Load the PDF, auto-flattening with Ghostscript if the page tree is unreadable.
+async function loadPdfDoc(filename) {
   const filePath = join(FORMS_DIR, filename);
   if (!existsSync(filePath)) {
     throw new Error(
@@ -25,53 +40,85 @@ export async function fillPdf(filename, fieldMap, flatten = true) {
     );
   }
 
-  const templateBytes = readFileSync(filePath);
-  const pdfDoc = await PDFDocument.load(templateBytes, { ignoreEncryption: true });
-  const form = pdfDoc.getForm();
-  const allFields = form.getFields();
+  let bytes = readFileSync(filePath);
+  let doc = await PDFDocument.load(bytes, { ignoreEncryption: true, throwOnInvalidObject: false });
 
-  // Log available field names once so devs can build/verify the mapping.
-  console.log(`[pdf-fill] ${filename} — ${allFields.length} AcroForm fields:`);
-  allFields.forEach((f) => console.log(`  [${f.constructor.name.replace('PDF', '')}] "${f.getName()}"`));
-
-  let filled = 0;
-  for (const [name, value] of Object.entries(fieldMap)) {
-    try {
-      const field = form.getFieldMaybe(name);
-      if (!field) { console.warn(`[pdf-fill] field not found: "${name}"`); continue; }
-      const type = field.constructor.name;
-      if (type === 'PDFTextField') {
-        field.setText(value == null ? '' : String(value));
-        filled++;
-      } else if (type === 'PDFCheckBox') {
-        value ? field.check() : field.uncheck();
-        filled++;
-      } else if (type === 'PDFRadioGroup') {
-        if (value) { field.select(String(value)); filled++; }
-      } else if (type === 'PDFDropdown') {
-        if (value) { field.select(String(value)); filled++; }
-      }
-    } catch (e) {
-      console.warn(`[pdf-fill] error on field "${name}": ${e.message}`);
+  // Try getPages() — XFA forms throw "Expected instance of PDFDict" here.
+  try {
+    doc.getPages();
+    return doc;
+  } catch {
+    // Flatten with Ghostscript and reload.
+    const flat = flattenPath(filename);
+    if (!existsSync(flat)) {
+      flattenWithGs(filePath, flat);
     }
+    bytes = readFileSync(flat);
+    doc   = await PDFDocument.load(bytes, { ignoreEncryption: true, throwOnInvalidObject: false });
+    return doc;
   }
-
-  console.log(`[pdf-fill] filled ${filled}/${Object.keys(fieldMap).length} mapped fields`);
-
-  if (flatten) form.flatten();
-  return Buffer.from(await pdfDoc.save());
 }
 
 /**
- * Returns all field names in a PDF template — useful for building a field map.
+ * Stamp text/checkmarks onto an existing PDF.
+ *
+ * @param {string} filename — file inside backend/templates/forms/
+ * @param {Array<{page:number, x:number, y:number, text?:any,
+ *                size?:number, bold?:boolean, check?:boolean}>} placements
+ * @param {{calibrate?:boolean}} opts
+ * @returns {Promise<Buffer>}
  */
-export async function listFields(filename) {
-  const filePath = join(FORMS_DIR, filename);
-  if (!existsSync(filePath)) return [];
-  const bytes = readFileSync(filePath);
-  const doc   = await PDFDocument.load(bytes, { ignoreEncryption: true });
-  return doc.getForm().getFields().map((f) => ({
-    name: f.getName(),
-    type: f.constructor.name.replace('PDF', ''),
-  }));
+export async function stampPdf(filename, placements, opts = {}) {
+  const pdfDoc   = await loadPdfDoc(filename);
+  const helv     = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const helvBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const pages    = pdfDoc.getPages();
+  const black    = rgb(0, 0, 0);
+
+  console.log(`[pdf-stamp] ${filename} — ${pages.length} pages, ${placements.length} placements${opts.calibrate ? ' [CALIBRATION]' : ''}`);
+
+  // ── Calibration grid ──────────────────────────────────────────────────────
+  if (opts.calibrate) {
+    pages.forEach((page, pi) => {
+      const { width, height } = page.getSize();
+      for (let x = 0; x <= width; x += 25) {
+        page.drawLine({ start: { x, y: 0 }, end: { x, y: height },
+          thickness: x % 50 === 0 ? 0.5 : 0.2, color: rgb(0.55, 0.7, 1), opacity: 0.6 });
+        if (x % 50 === 0)
+          page.drawText(String(x), { x: x + 1, y: 3, size: 5, font: helv, color: rgb(0, 0, 0.8) });
+      }
+      for (let y = 0; y <= height; y += 25) {
+        page.drawLine({ start: { x: 0, y }, end: { x: width, y },
+          thickness: y % 50 === 0 ? 0.5 : 0.2, color: rgb(1, 0.7, 0.55), opacity: 0.6 });
+        if (y % 50 === 0)
+          page.drawText(String(y), { x: 2, y: y + 1, size: 5, font: helv, color: rgb(0.8, 0, 0) });
+      }
+      page.drawText(`p${pi}  ${Math.round(width)}×${Math.round(height)}pt`,
+        { x: width / 2 - 40, y: height / 2, size: 10, font: helvBold, color: rgb(0.7, 0, 0.8) });
+    });
+  }
+
+  // ── Stamp values ──────────────────────────────────────────────────────────
+  let stamped = 0;
+  for (const p of placements) {
+    const page = pages[p.page];
+    if (!page) { console.warn(`[pdf-stamp] no page[${p.page}]`); continue; }
+
+    if (p.check) {
+      page.drawText('X', { x: p.x, y: p.y, size: p.size ?? 8, font: helvBold, color: black });
+      stamped++;
+      continue;
+    }
+
+    const text = p.text == null ? '' : String(p.text);
+    if (!text) continue;
+    page.drawText(text, {
+      x: p.x, y: p.y, size: p.size ?? 9,
+      font: p.bold ? helvBold : helv, color: black,
+    });
+    stamped++;
+  }
+
+  console.log(`[pdf-stamp] stamped ${stamped}/${placements.filter(p => p.check || (p.text != null && String(p.text))).length}`);
+  return Buffer.from(await pdfDoc.save());
 }
