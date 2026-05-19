@@ -205,7 +205,7 @@ export function Uc3CrossValidation({ search = '' }) {
         {/* Mismatch report */}
         <div className="col-span-9">
           <Section
-            title="Automate Filing (H4 EAD) report"
+            title="Automate Filing (H4 EAD)"
             subtitle={q && caseData?.rows?.length ? `${filteredRows.length} of ${caseData.rows.length} fields match` : 'Questionnaire entries vs. document extractions'}
             right={
               counts.blocking > 0 && caseData?.rows?.length > 0 && (
