@@ -3,8 +3,8 @@ import multer from 'multer';
 import { callWithFallback } from '../lib/ai-with-fallback.js';
 import { toUnit } from '../lib/confidence.js';
 import { getMatters, getMatter, setMatter, addMatter } from '../lib/store.js';
-import { stampPdf } from '../lib/pdf-fill.js';
-import { buildPafPlacements } from '../templates/fill-paf.js';
+import puppeteer from 'puppeteer';
+import { buildPafHtml } from '../templates/paf-html.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -146,6 +146,20 @@ If a field cannot be found set value to "Not found" and confidence to 0.`;
   }
 });
 
+async function renderPafPdf(matter) {
+  let browser;
+  try {
+    const html = buildPafHtml(matter);
+    browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    const buffer = await page.pdf({ format: 'Letter', margin: { top: '0', bottom: '0', left: '0', right: '0' }, printBackground: true });
+    return Buffer.from(buffer);
+  } finally {
+    if (browser) await browser.close();
+  }
+}
+
 // ─── POST /api/uc2/matters/:id/generate ──────────────────────────────────────
 router.post('/matters/:id/generate', async (req, res) => {
   const matter = getMatter(req.params.id);
@@ -153,16 +167,14 @@ router.post('/matters/:id/generate', async (req, res) => {
   if (!matter.lcaExtracted) return res.status(409).json({ error: 'Upload and extract an LCA before generating' });
 
   try {
-    const start      = Date.now();
-    const calibrate  = !!(req.query.calibrate || req.body?.calibrate);
-    const placements = buildPafPlacements(matter);
-    const pdfBuffer  = await stampPdf('paf.pdf', placements, { calibrate });
-    const pdfBase64  = pdfBuffer.toString('base64');
-    const filename   = `Public_Access_File_${matter.employer?.replace(/[^a-zA-Z0-9]/g, '_') || matter.id}.pdf`;
-    const elapsed    = Date.now() - start;
+    const start     = Date.now();
+    const pdfBuffer = await renderPafPdf(matter);
+    const pdfBase64 = pdfBuffer.toString('base64');
+    const filename  = `Public_Access_File_${matter.employer?.replace(/[^a-zA-Z0-9]/g, '_') || matter.id}.pdf`;
+    const elapsed   = Date.now() - start;
 
     setMatter(matter.id, { status: 'Generated', generatedPdfBase64: pdfBase64, generatedFilename: filename });
-    console.log(`[uc2/generate] PAF stamped for ${matter.id} in ${elapsed}ms${calibrate ? ' (calibration grid)' : ''}`);
+    console.log(`[uc2/generate] PAF rendered for ${matter.id} in ${elapsed}ms`);
 
     res.json({ pdfBase64, filename, processing_time_ms: elapsed });
   } catch (err) {
@@ -171,19 +183,18 @@ router.post('/matters/:id/generate', async (req, res) => {
   }
 });
 
-// ─── GET /api/uc2/matters/:id/calibrate ──────────────────────────────────────
-// Open in a browser to download the PAF with a coordinate ruler grid.
-router.get('/matters/:id/calibrate', async (req, res) => {
+// ─── GET /api/uc2/matters/:id/preview ────────────────────────────────────────
+// Stream the generated PAF PDF inline for browser preview.
+router.get('/matters/:id/preview', async (req, res) => {
   const matter = getMatter(req.params.id);
   if (!matter) return res.status(404).json({ error: 'Matter not found' });
   try {
-    const placements = buildPafPlacements(matter);
-    const pdfBuffer  = await stampPdf('paf.pdf', placements, { calibrate: true });
+    const pdfBuffer = await renderPafPdf(matter);
     res.set('Content-Type', 'application/pdf');
-    res.set('Content-Disposition', 'inline; filename="PAF_calibration.pdf"');
+    res.set('Content-Disposition', `inline; filename="PAF_${matter.id}.pdf"`);
     res.send(pdfBuffer);
   } catch (err) {
-    console.error('[uc2/calibrate]', err.message);
+    console.error('[uc2/preview]', err.message);
     res.status(500).json({ error: err.message });
   }
 });
