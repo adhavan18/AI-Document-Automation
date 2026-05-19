@@ -121,13 +121,6 @@ export function Uc3CrossValidation({ search = '' }) {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={running}
-                    className="px-3 py-1.5 text-xs font-medium rounded ring-1 ring-slate-200 hover:ring-slate-300 text-slate-600 disabled:opacity-40 whitespace-nowrap"
-                  >
-                    Upload passport
-                  </button>
-                  <button
                     onClick={() => handleRun(null)}
                     disabled={running}
                     className="px-3 py-1.5 text-xs font-medium text-white rounded disabled:opacity-40 whitespace-nowrap"
@@ -135,13 +128,6 @@ export function Uc3CrossValidation({ search = '' }) {
                   >
                     {running ? 'Validating…' : 'Validate Data'}
                   </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,image/*"
-                    className="hidden"
-                    onChange={(e) => { handleRun(e.target.files?.[0]); e.target.value = ''; }}
-                  />
                 </div>
               </div>
             </div>
@@ -177,6 +163,20 @@ export function Uc3CrossValidation({ search = '' }) {
                 );
               })}
             </div>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={running}
+              className="mt-2 w-full px-3 py-1.5 text-xs font-medium rounded ring-1 ring-slate-200 hover:ring-slate-300 text-slate-600 disabled:opacity-40 whitespace-nowrap"
+            >
+              Upload passport
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,image/*"
+              className="hidden"
+              onChange={(e) => { handleRun(e.target.files?.[0]); e.target.value = ''; }}
+            />
           </Section>
 
           {/* Inline document preview */}
