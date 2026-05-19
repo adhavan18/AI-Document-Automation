@@ -2,11 +2,11 @@ import { Router } from 'express';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import multer from 'multer';
-import puppeteer from 'puppeteer';
 import { callWithFallback } from '../lib/ai-with-fallback.js';
 import { toUnit, severityFor, noteFor } from '../lib/confidence.js';
 import { getCase, setCaseRows, setCaseResolved, computeCaseCounts, SAMPLES_DIR } from '../lib/store.js';
-import { buildI765HTML } from '../templates/i765-template.js';
+import { fillPdf } from '../lib/pdf-fill.js';
+import { buildI765FieldMap } from '../templates/fill-i765.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -188,32 +188,20 @@ router.post('/case/save', async (req, res) => {
     return res.status(409).json({ error: 'Cannot save — blocking mismatches remain unresolved', counts });
   }
 
-  let browser;
   try {
     const c = getCase();
     const start = Date.now();
 
-    const html = buildI765HTML(c);
-    browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    const pdfBuffer = await page.pdf({
-      format: 'Letter',
-      margin: { top: '0', bottom: '0', left: '0', right: '0' },
-      printBackground: true,
-    });
-    await browser.close();
-    browser = null;
-
-    const elapsed = Date.now() - start;
-    console.log(`[uc3/save] I-765 PDF built in ${elapsed}ms`);
+    const fieldMap   = buildI765FieldMap(c);
+    const pdfBuffer  = await fillPdf('i765.pdf', fieldMap);
+    const elapsed    = Date.now() - start;
+    console.log(`[uc3/save] I-765 filled in ${elapsed}ms`);
 
     res.set('Content-Type', 'application/pdf');
     res.set('Content-Disposition', `attachment; filename="Form_I-765_${c.id}.pdf"`);
-    res.send(Buffer.from(pdfBuffer));
+    res.send(pdfBuffer);
   } catch (err) {
     console.error('[uc3/save]', err.message);
-    if (browser) { try { await browser.close(); } catch { /* ignore */ } }
     res.status(500).json({ error: err.message });
   }
 });

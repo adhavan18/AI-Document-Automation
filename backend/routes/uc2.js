@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import multer from 'multer';
-import puppeteer from 'puppeteer';
 import { callWithFallback } from '../lib/ai-with-fallback.js';
 import { toUnit } from '../lib/confidence.js';
 import { getMatters, getMatter, setMatter, addMatter } from '../lib/store.js';
-import { buildPublicAccessFileHTML } from '../templates/public-access-file.js';
+import { fillPdf } from '../lib/pdf-fill.js';
+import { buildPafFieldMap } from '../templates/fill-paf.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -152,32 +152,20 @@ router.post('/matters/:id/generate', async (req, res) => {
   if (!matter) return res.status(404).json({ error: 'Matter not found' });
   if (!matter.lcaExtracted) return res.status(409).json({ error: 'Upload and extract an LCA before generating' });
 
-  let browser;
   try {
-    const start   = Date.now();
-    const html    = buildPublicAccessFileHTML(matter);
-    browser       = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-    const page    = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    const pdfBuffer = await page.pdf({
-      format: 'Letter',
-      margin: { top: '0', bottom: '0', left: '0', right: '0' },
-      printBackground: true,
-    });
-    await browser.close();
-    browser = null;
-
-    const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
+    const start     = Date.now();
+    const fieldMap  = buildPafFieldMap(matter);
+    const pdfBuffer = await fillPdf('paf.pdf', fieldMap);
+    const pdfBase64 = pdfBuffer.toString('base64');
     const filename  = `Public_Access_File_${matter.employer?.replace(/[^a-zA-Z0-9]/g, '_') || matter.id}.pdf`;
     const elapsed   = Date.now() - start;
 
     setMatter(matter.id, { status: 'Generated', generatedPdfBase64: pdfBase64, generatedFilename: filename });
-    console.log(`[uc2/generate] PDF built for ${matter.id} in ${elapsed}ms`);
+    console.log(`[uc2/generate] PAF filled for ${matter.id} in ${elapsed}ms`);
 
     res.json({ pdfBase64, filename, processing_time_ms: elapsed });
   } catch (err) {
     console.error('[uc2/generate]', err.message);
-    if (browser) { try { await browser.close(); } catch { /* ignore */ } }
     res.status(500).json({ error: err.message });
   }
 });
