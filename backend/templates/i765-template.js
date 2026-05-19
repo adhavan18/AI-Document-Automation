@@ -409,7 +409,7 @@ export function buildI765HTML(c) {
     </div>
     <div class="field-row">
       ${fb('2', "Interpreter's Business or Organization Name (if applicable)", '', 'w5')}
-      ${fb('3', 'Interpreter's Daytime Phone Number', '', 'w3')}
+      ${fb('3', "Interpreter's Daytime Phone Number", '', 'w3')}
     </div>
     <div class="field-row">
       ${fb('4', "Interpreter's Mobile Phone Number (if any)", '', 'w3')}
