@@ -5,8 +5,8 @@ import multer from 'multer';
 import { callWithFallback } from '../lib/ai-with-fallback.js';
 import { toUnit, severityFor, noteFor } from '../lib/confidence.js';
 import { getCase, setCaseRows, setCaseResolved, computeCaseCounts, SAMPLES_DIR } from '../lib/store.js';
-import { stampPdf } from '../lib/pdf-fill.js';
-import { buildI765Placements } from '../templates/fill-i765.js';
+import { fillAcroForm } from '../lib/pdf-acroform.js';
+import { buildI765FormData } from '../templates/i765-fields.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -189,12 +189,11 @@ router.post('/case/save', async (req, res) => {
   }
 
   try {
-    const c          = getCase();
-    const start      = Date.now();
-    const placements = buildI765Placements(c);
-    const pdfBuffer  = await stampPdf('i765.pdf', placements);
-    const elapsed    = Date.now() - start;
-    console.log(`[uc3/save] I-765 stamped in ${elapsed}ms`);
+    const c         = getCase();
+    const start     = Date.now();
+    const pdfBuffer = await fillAcroForm('i765_unlocked.pdf', buildI765FormData(c));
+    const elapsed   = Date.now() - start;
+    console.log(`[uc3/save] I-765 filled in ${elapsed}ms`);
 
     res.set('Content-Type', 'application/pdf');
     res.set('Content-Disposition', `attachment; filename="Form_I-765_${c.id}.pdf"`);
