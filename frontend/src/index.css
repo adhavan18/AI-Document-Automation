@@ -172,11 +172,11 @@ select:focus {
 
 .login-card {
   background: #fff;
-  border-radius: 14px;
-  padding: 40px 36px;
+  border-radius: 16px;
+  padding: 56px 52px;
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  max-width: 480px;
+  box-shadow: 0 32px 100px rgba(0, 0, 0, 0.3);
 }
 
 .login-header {
@@ -185,10 +185,10 @@ select:focus {
 }
 
 .login-logo-img {
-  height: 44px;
+  height: 54px;
   width: auto;
   object-fit: contain;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .login-divider {
@@ -202,15 +202,15 @@ select:focus {
 
 .login-title {
   font-family: 'IBM Plex Sans', 'DM Sans', system-ui, sans-serif;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 600;
   color: #0f1f3d;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   letter-spacing: -0.01em;
 }
 
 .login-subtitle {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text-muted);
 }
 
@@ -236,10 +236,10 @@ select:focus {
 
 .login-field input {
   font-family: var(--font-body);
-  font-size: 14px;
-  padding: 10px 12px;
+  font-size: 15px;
+  padding: 12px 14px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--color-text);
   outline: none;
   transition: border-color 0.15s;
@@ -260,13 +260,14 @@ select:focus {
 
 .login-submit {
   width: 100%;
-  padding: 11px;
-  font-size: 14px;
+  padding: 13px;
+  font-size: 15px;
   font-family: 'IBM Plex Sans', 'DM Sans', system-ui, sans-serif;
   font-weight: 500;
   margin-top: 4px;
   background: #204496;
   letter-spacing: 0.01em;
+  border-radius: 8px;
 }
 
 .login-submit:hover:not(:disabled) {
