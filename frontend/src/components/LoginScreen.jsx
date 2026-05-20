@@ -28,9 +28,14 @@ export default function LoginScreen({ onLogin }) {
     <div className="login-screen">
       <div className="login-card">
         <div className="login-header">
-          <div className="login-logo">⚖️</div>
-          <h1 className="login-title">Legal Document Intelligence</h1>
-          <p className="login-subtitle">Sign in to access the demo workspace</p>
+          <img
+            src="https://gip-us.com/wp-content/uploads/2023/12/gipuheader.png"
+            alt="GIP"
+            className="login-logo-img"
+          />
+          <div className="login-divider" />
+          <h1 className="login-title">Immigration AI Pilot</h1>
+          <p className="login-subtitle">Sign in to access your workspace</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
