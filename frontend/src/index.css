@@ -186,7 +186,7 @@ select:focus {
 }
 
 .login-logo-img {
-  height: 64px;
+  height: 80px;
   width: auto;
   object-fit: contain;
   margin-bottom: 24px;
