@@ -1,263 +1,343 @@
-// In-memory store — seeds on import, resets on process restart.
-// For demos: use `npm start` (not `npm run dev`) to prevent watch-reloads from clearing state.
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { db } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 export const SAMPLES_DIR = join(__dirname, '../../frontend/public/samples');
 
-// ─── Seed data (mirrors ImmigrationAIPilot.jsx verbatim) ─────────────────────
-
-const SEED_NOTICES = [
-  // Empty — notices are added live via upload
-  // Kept as array for future seeding if needed
-  /*{
-    id: 'N-24891',
-    file: 'I797_RECEIPT_2026-05-17_0834.pdf',
-    received: '08:34 today',
-    beneficiary: 'Rajeshwari Venkatasubramanian',
-    petitioner: 'Northstar Aerospace, Inc.',
-    form: 'I-129',
-    status: 'New',
-    flags: 0,
-    matter: 'M-2024-07731',
-    record: 'Awaiting extraction…',
-    sampleAsset: '/samples/i797-n24891-rajeshwari.png',
-    extractedProvider: null,
-    verifiedFields: null,
-    fields: [],
-  },
-  {
-    id: 'N-24892',
-    file: 'I797_RECEIPT_2026-05-17_0902.pdf',
-    received: '09:02 today',
-    beneficiary: 'Chen Wei-Lin',
-    petitioner: 'Pacific Genomics LLC',
-    form: 'I-140',
-    status: 'New',
-    flags: 0,
-    matter: 'M-2024-09122',
-    record: 'Awaiting extraction…',
-    sampleAsset: '/samples/i797-n24892-chenwei.png',
-    extractedProvider: null,
-    verifiedFields: null,
-    fields: [],
-  },
-  {
-    id: 'N-24893',
-    file: 'I797_RECEIPT_2026-05-17_0917.pdf',
-    received: '09:17 today',
-    beneficiary: 'Anjali Bhattacharya',
-    petitioner: 'Helix Bio Solutions',
-    form: 'I-129',
-    status: 'New',
-    flags: 0,
-    matter: 'M-2024-08841',
-    record: 'Awaiting extraction…',
-    sampleAsset: '/samples/i797-n24893-anjali.png',
-    extractedProvider: null,
-    verifiedFields: null,
-    fields: [],
-  },
-  {
-    id: 'N-24894',
-    file: 'I797_RECEIPT_2026-05-17_0944.pdf',
-    received: '09:44 today',
-    beneficiary: 'Mateusz Kowalczyk',
-    petitioner: 'Ironside Manufacturing',
-    form: 'I-129',
-    status: 'New',
-    flags: 0,
-    matter: 'M-2024-09501',
-    record: 'Awaiting extraction…',
-    sampleAsset: '/samples/i797-n24894-mateusz.png',
-    extractedProvider: null,
-    verifiedFields: null,
-    fields: [],
-  },*/
+export const STANDARD_H4_EAD_CHECKLIST = [
+  { id: 'passport_bio', label: 'Passport (bio page)', received: false, filename: null },
+  { id: 'i94', label: 'I-94 printout', received: false, filename: null },
+  { id: 'proof_address', label: 'Proof of address (utility bill)', received: false, filename: null },
+  { id: 'spouse_i797', label: 'Spouse I-129 approval notice (I-797)', received: false, filename: null },
+  { id: 'spouse_ead', label: 'Spouse EAD (if applicable)', received: false, filename: null },
+  { id: 'photos', label: 'Photos (2x2 inch)', received: false, filename: null },
+  { id: 'filing_fee', label: 'Filing fee check/money order', received: false, filename: null },
+  { id: 'questionnaire', label: 'Completed questionnaire', received: false, filename: null },
 ];
 
-// Seeded matters — represent existing DB records with LCA already processed.
-// New matters are added live via LCA upload.
-const SEED_MATTERS = [
-  {
-    id: 'M-2024-07731',
-    employer: 'Northstar Aerospace, Inc.',
-    position: 'Senior Avionics Engineer',
-    worksite: 'Wichita, KS',
-    lcaCertified: '2026-06-01',
-    status: 'Ready to generate',
-    lcaExtracted: true,
-    generatedPdfBase64: null,
-    generatedFilename: null,
-    lca: [
-      { label: 'Occupation Code (SOC)', value: '17-2011.00',           conf: 0.97, source: 'LCA PDF' },
-      { label: 'Wage Range',           value: '$138,000 – $182,000',  conf: 0.95, source: 'LCA PDF' },
-      { label: 'Prevailing Wage',      value: '$131,400 / yr',        conf: 0.94, source: 'LCA PDF' },
-      { label: 'Posting Start',        value: '2026-04-10',           conf: 0.92, source: 'LCA PDF' },
-      { label: 'Posting End',          value: '2026-04-24',           conf: 0.92, source: 'LCA PDF' },
-    ],
-    computed: [
-      { label: 'Retain Until', value: '2030-05-31', source: 'validity_end + 1y' },
-    ],
-  },
-  {
-    id: 'M-2024-09122',
-    employer: 'Pacific Genomics LLC',
-    position: 'Computational Biologist',
-    worksite: 'South San Francisco, CA',
-    lcaCertified: '2026-05-15',
-    status: 'Ready to generate',
-    lcaExtracted: true,
-    generatedPdfBase64: null,
-    generatedFilename: null,
-    lca: [
-      { label: 'Occupation Code (SOC)', value: '15-2041.00',           conf: 0.97, source: 'LCA PDF' },
-      { label: 'Wage Range',           value: '$148,000 – $198,000',  conf: 0.95, source: 'LCA PDF' },
-      { label: 'Prevailing Wage',      value: '$142,500 / yr',        conf: 0.93, source: 'LCA PDF' },
-      { label: 'Posting Start',        value: '2026-04-01',           conf: 0.90, source: 'LCA PDF' },
-      { label: 'Posting End',          value: '2026-04-15',           conf: 0.90, source: 'LCA PDF' },
-    ],
-    computed: [
-      { label: 'Retain Until', value: '2030-05-14', source: 'validity_end + 1y' },
-    ],
-  },
-  {
-    id: 'M-2024-08841',
-    employer: 'Helix Bio Solutions',
-    position: 'Research Scientist III',
-    worksite: 'Cambridge, MA',
-    lcaCertified: '2026-05-20',
-    status: 'Ready to generate',
-    lcaExtracted: true,
-    generatedPdfBase64: null,
-    generatedFilename: null,
-    lca: [
-      { label: 'Occupation Code (SOC)', value: '19-1042.00',           conf: 0.96, source: 'LCA PDF' },
-      { label: 'Wage Range',           value: '$125,000 – $168,000',  conf: 0.94, source: 'LCA PDF' },
-      { label: 'Prevailing Wage',      value: '$119,800 / yr',        conf: 0.92, source: 'LCA PDF' },
-      { label: 'Posting Start',        value: '2026-04-10',           conf: 0.91, source: 'LCA PDF' },
-      { label: 'Posting End',          value: '2026-04-24',           conf: 0.91, source: 'LCA PDF' },
-    ],
-    computed: [
-      { label: 'Retain Until', value: '2030-05-19', source: 'validity_end + 1y' },
-    ],
-  },
-];
-
-const SEED_CASE = {
-  id: 'DEP-2026-00482',
-  type: 'Dependent filing',
-  applicant: 'Priya Subramanian',
-  primary: 'Karthik Subramanian',
-  intake: '2026-05-16 14:22',
-  documents: [
-    { id: 'doc-1', label: 'Passport (32 pp)',             sampleAsset: '/samples/priya-passport.jpg' },
-    { id: 'doc-2', label: 'I-94 latest entry',            sampleAsset: '/samples/priya-i94.jpg' },
-    { id: 'doc-3', label: 'Prior approval notice',        sampleAsset: '/samples/priya-approval-notice.jpg' },
-    { id: 'doc-4', label: 'Marriage certificate',         sampleAsset: '/samples/priya-marriage-cert.jpg' },
-    { id: 'doc-5', label: 'Utility bill (proof of addr)', sampleAsset: '/samples/priya-utility-bill.jpg' },
-  ],
-  questionnaire: {
-    'Full Legal Name':        'Priya Subramanian',
-    'Date of Birth':          '1991-07-12',
-    'Passport Number':        'M9 482 1733',
-    'Passport Expiry':        '2031-03-18',
-    'Country of Birth':       'India',
-    'Most Recent Entry Date': '2024-08-03',
-    'Visa Class on Entry':    'H-4',
-    'Current Address':        '142 Cypress Ln, Plano TX 75024',
-  },
-  rows: [],
-  resolved: {},
-};
-
-// ─── Store singleton ──────────────────────────────────────────────────────────
-
-function deepClone(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
-
-function seed() {
-  return {
-    notices: deepClone(SEED_NOTICES),
-    matters: deepClone(SEED_MATTERS),
-    validationCase: deepClone(SEED_CASE),
-    stats: {
-      queueTotal: 47,
-      queueDelta: '+12 vs avg',
-      autoFillTarget: 'target ≥80%',
-      fieldAccuracy: '96.2%',
-      fieldAccuracyTarget: 'target ≥95%',
-      duplicates: '0',
-      duplicatesDelta: 'pilot to date',
-    },
-  };
-}
-
-export const store = seed();
-
-// ─── Notice helpers ───────────────────────────────────────────────────────────
-
-export function getNotices() { return store.notices; }
-
-export function getNotice(id) {
-  return store.notices.find((n) => n.id === id) ?? null;
-}
-
-export function setNotice(id, patch) {
-  const idx = store.notices.findIndex((n) => n.id === id);
-  if (idx === -1) return null;
-  Object.assign(store.notices[idx], patch);
-  return store.notices[idx];
-}
-
-export function addNotice(notice) {
-  store.notices.push(notice);
-}
-
-export function recomputeNoticeFlags(notice) {
-  notice.flags = notice.fields.filter((f) => f.flagged).length;
+function withChecklistDefaults(items = []) {
+  const byId = new Map(items.map((item) => [item.id, item]));
+  return STANDARD_H4_EAD_CHECKLIST.map((item) => ({ ...item, ...(byId.get(item.id) || {}) }));
 }
 
 // ─── Matter helpers ───────────────────────────────────────────────────────────
 
-export function getMatters() { return store.matters; }
+function hydrateMatter(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    employer: row.employer,
+    position: row.position,
+    worksite: row.worksite,
+    lcaCertified: row.lca_certified,
+    status: row.status,
+    lcaExtracted: true,
+    generatedPdfBase64: row.generated_pdf_b64 ?? null,
+    generatedFilename: row.generated_filename ?? null,
+    reviewNotes: row.review_notes ?? null,
+    submittedAt: row.submitted_at ?? null,
+    reviewedAt: row.reviewed_at ?? null,
+    reviewedBy: row.reviewed_by ?? null,
+    lca: row.lca_json ? JSON.parse(row.lca_json) : [],
+    computed: row.computed_json ? JSON.parse(row.computed_json) : [],
+  };
+}
+
+export function getMatters() {
+  return db.prepare('SELECT * FROM matters ORDER BY created_at DESC').all().map(hydrateMatter);
+}
 
 export function getMatter(id) {
-  return store.matters.find((m) => m.id === id) ?? null;
+  return hydrateMatter(db.prepare('SELECT * FROM matters WHERE id = ?').get(id));
 }
 
 export function setMatter(id, patch) {
-  const idx = store.matters.findIndex((m) => m.id === id);
-  if (idx === -1) return null;
-  Object.assign(store.matters[idx], patch);
-  return store.matters[idx];
+  const colMap = {
+    status:            'status',
+    generatedPdfBase64: 'generated_pdf_b64',
+    generatedFilename:  'generated_filename',
+    reviewNotes:       'review_notes',
+    submittedAt:       'submitted_at',
+    reviewedAt:        'reviewed_at',
+    reviewedBy:        'reviewed_by',
+    lca:               'lca_json',
+    computed:          'computed_json',
+  };
+  const sets = [];
+  const vals = [];
+  for (const [k, v] of Object.entries(patch)) {
+    const col = colMap[k];
+    if (!col) continue;
+    sets.push(`${col} = ?`);
+    vals.push(typeof v === 'object' && v !== null ? JSON.stringify(v) : v);
+  }
+  if (!sets.length) return getMatter(id);
+  vals.push(id);
+  db.prepare(`UPDATE matters SET ${sets.join(', ')} WHERE id = ?`).run(...vals);
+  return getMatter(id);
 }
 
 export function addMatter(matter) {
-  store.matters.push(matter);
+  db.prepare(`
+    INSERT INTO matters (id, employer, position, worksite, lca_certified, status, lca_json, computed_json)
+    VALUES (@id, @employer, @position, @worksite, @lca_certified, @status, @lca_json, @computed_json)
+  `).run({
+    id: matter.id,
+    employer: matter.employer,
+    position: matter.position,
+    worksite: matter.worksite,
+    lca_certified: matter.lcaCertified ?? null,
+    status: matter.status ?? 'Ready to generate',
+    lca_json: JSON.stringify(matter.lca ?? []),
+    computed_json: JSON.stringify(matter.computed ?? []),
+  });
 }
 
-// ─── Validation case helpers ──────────────────────────────────────────────────
+// ─── Notice helpers ───────────────────────────────────────────────────────────
 
-export function getCase() { return store.validationCase; }
-
-export function setCaseRows(rows) {
-  store.validationCase.rows = rows;
-  store.validationCase.resolved = {};
+function hydrateNotice(row) {
+  if (!row) return null;
+  const fields = row.fields_json ? JSON.parse(row.fields_json) : [];
+  const status = row.verified_at
+    ? 'Verified'
+    : row.manual_review
+      ? 'Manual Review'
+      : row.extraction_status || 'New';
+  return {
+    id: row.id,
+    file: row.filename,
+    mime: row.mime,
+    fileB64: row.file_b64,
+    sampleAsset: row.sample_asset,
+    beneficiary: row.beneficiary,
+    petitioner: row.petitioner,
+    receiptNumber: row.receipt_number,
+    receiptNoticeDate: row.receipt_notice_date,
+    receivedOn: row.received_on,
+    receiptType: row.receipt_type,
+    form: row.government_form,
+    serviceCenter: row.service_center,
+    statusField: row.status_field,
+    priorityDate: row.priority_date,
+    extractionStatus: row.extraction_status,
+    flags: row.flags,
+    manualReview: !!row.manual_review,
+    verifiedAt: row.verified_at,
+    fields,
+    status,
+    received: row.created_at,
+    record: row.verified_at
+      ? 'Saved to case management - record updated'
+      : row.manual_review
+        ? 'Routed to manual review queue'
+        : fields.length
+          ? `${row.extraction_status || 'Extracted'} - ${row.flags || 0} flag(s)`
+          : 'Uploaded - extraction pending',
+  };
 }
 
-export function setCaseResolved(field, choice) {
-  store.validationCase.resolved[field] = choice;
+export function getNotices() {
+  return db.prepare('SELECT * FROM notices ORDER BY created_at DESC').all().map(hydrateNotice);
 }
 
-export function computeCaseCounts() {
-  const { rows, resolved } = store.validationCase;
-  const Error = rows.filter((r) => !r.match && r.severity === 'Error' && !resolved[r.field]).length;
-  const Review    = rows.filter((r) => !r.match && r.severity === 'Review'    && !resolved[r.field]).length;
+export function getNotice(id) {
+  return hydrateNotice(db.prepare('SELECT * FROM notices WHERE id = ?').get(id));
+}
+
+export function setNotice(id, patch) {
+  const colMap = {
+    beneficiary:       'beneficiary',
+    petitioner:        'petitioner',
+    receiptNumber:     'receipt_number',
+    receiptNoticeDate: 'receipt_notice_date',
+    receivedOn:        'received_on',
+    receiptType:       'receipt_type',
+    form:              'government_form',
+    serviceCenter:     'service_center',
+    statusField:       'status_field',
+    priorityDate:      'priority_date',
+    extractionStatus:  'extraction_status',
+    flags:             'flags',
+    manualReview:      'manual_review',
+    verifiedAt:        'verified_at',
+    fields:            'fields_json',
+    status:            'extraction_status',
+    record:            null,
+    extractedProvider: null,
+    verifiedFields:    null,
+  };
+  const sets = [];
+  const vals = [];
+  for (const [k, v] of Object.entries(patch)) {
+    const col = colMap[k];
+    if (!col) continue;
+    sets.push(`${col} = ?`);
+    vals.push(Array.isArray(v) || (typeof v === 'object' && v !== null) ? JSON.stringify(v) : v);
+  }
+  if (!sets.length) return getNotice(id);
+  vals.push(id);
+  db.prepare(`UPDATE notices SET ${sets.join(', ')} WHERE id = ?`).run(...vals);
+  return getNotice(id);
+}
+
+export function addNotice(notice) {
+  db.prepare(`
+    INSERT INTO notices (id, filename, mime, file_b64, sample_asset, extraction_status, flags, fields_json)
+    VALUES (@id, @filename, @mime, @file_b64, @sample_asset, @extraction_status, @flags, @fields_json)
+  `).run({
+    id: notice.id,
+    filename: notice.file ?? notice.filename ?? '',
+    mime: notice.mime ?? 'application/octet-stream',
+    file_b64: notice.fileB64 ?? null,
+    sample_asset: notice.sampleAsset ?? null,
+    extraction_status: notice.extractionStatus ?? 'new',
+    flags: notice.flags ?? 0,
+    fields_json: JSON.stringify(notice.fields ?? []),
+  });
+}
+
+export function recomputeNoticeFlags(noticeId) {
+  const n = getNotice(noticeId);
+  if (!n) return;
+  const flags = n.fields.filter((f) => f.flagged).length;
+  setNotice(noticeId, { flags });
+}
+
+// ─── Case helpers ─────────────────────────────────────────────────────────────
+
+function hydrateCase(row) {
+  if (!row) return null;
+  const checklist = withChecklistDefaults(row.checklist_json ? JSON.parse(row.checklist_json) : []);
+  return {
+    id: row.id,
+    type: row.type,
+    applicant: row.applicant,
+    primary: row.primary_applicant,
+    visaType: row.visa_type,
+    intake: row.intake,
+    questionnaire: row.questionnaire_json ? JSON.parse(row.questionnaire_json) : {},
+    rows: row.rows_json ? JSON.parse(row.rows_json) : [],
+    resolved: row.resolved_json ? JSON.parse(row.resolved_json) : {},
+    checklist,
+    documents: row.documents_json ? JSON.parse(row.documents_json) : [],
+    status: row.status,
+    createdAt: row.created_at,
+  };
+}
+
+export function getCases() {
+  return db.prepare('SELECT * FROM cases ORDER BY created_at DESC').all().map(hydrateCase);
+}
+
+export function getCase(id) {
+  if (id) return hydrateCase(db.prepare('SELECT * FROM cases WHERE id = ?').get(id));
+  // Legacy: return first case for backward compat
+  return hydrateCase(db.prepare('SELECT * FROM cases ORDER BY created_at ASC LIMIT 1').get());
+}
+
+export function createCase(data) {
+  const id = data.id ?? `DEP-${Date.now().toString().slice(-7)}`;
+  const intake = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  const checklist = withChecklistDefaults(data.checklist ?? []).map((item) => (
+    item.id === 'questionnaire' ? { ...item, received: true } : item
+  ));
+  db.prepare(`
+    INSERT INTO cases (id, type, applicant, primary_applicant, visa_type, intake, questionnaire_json, checklist_json, documents_json)
+    VALUES (@id, @type, @applicant, @primary_applicant, @visa_type, @intake, @questionnaire_json, @checklist_json, @documents_json)
+  `).run({
+    id,
+    type: data.type ?? 'Dependent filing',
+    applicant: data.applicant,
+    primary_applicant: data.primary ?? '',
+    visa_type: data.visaType ?? 'H-4 EAD',
+    intake,
+    questionnaire_json: JSON.stringify(data.questionnaire ?? {}),
+    checklist_json: JSON.stringify(checklist),
+    documents_json: JSON.stringify([]),
+  });
+
+  // Auto-create deadlines from questionnaire dates
+  const q = data.questionnaire ?? {};
+  if (q['Passport Expiry'] && q['Passport Expiry'] !== 'Not found') {
+    db.prepare(`INSERT INTO deadlines (id, case_id, label, due_date, type) VALUES (?, ?, ?, ?, ?)`)
+      .run(`dl-${Date.now()}-1`, id, `Passport Expiry — ${data.applicant}`, q['Passport Expiry'], 'passport_expiry');
+  }
+  if (q['Most Recent Entry Date'] && q['Most Recent Entry Date'] !== 'Not found') {
+    // I-94 typically expires 3 years after entry for H-4
+    const entry = new Date(q['Most Recent Entry Date']);
+    if (!isNaN(entry)) {
+      entry.setFullYear(entry.getFullYear() + 3);
+      db.prepare(`INSERT INTO deadlines (id, case_id, label, due_date, type) VALUES (?, ?, ?, ?, ?)`)
+        .run(`dl-${Date.now()}-2`, id, `I-94 Authorized Stay Ends — ${data.applicant}`, entry.toISOString().split('T')[0], 'i94_expiry');
+    }
+  }
+
+  return getCase(id);
+}
+
+export function getCaseChecklist(caseId) {
+  return getCase(caseId)?.checklist ?? [];
+}
+
+export function setCaseChecklistItem(caseId, itemId, patch) {
+  const c = getCase(caseId);
+  if (!c) return null;
+  const checklist = withChecklistDefaults(c.checklist).map((item) => (
+    item.id === itemId ? { ...item, ...patch } : item
+  ));
+  db.prepare('UPDATE cases SET checklist_json = ? WHERE id = ?')
+    .run(JSON.stringify(checklist), caseId);
+  return getCase(caseId);
+}
+
+export function setCaseRows(rows, caseId) {
+  const id = caseId ?? getCase()?.id;
+  if (!id) return;
+  db.prepare('UPDATE cases SET rows_json = ?, resolved_json = ? WHERE id = ?')
+    .run(JSON.stringify(rows), JSON.stringify({}), id);
+}
+
+export function setCaseResolved(field, choice, caseId) {
+  const id = caseId ?? getCase()?.id;
+  if (!id) return;
+  const c = getCase(id);
+  if (!c) return;
+  const resolved = { ...c.resolved, [field]: choice };
+  db.prepare('UPDATE cases SET resolved_json = ? WHERE id = ?')
+    .run(JSON.stringify(resolved), id);
+}
+
+export function computeCaseCounts(caseId) {
+  const c = getCase(caseId ?? getCase()?.id);
+  if (!c) return { Error: 0, Review: 0, verified: 0, status: 'Review' };
+  const { rows, resolved } = c;
+  const Error    = rows.filter((r) => !r.match && r.severity === 'Error'  && !resolved[r.field]).length;
+  const Review   = rows.filter((r) => !r.match && r.severity === 'Review' && !resolved[r.field]).length;
   const verified = rows.filter((r) => r.match).length + Object.keys(resolved).length;
   const status   = Error > 0 ? 'Mismatches' : Review > 0 ? 'Needs review' : 'Review';
   return { Error, Review, verified, status };
+}
+
+// ─── Deadline helpers ─────────────────────────────────────────────────────────
+
+export function getDeadlines(caseId) {
+  if (caseId) {
+    return db.prepare('SELECT * FROM deadlines WHERE case_id = ? ORDER BY due_date ASC').all(caseId);
+  }
+  return db.prepare('SELECT * FROM deadlines ORDER BY due_date ASC').all();
+}
+
+export function addDeadline(d) {
+  db.prepare(`INSERT INTO deadlines (id, case_id, label, due_date, type) VALUES (@id, @case_id, @label, @due_date, @type)`)
+    .run({ id: d.id ?? `dl-${Date.now()}`, case_id: d.caseId ?? null, label: d.label, due_date: d.dueDate, type: d.type ?? 'custom' });
+}
+
+export function completeDeadline(id) {
+  db.prepare('UPDATE deadlines SET completed = 1 WHERE id = ?').run(id);
+}
+
+export function reopenDeadline(id) {
+  db.prepare('UPDATE deadlines SET completed = 0 WHERE id = ?').run(id);
 }

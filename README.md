@@ -1,6 +1,6 @@
-# Legal Document Intelligence — PoC Demo
+# Legal Document Intelligence
 
-3-tab demo app showcasing AI document processing for immigration workflows.
+3-tab  app showcasing AI document processing for immigration workflows.
 
 ## Quick Start
 
@@ -47,21 +47,3 @@ Backend health: http://localhost:3001/health
 
 **Close (1 min)**
 - "The pilot adds breadth, integrations, and production stability. Today you saw the core."
-
-## Three Things to Repeat
-
-- "These are real public USCIS / DOL forms — not mockups."
-- "The reviewer stays in control. Confidence scoring and mismatch surfacing keep the human in the loop."
-- "The pilot adds breadth, not capability. The hard part is what you just saw."
-
-## Fallback
-
-If the live demo breaks on any tab, switch to the backup recording without explanation.
-Each tab is self-contained — if one fails, the other two still tell the story.
-
-## API Keys
-
-| Key | Where to get |
-|---|---|
-| ANTHROPIC_API_KEY | https://console.anthropic.com |
-| GOOGLE_GEMINI_API_KEY | https://aistudio.google.com/app/apikey |

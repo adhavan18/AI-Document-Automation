@@ -30,33 +30,78 @@ export const uc1 = {
 // ─── UC-02 ────────────────────────────────────────────────────────────────────
 
 export const uc2 = {
-  listMatters: ()     => http.get('/uc2/matters').then((r) => r.data),
-  getMatter:   (id)   => http.get(`/uc2/matters/${id}`).then((r) => r.data),
-  uploadLca:   (file) => {
+  listMatters:    ()              => http.get('/uc2/matters').then((r) => r.data),
+  getMatter:      (id)            => http.get(`/uc2/matters/${id}`).then((r) => r.data),
+  uploadLca:      (file)          => {
     const fd = new FormData();
     fd.append('file', file);
     return http.post('/uc2/matters/upload-lca', fd, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then((r) => r.data);
   },
-  generate: (id) => http.post(`/uc2/matters/${id}/generate`).then((r) => r.data),
-  approve:  (id) => http.post(`/uc2/matters/${id}/approve`).then((r) => r.data),
+  generate:       (id)            => http.post(`/uc2/matters/${id}/generate`).then((r) => r.data),
+  submitReview:   (id)            => http.post(`/uc2/matters/${id}/submit-review`).then((r) => r.data),
+  approve:        (id, body = {}) => http.post(`/uc2/matters/${id}/approve`, body).then((r) => r.data),
+  requestChanges: (id, body)      => http.post(`/uc2/matters/${id}/request-changes`, body).then((r) => r.data),
 };
 
 // ─── UC-03 ────────────────────────────────────────────────────────────────────
 
 export const uc3 = {
-  getCase:       ()              => http.get('/uc3/case').then((r) => r.data),
-  runValidation: (file)          => {
+  listCases:     ()              => http.get('/uc3/cases').then((r) => r.data),
+  createCase:    (data)          => http.post('/uc3/cases', data).then((r) => r.data),
+  getCase:       (id)            => id
+    ? http.get(`/uc3/cases/${id}`).then((r) => r.data)
+    : http.get('/uc3/case').then((r) => r.data),
+  runValidation: (id, file)      => {
     if (file) {
       const fd = new FormData();
       fd.append('file', file);
-      return http.post('/uc3/case/run', fd, {
+      return http.post(`/uc3/cases/${id}/run`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       }).then((r) => r.data);
     }
-    return http.post('/uc3/case/run').then((r) => r.data);
+    return http.post(`/uc3/cases/${id}/run`).then((r) => r.data);
   },
-  resolve:       (field, choice) => http.post('/uc3/case/resolve', { field, choice }).then((r) => r.data),
-  save:          ()              => http.post('/uc3/case/save', {}, { responseType: 'blob' }).then((r) => r.data),
+  resolve:       (id, field, choice) => http.post(`/uc3/cases/${id}/resolve`, { field, choice }).then((r) => r.data),
+  save:          (id)            => http.post(`/uc3/cases/${id}/save`, {}, { responseType: 'blob' }).then((r) => r.data),
+  getChecklist:  (id)            => http.get(`/uc3/cases/${id}/checklist`).then((r) => r.data),
+  updateChecklistItem: (id, itemId, data = {}) => {
+    if (data.file) {
+      const fd = new FormData();
+      fd.append('file', data.file);
+      fd.append('received', data.received ?? true);
+      return http.patch(`/uc3/cases/${id}/checklist/${itemId}`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }).then((r) => r.data);
+    }
+    return http.patch(`/uc3/cases/${id}/checklist/${itemId}`, data).then((r) => r.data);
+  },
+};
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+
+export const dashboard = {
+  getSummary: () => http.get('/dashboard/summary').then((r) => r.data),
+};
+
+// ─── Deadlines ────────────────────────────────────────────────────────────────
+
+export const deadlines = {
+  list:     (params = {}) => http.get('/deadlines', { params }).then((r) => r.data),
+  create:   (data)        => http.post('/deadlines', data).then((r) => r.data),
+  complete: (id)          => http.patch(`/deadlines/${id}/complete`).then((r) => r.data),
+  reopen:   (id)          => http.patch(`/deadlines/${id}/reopen`).then((r) => r.data),
+};
+
+// ─── USCIS ────────────────────────────────────────────────────────────────────
+
+export const uscis = {
+  checkStatus: (receiptNumber) => http.get(`/uscis/status/${receiptNumber}`).then((r) => r.data),
+};
+
+// ─── Search ───────────────────────────────────────────────────────────────────
+
+export const search = {
+  query: (q) => http.get('/search', { params: { q } }).then((r) => r.data),
 };

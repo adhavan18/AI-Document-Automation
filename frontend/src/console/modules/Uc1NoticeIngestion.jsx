@@ -1,17 +1,33 @@
-import { useState, useRef } from 'react';
-import { Eye, FolderOpen, CheckCircle2, Clock, Flag, Upload } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { Eye, FolderOpen, CheckCircle2, Clock, Flag, Upload, RefreshCcw } from 'lucide-react';
 import { Section } from '../primitives/Section.jsx';
 import { StatusPill } from '../primitives/StatusPill.jsx';
 import { FieldRow } from '../primitives/FieldRow.jsx';
-import { uc1 } from '../api.js';
+import { uc1, uscis } from '../api.js';
 
-export function Uc1NoticeIngestion({ search = '' }) {
+export function Uc1NoticeIngestion({ search = '', initialNoticeId = null }) {
   const [notices, setNotices] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState(null);
+  const [uscisStatus, setUscisStatus] = useState(null);
+  const [checkingUscis, setCheckingUscis] = useState(false);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    uc1.listNotices()
+      .then((d) => {
+        setNotices(d.notices || []);
+        if (initialNoticeId) setSelectedId(initialNoticeId);
+        else if (d.notices?.length) setSelectedId(d.notices[0].id);
+      })
+      .catch(() => {});
+  }, [initialNoticeId]);
+
+  useEffect(() => {
+    setUscisStatus(null);
+  }, [selectedId]);
 
   const q = search.toLowerCase();
   const filtered = q
@@ -59,6 +75,19 @@ export function Uc1NoticeIngestion({ search = '' }) {
       setNotices((prev) => prev.map((n) => (n.id === id ? notice : n)));
     } finally {
       setMutating(false);
+    }
+  }
+
+  async function handleCheckUscis() {
+    if (!selected?.receiptNumber) return;
+    setCheckingUscis(true);
+    setError(null);
+    try {
+      setUscisStatus(await uscis.checkStatus(selected.receiptNumber));
+    } catch (err) {
+      setError(err?.response?.data?.error || err.message || 'USCIS lookup failed');
+    } finally {
+      setCheckingUscis(false);
     }
   }
 
@@ -154,6 +183,31 @@ export function Uc1NoticeIngestion({ search = '' }) {
                   </div>
                 }
               >
+                {selected.status === 'Verified' && selected.receiptNumber && (
+                  <div className="mb-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">USCIS receipt</div>
+                        <div className="mt-0.5 font-mono text-xs text-slate-800">{selected.receiptNumber}</div>
+                      </div>
+                      <button
+                        onClick={handleCheckUscis}
+                        disabled={checkingUscis}
+                        className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium text-white disabled:opacity-40"
+                        style={{ backgroundColor: '#204496' }}
+                      >
+                        <RefreshCcw className={`h-3 w-3 ${checkingUscis ? 'animate-spin' : ''}`} />
+                        {checkingUscis ? 'Checking...' : 'Check USCIS status'}
+                      </button>
+                    </div>
+                    {uscisStatus && (
+                      <div className="mt-3 rounded border border-white bg-white p-2 text-xs text-slate-700">
+                        <div className="font-semibold text-slate-900">{uscisStatus.statusTitle}</div>
+                        <div className="mt-1 leading-relaxed">{uscisStatus.statusBody}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {selected.status === 'Verified' ? (
                   <div className="py-10 text-center">
                     <div className="inline-flex items-center gap-2 text-emerald-600 text-sm">

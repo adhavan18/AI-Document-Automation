@@ -3,9 +3,13 @@ import './lib/env.js';
 import express from 'express';
 import cors from 'cors';
 
-import uc1Router from './routes/uc1.js';
-import uc2Router from './routes/uc2.js';
-import uc3Router from './routes/uc3.js';
+import uc1Router       from './routes/uc1.js';
+import uc2Router       from './routes/uc2.js';
+import uc3Router       from './routes/uc3.js';
+import dashboardRouter from './routes/dashboard.js';
+import deadlinesRouter from './routes/deadlines.js';
+import uscisRouter     from './routes/uscis.js';
+import searchRouter    from './routes/search.js';
 import generatePdfRouter from './routes/generate-pdf.js';
 
 const app = express();
@@ -30,9 +34,13 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.use('/api/uc1', uc1Router);
-app.use('/api/uc2', uc2Router);
-app.use('/api/uc3', uc3Router);
+app.use('/api/uc1',       uc1Router);
+app.use('/api/uc2',       uc2Router);
+app.use('/api/uc3',       uc3Router);
+app.use('/api/dashboard', dashboardRouter);
+app.use('/api/deadlines', deadlinesRouter);
+app.use('/api/uscis',     uscisRouter);
+app.use('/api/search',    searchRouter);
 app.use('/api/generate/pdf', generatePdfRouter);
 
 if (!process.env.ANTHROPIC_API_KEY) {
@@ -44,5 +52,4 @@ if (!process.env.GOOGLE_GEMINI_API_KEY) {
 
 app.listen(port, () => {
   console.log(`Backend listening on port ${port}`);
-  console.log('NOTE: Use "npm start" for demos — "npm run dev" resets the in-memory store on file saves.');
 });
