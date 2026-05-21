@@ -1,301 +1,37 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --color-bg: #FFFFFF;
-  --color-panel: #F8F9FA;
+  --color-primary: #6D28D9;
+  --color-primary-dark: #5B21B6;
+  --color-primary-light: #7C3AED;
+  --color-bg: #F9FAFB;
+  --color-surface: #FFFFFF;
   --color-border: #E5E7EB;
-  --color-navy: #1E3A5F;
-  --color-blue: #2563EB;
-  --color-blue-hover: #1D4ED8;
-  --color-blue-light: #EFF6FF;
   --color-text: #111827;
   --color-text-muted: #6B7280;
-  --color-green-bg: #F0FDF4;
-  --color-green-text: #16A34A;
-  --color-green-badge: #DCFCE7;
-  --color-yellow-bg: #FEFCE8;
-  --color-yellow-text: #CA8A04;
-  --color-yellow-badge: #FEF9C3;
-  --color-red-bg: #FEF2F2;
-  --color-red-text: #DC2626;
-  --color-red-badge: #FEE2E2;
-  --color-disabled: #9CA3AF;
-  --font-body: 'DM Sans', sans-serif;
-  --font-display: 'DM Serif Display', serif;
-  --header-height: 60px;
-  --tabbar-height: 48px;
 }
 
 body {
-  font-family: var(--font-body);
-  background: var(--color-bg);
+  background-color: var(--color-bg);
   color: var(--color-text);
-  font-size: 14px;
-  line-height: 1.5;
-  height: 100vh;
-  overflow: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-#root {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-button {
-  font-family: var(--font-body);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  transition: background 0.15s ease;
-}
-
-button.primary {
-  background: var(--color-blue);
-  color: #fff;
-}
-
-button.primary:hover {
-  background: var(--color-blue-hover);
-}
-
-button.primary:disabled {
-  background: var(--color-disabled);
-  cursor: not-allowed;
-}
-
-button.secondary {
-  background: var(--color-panel);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
-
-button.secondary:hover {
-  background: var(--color-border);
-}
-
-select {
-  font-family: var(--font-body);
-  font-size: 13px;
-  padding: 8px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-bg);
-  color: var(--color-text);
-  width: 100%;
-  cursor: pointer;
-}
-
-select:focus {
-  outline: 2px solid var(--color-blue);
-  outline-offset: 1px;
-}
-
-/* Fade-in animation for result panels */
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.result-appear {
-  animation: fadeInUp 0.25s ease forwards;
+.fade-in-up {
+  animation: fadeInUp 0.25s ease-out both;
 }
 
-/* Processing state — subtle pulse on the button text */
-@keyframes pulse-text {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
 }
 
-.processing-label {
-  animation: pulse-text 1.2s ease-in-out infinite;
-  display: inline-block;
-}
-
-/* Upload zone hover state */
-.upload-zone:hover {
-  border-color: var(--color-blue) !important;
-  background: var(--color-blue-light) !important;
-  cursor: pointer;
-}
-
-/* Smooth tab content transition */
-.tab-content {
-  animation: fadeInUp 0.15s ease forwards;
-}
-
-/* Tooltip for disabled buttons */
-[title]:hover::after {
-  content: attr(title);
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1F2937;
-  color: white;
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 100;
-}
-
-[title] {
-  position: relative;
-}
-
-/* ── Login Screen ─────────────────────────────────────── */
-.login-screen {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #1E3A5F 0%, #2563EB 100%);
-}
-
-.login-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 40px 36px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-}
-
-.login-header {
-  text-align: center;
-  margin-bottom: 28px;
-}
-
-.login-logo {
-  font-size: 36px;
-  margin-bottom: 12px;
-}
-
-.login-title {
-  font-family: var(--font-display);
-  font-size: 22px;
-  color: var(--color-navy);
-  margin-bottom: 6px;
-}
-
-.login-subtitle {
-  font-size: 13px;
-  color: var(--color-text-muted);
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.login-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.login-field label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.login-field input {
-  font-family: var(--font-body);
-  font-size: 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  color: var(--color-text);
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.login-field input:focus {
-  border-color: var(--color-blue);
-}
-
-.login-error {
-  background: var(--color-red-bg);
-  border: 1px solid var(--color-red-badge);
-  border-radius: 6px;
-  padding: 10px 12px;
-  font-size: 13px;
-  color: var(--color-red-text);
-}
-
-.login-submit {
-  width: 100%;
-  padding: 11px;
-  font-size: 14px;
-  margin-top: 4px;
-}
-
-.login-hint {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border);
-  font-size: 12px;
-  color: var(--color-text-muted);
-  text-align: center;
-  line-height: 1.8;
-}
-
-/* ── Header User Info ─────────────────────────────────── */
-.header-user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.header-user-info {
-  text-align: right;
-}
-
-.header-user-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-  line-height: 1.2;
-}
-
-.header-user-role {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.65);
-  line-height: 1.2;
-}
-
-.header-logout {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  font-size: 12px;
-  padding: 5px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.header-logout:hover {
-  background: rgba(255, 255, 255, 0.22);
+.spin-slow {
+  animation: spin-slow 1s linear infinite;
 }
