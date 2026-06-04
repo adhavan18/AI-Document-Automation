@@ -36,7 +36,9 @@ from database.models import AuditLog, Case, ExtractedField
 router = APIRouter(prefix="/queue", tags=["review"])
 
 _LOW_CONF = 0.7
-_QUEUE_STATUSES = ("pending", "in_review")
+# Include 'processing' so a freshly-uploaded case shows in the queue immediately
+# (with a spinner) instead of disappearing until the pipeline finishes.
+_QUEUE_STATUSES = ("processing", "pending", "in_review")
 _SYSTEM_ACTOR = "caseworker"
 
 def _system_cw_id(db: Session) -> uuid.UUID:
@@ -222,7 +224,7 @@ def list_queue(
     cases: list[Case] = db.execute(
         select(Case)
         .where(Case.status.in_(_QUEUE_STATUSES))
-        .order_by(Case.uploaded_at.asc())
+        .order_by(Case.uploaded_at.desc())
     ).scalars().all()
 
     items: list[QueueItem] = []
@@ -242,7 +244,11 @@ def list_queue(
             )
         )
 
-    items.sort(key=lambda i: (0 if i.priority == "high" else 1, i.uploaded_at))
+    # High priority first; within each band, newest upload first.
+    # uploaded_at is an ISO string so it sorts lexicographically by time —
+    # negating isn't possible on strings, so sort by time desc then stable-sort by priority.
+    items.sort(key=lambda i: i.uploaded_at, reverse=True)
+    items.sort(key=lambda i: 0 if i.priority == "high" else 1)
     total = len(items)
     return QueueResponse(cases=items[offset: offset + limit], total=total)
 
