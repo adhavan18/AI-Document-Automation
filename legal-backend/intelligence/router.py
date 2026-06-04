@@ -209,15 +209,29 @@ def _persist(
         db = SessionLocal()
         try:
             _cid = _uuid.UUID(preset_case_id) if preset_case_id else None
-            case = crud.create_case(
-                db,
-                form_type=form_type,
-                pdf_path=pdf_path,
-                page_count=len(pre.get('page_images', [])),
-                form_version=pre.get('form_version'),
-                edition_date=edition_date,
-                case_id=_cid,
-            )
+
+            if _cid is not None:
+                # Async path: case row was pre-created in upload handler.
+                # UPDATE the existing row instead of inserting a duplicate.
+                case = crud.get_case(db, _cid)
+                if case is None:
+                    raise RuntimeError(f"preset case {_cid} not found in DB")
+                case.form_type   = form_type
+                case.status      = "pending"
+                case.page_count  = len(pre.get('page_images', []))
+                case.form_version = pre.get('form_version')
+                case.edition_date = edition_date
+            else:
+                # Synchronous path (no preset): create a fresh case.
+                case = crud.create_case(
+                    db,
+                    form_type=form_type,
+                    pdf_path=pdf_path,
+                    page_count=len(pre.get('page_images', [])),
+                    form_version=pre.get('form_version'),
+                    edition_date=edition_date,
+                )
+
             crud.save_extracted_fields(db, case.id, fields_payload)
             crud.log_audit_event(
                 db,
@@ -230,7 +244,6 @@ def _persist(
                     'stage_log': stage_log,
                 },
             )
-            # Store exception results in audit log for UI retrieval
             if stage4_output.get('exceptions') is not None:
                 crud.log_audit_event(
                     db,

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GIP Reviewer — Compliance Doc (PAF)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
+    --bg:#f3f5fa; --card:#ffffff;
+    --ink:#1a1f2e; --ink-soft:#5b6376; --ink-faint:#9aa1b2;
+    --line:#e6e9f0; --line-soft:#eef1f7;
+    --green:#1f8a52; --green-soft:#e4f3ea;
+    --amber:#b8791a; --amber-soft:#fbf0db;
+    --orange:#e14a28; --orange-soft:#fbe8e2;
+    --blue:#2f6fb0;  --blue-soft:#e6eff8;
+    --violet:#6b4ce0;--violet-soft:#ece7fb;
+    --side-bg:#0e1326; --side-bg-2:#111733;
+    --side-text:#aab2c6; --side-text-hi:#ffffff;
+    --side-line:#222a45;
+    --accent:#4d82f0; --accent-soft:rgba(77,130,240,.14);
+    --font:'Inter',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .spin{animation:spin 1s linear infinite;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#d3d8e4;border-radius:9px;}
+  button{font-family:var(--font);cursor:pointer;}
+  .shell{display:flex;height:100vh;}
+
+  /* ═══ SIDEBAR ═══ */
+  .sidebar{width:252px;flex-shrink:0;background:linear-gradient(180deg,var(--side-bg),var(--side-bg-2));
+    display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);}
+  .sidebar.collapsed{width:74px;}
+  .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
+  .brand-mark{width:36px;height:36px;border-radius:10px;flex-shrink:0;
+    background:linear-gradient(135deg,var(--primary),var(--accent));
+    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(32,68,150,.4);}
+  .brand-txt{overflow:hidden;white-space:nowrap;}
+  .brand-name{font-size:18px;font-weight:800;color:#fff;letter-spacing:.04em;line-height:1;}
+  .brand-sub{font-size:9.5px;font-weight:600;color:var(--ink-faint);letter-spacing:.14em;
+    text-transform:uppercase;margin-top:3px;}
+  .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
+    background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;transition:background .15s;}
+  .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
+  .sidebar.collapsed .brand-txt,.sidebar.collapsed .collapse-btn{display:none;}
+  .nav{flex:1;overflow-y:auto;padding:6px 12px;}
+  .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
+    text-transform:uppercase;padding:14px 10px 7px;}
+  .sidebar.collapsed .nav-label{text-align:center;font-size:8px;padding:14px 0 7px;}
+  .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
+    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:13.5px;
+    font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:var(--side-text-hi);}
+  .nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600;}
+  .nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--accent);box-shadow:0 0 10px var(--accent);}
+  .nav-item .ico{flex-shrink:0;display:flex;}
+  .nav-item.active .ico{color:var(--accent);}
+  .nav-item .lbl{overflow:hidden;text-overflow:ellipsis;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding:11px 0;}
+  .sidebar.collapsed .nav-item .lbl{display:none;}
+  .sidebar.collapsed .nav-item:hover::after{content:attr(data-label);position:absolute;left:calc(100% + 10px);
+    top:50%;transform:translateY(-50%);background:#1c2340;color:#fff;font-size:12px;font-weight:500;
+    padding:6px 10px;border-radius:7px;white-space:nowrap;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+  .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
+  .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
+    border:none;background:transparent;color:var(--side-text);font-size:13px;font-weight:500;
+    margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;}
+  .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+  .foot-item .badge{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:700;
+    min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+  .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
+  .sidebar.collapsed .foot-item .lbl,.sidebar.collapsed .foot-item .badge{display:none;}
+  .user{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-top:6px;border-radius:10px;transition:background .15s;}
+  .user:hover{background:rgba(255,255,255,.05);}
+  .avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--orange);color:#fff;
+    font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .user-txt{overflow:hidden;white-space:nowrap;}
+  .user-name{font-size:13px;font-weight:600;color:#fff;line-height:1.1;}
+  .user-role{font-size:11px;color:var(--ink-faint);}
+  .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
+  .sidebar.collapsed .user-txt{display:none;}
+
+  /* ═══ MAIN ═══ */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 30px;
+    background:var(--card);border-bottom:1px solid var(--line);}
+  .topbar h1{font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em;}
+  .topbar .date{font-size:12.5px;color:var(--ink-faint);margin-top:2px;}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .top-search{position:relative;}
+  .top-search input{width:230px;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13px;outline:none;}
+  .top-search input:focus{border-color:var(--primary);background:#fff;}
+  .top-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
+  .btn-primary{padding:9px 16px;border-radius:9px;border:none;background:var(--primary);color:#fff;
+    font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 2px 10px rgba(32,68,150,.22);}
+  .icon-btn-top{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);position:relative;}
+  .icon-btn-top .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;
+    background:var(--orange);border:1.5px solid #fff;}
+
+  .content{flex:1;overflow-y:auto;padding:26px 30px 40px;}
+
+  /* === PAGE BODY === */
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 7px;border-radius:999px;
+    font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
+  .pill.ready{background:var(--primary-soft);color:var(--primary);}
+  .pill.draft{background:var(--amber-soft);color:var(--amber);}
+  .pill.signed{background:var(--green-soft);color:var(--green);}
+  .pill.expired{background:var(--orange-soft);color:var(--orange);}
+
+  .grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+    border-bottom:1px solid var(--line-soft);}
+  .panel-head h3{font-size:15px;font-weight:700;margin:0;}
+  .panel-head .sub{font-size:12px;color:var(--ink-faint);}
+  .panel-body{padding:8px 12px 12px;}
+
+  /* LCA cards (left) */
+  .lca-row{display:flex;align-items:center;gap:14px;padding:12px;border-radius:10px;transition:background .15s;border:1px solid transparent;}
+  .lca-row:hover{background:var(--bg);}
+  .lca-row.active{background:var(--primary-soft);border-color:rgba(32,68,150,.18);}
+  .lca-ico{width:38px;height:38px;border-radius:9px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .lca-row.active .lca-ico{background:#fff;}
+  .lca-main{flex:1;min-width:0;}
+  .lca-title{font-size:13.5px;font-weight:700;letter-spacing:-.005em;}
+  .lca-sub{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .lca-meta{font-size:11px;color:var(--ink-faint);margin-top:1px;font-weight:500;}
+  .lca-right{text-align:right;}
+  .lca-wage{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .lca-wage span{font-size:11px;font-weight:500;color:var(--ink-faint);}
+
+  /* checklist */
+  .check-list{padding:14px 18px 16px;}
+  .check{display:flex;align-items:flex-start;gap:11px;padding:9px 0;border-bottom:1px dashed var(--line-soft);}
+  .check:last-child{border-bottom:none;}
+  .check .box{width:18px;height:18px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .check.done .box{background:var(--green-soft);color:var(--green);}
+  .check.pend .box{background:var(--amber-soft);color:var(--amber);}
+  .check.miss .box{background:var(--orange-soft);color:var(--orange);}
+  .check .lbl{flex:1;font-size:13px;font-weight:500;line-height:1.35;}
+  .check .lbl .sub{display:block;font-size:11.5px;color:var(--ink-faint);font-weight:400;margin-top:1px;}
+  .check .pill{align-self:center;}
+
+  /* doc detail card */
+  .detail{padding:18px 20px 16px;}
+  .detail-row{display:flex;justify-content:space-between;align-items:flex-start;
+    padding:11px 0;border-bottom:1px dashed var(--line-soft);}
+  .detail-row:last-child{border-bottom:none;}
+  .detail-k{font-size:11.5px;color:var(--ink-faint);font-weight:600;letter-spacing:.02em;text-transform:uppercase;}
+  .detail-v{font-size:13.5px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;max-width:60%;}
+
+  /* generate card */
+  .gen-card{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;
+    border-radius:14px;padding:20px;display:flex;align-items:center;gap:16px;
+    box-shadow:0 6px 24px rgba(32,68,150,.22);margin-bottom:18px;}
+  .gen-ico{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.18);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .gen-main{flex:1;}
+  .gen-title{font-size:15px;font-weight:700;letter-spacing:-.005em;}
+  .gen-sub{font-size:12.5px;opacity:.85;margin-top:3px;}
+  .gen-btn{padding:9px 14px;border-radius:9px;border:none;background:#fff;color:var(--primary);
+    font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:6px;flex-shrink:0;
+    box-shadow:0 2px 10px rgba(0,0,0,.12);}
+
+  /* KPI row */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .kpi .lbl{font-size:11.5px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+  .kpi .val{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums;}
+  .kpi .delta{font-size:11.5px;font-weight:600;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <div class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg>
+      </div>
+      <div class="brand-txt">
+        <div class="brand-name">GIP</div>
+        <div class="brand-sub">Immigration · Reviewer</div>
+      </div>
+      <button class="collapse-btn" id="collapseBtn" title="Collapse">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <button class="foot-item" data-label="Status">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg></span>
+        <span class="lbl">Status</span>
+      </button>
+      <button class="foot-item" data-label="Notifications">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+        <span class="lbl">Notifications</span>
+        <span class="badge">3</span>
+      </button>
+      <div class="user" data-label="Austin">
+        <div class="avatar">A</div>
+        <div class="user-txt">
+          <div class="user-name">Austin</div>
+          <div class="user-role">admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Compliance Doc (PAF)</h1>
+        <div class="date" id="pageDate"></div>
+      </div>
+      <div class="top-actions">
+        <div class="top-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Search LCAs, employers…" />
+        </div>
+        <button class="icon-btn-top"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="dot"></span></button>
+        <button class="btn-primary"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>New PAF</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- Generate banner -->
+      <div class="gen-card">
+        <div class="gen-ico">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>
+        </div>
+        <div class="gen-main">
+          <div class="gen-title">Generate H-1B Public Access File</div>
+          <div class="gen-sub">Select an LCA below — we'll assemble all 9 PAF documents in under a minute.</div>
+        </div>
+        <button class="gen-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L19 10l-5.1 1.2L12 17l-1.9-5.8L5 10l5.1-1.2z"/></svg>
+          Auto-Generate
+        </button>
+      </div>
+
+      <!-- KPI row -->
+      <div class="kpis">
+        <div class="kpi">
+          <div class="lbl">Active LCAs</div>
+          <div class="val">24</div>
+          <div class="delta" style="color:var(--primary);">7 due this month</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">PAFs Generated</div>
+          <div class="val">18</div>
+          <div class="delta" style="color:var(--green);">+3 this week</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Pending Signatures</div>
+          <div class="val">2</div>
+          <div class="delta" style="color:var(--amber);">Needs review</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Expiring &lt; 30d</div>
+          <div class="val">4</div>
+          <div class="delta" style="color:var(--orange);">Action required</div>
+        </div>
+      </div>
+
+      <div class="grid">
+
+        <!-- LEFT: LCA list -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Active LCAs</h3>
+            <span class="sub">Sorted by start date</span>
+          </div>
+          <div class="panel-body" id="lcaList"></div>
+        </div>
+
+        <!-- RIGHT: stacked panels -->
+        <div style="display:flex;flex-direction:column;gap:18px;">
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3 id="detailTitle">PAF Detail</h3>
+              <span class="pill ready" id="detailPill">Ready to Generate</span>
+            </div>
+            <div class="detail" id="detail"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>PAF Document Checklist</h3>
+              <span class="sub">9 required items</span>
+            </div>
+            <div class="check-list" id="checklist"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const ICONS = {
+  dashboard:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>',
+  notice:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>',
+  compliance:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>',
+  filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  file:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  check:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  hourglass:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>',
+  alert:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>',
+};
+
+const NAV = [
+  {id:'dashboard',  label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard},
+  {id:'notice',     label:'Notice Processing',        href:'gip-notice.html',     icon:ICONS.notice},
+  {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance},
+  {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing},
+];
+const ACTIVE_NAV = 'compliance';
+
+function renderNav(){
+  document.getElementById('nav').innerHTML =
+    '<div class="nav-label lbl">Workspace</div>' +
+    NAV.map(n=>`<a class="nav-item ${n.id===ACTIVE_NAV?'active':''}" href="${n.href}" data-label="${n.label}">
+      <span class="ico">${n.icon}</span><span class="lbl">${n.label}</span>
+    </a>`).join('');
+}
+
+const LCAS = [
+  {id:'I-203-25132',  employer:'Northbridge Health Systems', role:'Senior Data Engineer',  wage:142000, period:'Annual',
+   worksite:'Boston, MA',     start:'2025-09-01', end:'2028-08-31', status:'ready',  pafState:'Ready to Generate'},
+  {id:'I-203-25099',  employer:'Aurelia Analytics Inc.',     role:'Machine Learning Scientist', wage:178500, period:'Annual',
+   worksite:'San Jose, CA',   start:'2025-07-15', end:'2028-07-14', status:'draft',  pafState:'Draft — 2 items missing'},
+  {id:'I-203-25064',  employer:'Pinegrove Capital LLC',      role:'Quantitative Analyst',  wage:165000, period:'Annual',
+   worksite:'New York, NY',   start:'2025-06-01', end:'2028-05-31', status:'signed', pafState:'Signed · Posted 2025-06-03'},
+  {id:'I-203-24988',  employer:'Helix Robotics Co.',         role:'Mechatronics Engineer', wage:128000, period:'Annual',
+   worksite:'Austin, TX',     start:'2025-04-12', end:'2028-04-11', status:'ready',  pafState:'Ready to Generate'},
+  {id:'I-203-24917',  employer:'Northbridge Health Systems', role:'Clinical Informatics Lead', wage:151000, period:'Annual',
+   worksite:'Cambridge, MA',  start:'2025-03-01', end:'2028-02-29', status:'expired',pafState:'Expired — renew LCA'},
+];
+
+const CHECKLIST = {
+  'I-203-25132':[
+    {name:'Certified Form ETA-9035',           sub:'Page 1–4 stamped by DOL',           state:'done'},
+    {name:'Wage Rate Documentation',           sub:'Offer letter §3 — \$142,000/yr',     state:'done'},
+    {name:'Prevailing Wage Determination',     sub:'OFLC PWD #P-100-25-00081',          state:'done'},
+    {name:'Actual Wage Memo',                  sub:'Internal salary band: SDE-IV',      state:'done'},
+    {name:'Notice of Filing',                  sub:'Posted both worksites · Sep 1',     state:'done'},
+    {name:'Summary of Benefits',               sub:'Same as US workers — confirmed',    state:'done'},
+    {name:'Working Conditions Statement',      sub:'Boilerplate §2 (auto-fill)',        state:'pend'},
+    {name:'Strike / Lockout Statement',        sub:'No labor dispute at worksite',      state:'done'},
+    {name:'Recruitment Documentation',         sub:'(H-1B-dependent only — N/A)',       state:'pend'},
+  ],
+  'I-203-25099':[
+    {name:'Certified Form ETA-9035',           sub:'Awaiting DOL certification',        state:'pend'},
+    {name:'Wage Rate Documentation',           sub:'Offer letter §3 — \$178,500/yr',     state:'done'},
+    {name:'Prevailing Wage Determination',     sub:'OFLC PWD #P-100-25-00141',          state:'done'},
+    {name:'Actual Wage Memo',                  sub:'MLS-V band — confirmed by HR',      state:'done'},
+    {name:'Notice of Filing',                  sub:'Not yet posted',                    state:'miss'},
+    {name:'Summary of Benefits',               sub:'Same as US workers — confirmed',    state:'done'},
+    {name:'Working Conditions Statement',      sub:'Boilerplate §2 (auto-fill)',        state:'done'},
+    {name:'Strike / Lockout Statement',        sub:'No labor dispute at worksite',      state:'done'},
+    {name:'Recruitment Documentation',         sub:'H-1B-dependent — required',         state:'miss'},
+  ],
+  'I-203-25064':[
+    {name:'Certified Form ETA-9035',           sub:'Page 1–4 stamped by DOL',           state:'done'},
+    {name:'Wage Rate Documentation',           sub:'Offer letter §3 — \$165,000/yr',     state:'done'},
+    {name:'Prevailing Wage Determination',     sub:'OFLC PWD #P-100-25-00018',          state:'done'},
+    {name:'Actual Wage Memo',                  sub:'QA-Senior band',                    state:'done'},
+    {name:'Notice of Filing',                  sub:'Posted 2025-06-03 — 10 biz days',   state:'done'},
+    {name:'Summary of Benefits',               sub:'Same as US workers — confirmed',    state:'done'},
+    {name:'Working Conditions Statement',      sub:'Boilerplate §2',                    state:'done'},
+    {name:'Strike / Lockout Statement',        sub:'No labor dispute at worksite',      state:'done'},
+    {name:'Recruitment Documentation',         sub:'(H-1B-dependent only — N/A)',       state:'done'},
+  ],
+  'I-203-24988':[
+    {name:'Certified Form ETA-9035',           sub:'Page 1–4 stamped by DOL',           state:'done'},
+    {name:'Wage Rate Documentation',           sub:'Offer letter §3 — \$128,000/yr',     state:'done'},
+    {name:'Prevailing Wage Determination',     sub:'OFLC PWD #P-100-24-09812',          state:'done'},
+    {name:'Actual Wage Memo',                  sub:'Mech-Eng-III band',                 state:'done'},
+    {name:'Notice of Filing',                  sub:'Posted 2025-04-12 — 10 biz days',   state:'done'},
+    {name:'Summary of Benefits',               sub:'Same as US workers — confirmed',    state:'done'},
+    {name:'Working Conditions Statement',      sub:'Boilerplate §2',                    state:'done'},
+    {name:'Strike / Lockout Statement',        sub:'No labor dispute at worksite',      state:'pend'},
+    {name:'Recruitment Documentation',         sub:'(H-1B-dependent only — N/A)',       state:'done'},
+  ],
+  'I-203-24917':[
+    {name:'Certified Form ETA-9035',           sub:'Expired 2025-02-28',                state:'miss'},
+    {name:'Wage Rate Documentation',           sub:'On file',                           state:'done'},
+    {name:'Prevailing Wage Determination',     sub:'On file',                           state:'done'},
+    {name:'Actual Wage Memo',                  sub:'On file',                           state:'done'},
+    {name:'Notice of Filing',                  sub:'On file',                           state:'done'},
+    {name:'Summary of Benefits',               sub:'On file',                           state:'done'},
+    {name:'Working Conditions Statement',      sub:'On file',                           state:'done'},
+    {name:'Strike / Lockout Statement',        sub:'On file',                           state:'done'},
+    {name:'Recruitment Documentation',         sub:'On file',                           state:'done'},
+  ],
+};
+
+const STATE_ICON = {done:ICONS.check, pend:ICONS.hourglass, miss:ICONS.alert};
+const STATE_PILL = {
+  done:['signed','Complete'],
+  pend:['draft','Pending'],
+  miss:['expired','Missing'],
+};
+
+let activeId = 'I-203-25132';
+
+function fmt$(n){ return '$' + n.toLocaleString('en-US'); }
+
+function renderList(){
+  document.getElementById('lcaList').innerHTML = LCAS.map(l=>{
+    return `<button class="lca-row ${l.id===activeId?'active':''}" data-id="${l.id}" style="width:100%;text-align:left;cursor:pointer;">
+      <span class="lca-ico">${ICONS.file}</span>
+      <span class="lca-main">
+        <span class="lca-title" style="display:block;">${l.role}</span>
+        <span class="lca-sub" style="display:block;">${l.employer}</span>
+        <span class="lca-meta" style="display:block;">${l.worksite} · ${l.start} → ${l.end}</span>
+      </span>
+      <span class="lca-right">
+        <span class="lca-wage" style="display:block;">${fmt$(l.wage)}<span>/yr</span></span>
+        <span style="margin-top:6px;display:inline-block;"><span class="pill ${l.status}">${l.pafState.split('—')[0].trim()}</span></span>
+      </span>
+    </button>`;
+  }).join('');
+  document.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{activeId=b.dataset.id;renderAll();});
+}
+
+function renderDetail(){
+  const l = LCAS.find(x=>x.id===activeId) || LCAS[0];
+  const pillCls = l.status;
+  document.getElementById('detailTitle').textContent = `${l.id} · ${l.role}`;
+  document.getElementById('detailPill').className = `pill ${pillCls}`;
+  document.getElementById('detailPill').textContent = l.pafState;
+  document.getElementById('detail').innerHTML = `
+    <div class="detail-row"><span class="detail-k">Employer</span><span class="detail-v">${l.employer}</span></div>
+    <div class="detail-row"><span class="detail-k">Worksite</span><span class="detail-v">${l.worksite}</span></div>
+    <div class="detail-row"><span class="detail-k">Validity Period</span><span class="detail-v">${l.start} → ${l.end}</span></div>
+    <div class="detail-row"><span class="detail-k">Offered Wage</span><span class="detail-v">${fmt$(l.wage)} <span style="color:var(--ink-faint);font-weight:500;font-size:11.5px;">${l.period}</span></span></div>
+    <div class="detail-row"><span class="detail-k">PAF Location</span><span class="detail-v">HQ — Records Room B</span></div>
+    <div class="detail-row"><span class="detail-k">Posting Window</span><span class="detail-v">10 business days</span></div>
+  `;
+}
+
+function renderChecklist(){
+  const items = CHECKLIST[activeId] || [];
+  document.getElementById('checklist').innerHTML = items.map(c=>{
+    const [pc,pl] = STATE_PILL[c.state];
+    return `<div class="check ${c.state}">
+      <span class="box">${STATE_ICON[c.state]}</span>
+      <span class="lbl">${c.name}<span class="sub">${c.sub}</span></span>
+      <span class="pill ${pc}">${pl}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderAll(){ renderNav(); renderList(); renderDetail(); renderChecklist(); }
+
+document.getElementById('collapseBtn').onclick = ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+};
+document.getElementById('pageDate').textContent =
+  new Date().toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
+
+renderAll();
+</script>
+</body>
+</html>

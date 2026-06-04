@@ -152,7 +152,26 @@ _EIN_INLINE_RE       = re.compile(r"\b(\d{2}-\d{7})\b")
 _SSN_INLINE_RE       = re.compile(r"\b(\d{3}-\d{2}-\d{4})\b")
 _WAGE_INLINE_RE      = re.compile(r"(?i)wage[:\s]+\$?([\d,]+(?:\.\d{2})?)")
 _DOB_INLINE_RE       = re.compile(r"(?i)date\s+of\s+birth[:\s]+(\d{2}/\d{2}/\d{4})")
+# OCR-tolerant: "Date of Birth (mm/dd/yyyy) 03/15/1990" — skip non-digit noise between label and value
+_DOB_OCR_RE          = re.compile(r"(?i)date\s+of\s+birth[^0-9]+(\d{1,2}/\d{1,2}/\d{4})")
 _ENTRY_INLINE_RE     = re.compile(r"(?i)date\s+of\s+(?:last\s+)?entry[:\s]+(\d{2}/\d{2}/\d{4})")
+_ENTRY_OCR_RE        = re.compile(r"(?i)date\s+of\s+(?:last\s+)?(?:entry|arrival)[^0-9]+(\d{1,2}/\d{1,2}/\d{4})")
+# OCR legal-name extractor for I-485/N-400 layout. The OCR renders the name
+# fields as:  "... Middle Name (if applicable) (Sharma Arjun Kumar Other Names …"
+# i.e. the three values appear together right after the last "(if applicable)"
+# label, often prefixed by a stray "(". We capture the first three Name-Case
+# tokens following that anchor and reject the "N/A"/"NIA" empty-row marker.
+_LEGAL_NAME_OCR_RE = re.compile(
+    r"(?i)current\s+legal\s+name.*?middle\s+name\s*\(if\s+applicable\)\s*\(?\s*"
+    r"([A-Z][a-zA-Z]{1,40})\s+([A-Z][a-zA-Z]{1,40})"
+)
+# Single-label fallbacks (used only if the combined pattern misses)
+_FAMILY_NAME_OCR_RE  = re.compile(r"(?i)family\s+name\s*\(last\s+name\)\s*\(?\s*([A-Z][a-z]{2,40})\b")
+_GIVEN_NAME_OCR_RE   = re.compile(r"(?i)given\s+name\s*\(first\s+name\)\s*\(?\s*([A-Z][a-z]{2,40})\b")
+# OCR country extractor: "Country of Birth India" on its own line
+_COB_OCR_RE          = re.compile(r"(?i)^country\s+of\s+birth\s+([A-Za-z][A-Za-z\s]{1,29}?)$", re.MULTILINE)
+# OCR class of admission: "Class of Admission: F-1" or similar
+_COA_OCR_RE          = re.compile(r"(?i)class\s+of\s+admission[:\s]+([A-Z0-9\-]{1,10})")
 _PR_DATE_INLINE_RE   = re.compile(r"(?i)permanent\s+resident[:\s]+(\d{2}/\d{2}/\d{4})")
 _PRIORITY_INLINE_RE  = re.compile(r"(?i)priority\s+date[:\s]+(\d{2}/\d{2}/\d{4})")
 _NOTICE_TYPE_RE      = re.compile(r"(?i)notice\s+type\s*:\s*(.+)")
@@ -418,14 +437,31 @@ def _extract_i485(acro: dict[str, str | None], raw_text: str, receipt: dict[str,
     coa     = _a("classofadmission")
     ssn_raw = _a("ssn", ["socialsecurity"])
 
+    # AcroForm fallbacks → strict inline regex → OCR-tolerant regex
     if not arn_raw:
         arn_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
     if not dob_raw:
-        dob_raw = _regex_first(_DOB_INLINE_RE, raw_text)
+        dob_raw = _regex_first(_DOB_INLINE_RE, raw_text) or _regex_first(_DOB_OCR_RE, raw_text)
     if not doe_raw:
-        doe_raw = _regex_first(_ENTRY_INLINE_RE, raw_text)
+        doe_raw = _regex_first(_ENTRY_INLINE_RE, raw_text) or _regex_first(_ENTRY_OCR_RE, raw_text)
     if not ssn_raw:
         ssn_raw = _regex_first(_SSN_INLINE_RE, raw_text)
+    # Combined legal-name pattern captures family + given in one match
+    if not fname or not gname:
+        m = _LEGAL_NAME_OCR_RE.search(raw_text)
+        if m:
+            if not fname and m.group(1).upper() not in ("NIA", "NA"):
+                fname = m.group(1)
+            if not gname and m.group(2).upper() not in ("NIA", "NA"):
+                gname = m.group(2)
+    if not fname:
+        fname = _regex_first(_FAMILY_NAME_OCR_RE, raw_text)
+    if not gname:
+        gname = _regex_first(_GIVEN_NAME_OCR_RE, raw_text)
+    if not cob:
+        cob = _regex_first(_COB_OCR_RE, raw_text)
+    if not coa:
+        coa = _regex_first(_COA_OCR_RE, raw_text)
 
     return I485(
         **receipt,
@@ -1052,6 +1088,14 @@ def extract(
 
     acro = preprocess_result["acroform_fields"]
     raw_text = preprocess_result["ocr_text"] or preprocess_result["raw_text"]
+
+    # Clean common OCR artifacts so the inline regex extractors can match
+    # (EasyOCR inserts /, |, [, doubled capitals before values).
+    try:
+        from intelligence.nuextract import _clean_ocr
+        raw_text = _clean_ocr(raw_text)
+    except Exception:
+        pass
 
     print(
         f"[NATIVE] Starting extraction for form_type={form_type} "

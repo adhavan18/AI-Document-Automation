@@ -117,46 +117,31 @@ def _pipeline_background(
     form_type_override: str | None,
     api_key: str | None,
 ) -> None:
-    """Run the extraction pipeline in a background thread and update the existing case."""
-    import os
+    """
+    Run the extraction pipeline in a background thread.
+    _persist in router.py updates the pre-created case row (UPDATE, not INSERT).
+    """
     from intelligence.router import run as run_pipeline
-    from database.connection import SessionLocal
-    from database import crud
 
     try:
-        result = run_pipeline(
+        run_pipeline(
             pdf_path_str,
             api_key=api_key,
             form_type_override=form_type_override,
             preset_case_id=case_id_str,
         )
-
-        # Update the placeholder case with the real form_type + status
-        db = SessionLocal()
-        try:
-            _cid = uuid.UUID(case_id_str)
-            case = crud.get_case(db, _cid)
-            if case:
-                case.form_type = result.form_type or form_type_override or 'unknown'
-                case.status = 'pending'
-                db.commit()
-        except Exception as _e:
-            db.rollback()
-            print(f'[UPLOAD] Case update failed: {_e}')
-        finally:
-            db.close()
-
+        print(f'[UPLOAD] Pipeline complete for {case_id_str[:8]}')
     except Exception as exc:
         print(f'[UPLOAD] Pipeline failed for {case_id_str}: {exc}')
         try:
             from database.connection import SessionLocal
             from database import crud
-            db = SessionLocal()
-            case = crud.get_case(db, uuid.UUID(case_id_str))
-            if case:
-                case.status = 'failed'
-                db.commit()
-            db.close()
+            _db = SessionLocal()
+            _case = crud.get_case(_db, uuid.UUID(case_id_str))
+            if _case:
+                _case.status = 'failed'
+                _db.commit()
+            _db.close()
         except Exception:
             pass
 

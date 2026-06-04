@@ -77,22 +77,30 @@ def _run(text: str, schema: dict) -> dict:
         return {}
     import torch
 
+    # For long documents, prioritise the first 16 000 chars (covers most
+    # multi-page receipt notices). If the text is longer, also grab the last
+    # 4 000 chars where footer/summary info sometimes lives, then merge.
+    if len(text) > 16000:
+        excerpt = text[:14000] + "\n...\n" + text[-2000:]
+    else:
+        excerpt = text
+
     schema_str = json.dumps(schema, indent=2)
     prompt = (
         "<|input|>\n"
         "### Template:\n" + schema_str + "\n"
-        "### Text:\n" + text[:8000] + "\n"
+        "### Text:\n" + excerpt + "\n"
         "<|output|>\n"
     )
     device = next(model.parameters()).device
     inputs = tokenizer(
-        prompt, return_tensors="pt", max_length=10000, truncation=True
+        prompt, return_tensors="pt", max_length=16000, truncation=True
     ).to(device)
 
     with torch.no_grad():
         out_ids = model.generate(
             **inputs,
-            max_new_tokens=512,
+            max_new_tokens=600,
             do_sample=False,
             temperature=1.0,
             repetition_penalty=1.1,
@@ -107,6 +115,8 @@ def _run(text: str, schema: dict) -> dict:
     if "<|end-output|>" in raw:
         raw = raw.split("<|end-output|>")[0]
     raw = raw.strip()
+
+    print(f"[NUEXTRACT] Raw output (first 500 chars): {raw[:500]!r}")
 
     try:
         return json.loads(raw)
@@ -304,6 +314,29 @@ _RECEIPT_SCHEMA: dict = {
 # Public API
 # ---------------------------------------------------------------------------
 
+def _clean_ocr(text: str) -> str:
+    """
+    Fix common EasyOCR errors before sending text to NuExtract.
+
+    EasyOCR frequently inserts spurious characters (/ | [ I) at the start of
+    values, doubles letters at word boundaries (IIndia → India), and splits
+    field labels across lines.  These simple substitutions recover enough
+    structure for NuExtract to parse the text.
+    """
+    import re
+    # "A-/123456789" → "A-123456789",  "A-|123456789" → same
+    text = re.sub(r'(A[-\s])[/|](\d)', r'\g<1>\2', text)
+    # "|03/15/1990" → "03/15/1990"
+    text = re.sub(r'[|/\[](\d{2}/)', r'\1', text)
+    # "IIndia" → "India",  "ILos" → "Los"  (double capital-I OCR artifact)
+    text = re.sub(r'\bII([a-z])', r'I\1', text)
+    # "|mm/dd/yyyy" placeholder removal
+    text = re.sub(r'\[mm/dd/yyyy\]', '', text)
+    # Normalise A-number formats: "A- 123456789" → "A-123456789"
+    text = re.sub(r'\bA[-\s]+(\d{8,9})\b', r'A-\1', text)
+    return text
+
+
 def extract_fields(text: str, form_type: str) -> dict[str, FieldResult]:
     """
     Extract form-specific fields from *text* using NuExtract.
@@ -318,18 +351,24 @@ def extract_fields(text: str, form_type: str) -> dict[str, FieldResult]:
     if schema is None:
         return {}
 
-    print(f"[NUEXTRACT] Extracting fields for {form_type} ({len(text)} chars)")
-    raw = _run(text, schema)
-    return _to_field_results(raw)
+    cleaned = _clean_ocr(text)
+    print(f"[NUEXTRACT] Extracting fields for {form_type} ({len(cleaned)} chars after clean)")
+    raw = _run(cleaned, schema)
+    result = _to_field_results(raw)
+    print(f"[NUEXTRACT] Found {len(result)} form fields: {list(result.keys())}")
+    return result
 
 
 def extract_receipt_fields(text: str) -> dict[str, FieldResult]:
     """Extract USCIS receipt-notice fields from *text* using NuExtract."""
     if not text or not text.strip():
         return {}
-    print(f"[NUEXTRACT] Extracting receipt fields ({len(text)} chars)")
-    raw = _run(text, _RECEIPT_SCHEMA)
-    return _to_field_results(raw)
+    cleaned = _clean_ocr(text)
+    print(f"[NUEXTRACT] Extracting receipt fields ({len(cleaned)} chars after clean)")
+    raw = _run(cleaned, _RECEIPT_SCHEMA)
+    result = _to_field_results(raw)
+    print(f"[NUEXTRACT] Found {len(result)} receipt fields: {list(result.keys())}")
+    return result
 
 
 def is_available() -> bool:
