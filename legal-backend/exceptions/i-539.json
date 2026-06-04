@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Co-Applicant Count Overflow",
+    "exception_description": "More than 5 co-applicants listed; system truncates list silently instead of requiring additional supplement pages."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Status-to-Status Invalid Transition",
+    "exception_description": "Applicant attempts F-1 \u2192 B-2 while course of study still active; ineligibility not caught at field-validation layer."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "Days-of-Status Calculation Across DST",
+    "exception_description": "Lawful status duration miscounted when period spans daylight-saving-time boundary; 1-day error in authorized stay."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Principal vs Derivative A-Number",
+    "exception_description": "Co-applicant A-Number entered as principal's; system accepts without cross-checking existing USCIS alien file."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "Grace Period Post-Program End",
+    "exception_description": "F-1 60-day grace period not correctly subtracted when computing earliest filing date for status extension."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Handwritten Status Entry Misread",
+    "exception_description": "Handwritten 'F-1' OCR'd as 'F-l' (lowercase L); downstream status code lookup fails silently."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "I-94 vs Visa Stamp Duration Conflict",
+    "exception_description": "I-94 shows D/S (duration of status) but underlying visa stamp has hard expiry; system uses wrong end-date source."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Change vs Extension Misclassification",
+    "exception_description": "LLM classifies request as extension when applicant switched employer; should be change-of-status route."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Parallel I-539 and Departure Filed",
+    "exception_description": "Applicant files I-539 then departs; USCIS continues adjudicating abandoned application; status shows pending."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Biometrics Appointment Expired",
+    "exception_description": "Biometrics notice issued; applicant misses appointment; system must return to biometrics-pending state, not denial."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Fiscal Year Fee Schedule Change",
+    "exception_description": "I-539 filed on Sep 30 at old fee rate; processed Oct 1 under new fee schedule; discrepancy not auto-resolved."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "VAWA Confidentiality Breach",
+    "exception_description": "I-539 filed under VAWA protections; case notes visible to DHS officers outside approved VAWA unit."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Unlawful Presence Accrual Edge Case",
+    "exception_description": "LLM incorrectly advises applicant has no unlawful presence when timely-filed I-539 pending tolls accrual."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Family Group Split Across Offices",
+    "exception_description": "Principal processed at Nebraska SC; co-applicants routed to Texas SC; approval dates diverge creating status gap."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "Old Status Code Retained Post-Approval",
+    "exception_description": "Database status field not updated after I-539 approval; downstream I-765 eligibility check reads stale status."
+  }
+]

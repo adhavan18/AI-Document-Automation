@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Petitioner Citizenship vs LPR Path",
+    "exception_description": "US citizen petitioner classified as LPR; preference-category queue and priority-date system incorrectly applied."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Relationship Code vs Evidence Type",
+    "exception_description": "Stepchild relationship claimed; marriage-date field shows date after child's birth; step-relationship validity not flagged."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "Preference Category Wait Time Estimate",
+    "exception_description": "F-2A vs F-2B queue assignment error; married child incorrectly placed in F-2A (spouse) queue; wrong wait time."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Petitioner Name Change Post-Naturalization",
+    "exception_description": "Petitioner naturalized under maiden name; I-130 filed under married name; citizenship evidence name mismatch."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "Immediate Relative vs Preference Category Transition",
+    "exception_description": "Child turns 21 during petition pendency; CSPA age-freeze calculation not applied; downgraded to preference category."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Foreign Marriage Certificate OCR",
+    "exception_description": "Non-Latin script marriage certificate; OCR transliteration of names produces inconsistent romanization across fields."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "Prior Petition for Same Beneficiary",
+    "exception_description": "Second I-130 filed for same alien by different qualifying relative; earlier priority date not preserved automatically."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Bona Fide vs Sham Marriage Detection",
+    "exception_description": "LLM flags marriage as potentially fraudulent based on age gap alone; demographic bias in model training data."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Petitioner Death During Pendency",
+    "exception_description": "Petitioner dies; I-130 automatically revoked; humanitarian reinstatement (I-360 substitute) not offered proactively."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "NVC Invoice Sent Before USCIS Approval",
+    "exception_description": "NVC generates fee invoice before I-130 approval transmitted; beneficiary pays before case is approvable."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Annual Numerical Limitation Reset",
+    "exception_description": "Family preference number charged to prior fiscal year; petition approved Oct 1; number not refreshed in new FY allocation."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "Adam Walsh Act Check Not Performed",
+    "exception_description": "USC petitioner has prior sex-offense conviction; I-130 for minor child proceeds without Adam Walsh screening."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "CSPA Age Calculation Complexity",
+    "exception_description": "LLM miscalculates CSPA age when petition was converted from derivative to direct; formula not applied to conversion date."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Same Petitioner Multiple Active I-130s",
+    "exception_description": "Petitioner has five active I-130s across different family members; aggregate case load not monitored for fraud pattern."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "Priority Date Not Preserved on Conversion",
+    "exception_description": "I-130 converted from F-2A to immediate relative on petitioner naturalization; old priority date lost in conversion."
+  }
+]

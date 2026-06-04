@@ -31,3 +31,12 @@ Thumbs.db
 test.pdf
 *.tmp
 backend/data/app.db*
+
+# legal-backend (FastAPI / Python)
+legal-backend/uploads/*
+!legal-backend/uploads/.gitkeep
+__pycache__/
+*.py[cod]
+legal-backend/.venv/
+legal-backend/venv/
+legal-backend/*.egg-info/

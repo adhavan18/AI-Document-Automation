@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "K-1 vs K-3 Base Form Conflict",
+    "exception_description": "Single base I-129F used for both K-1 and K-3; separate fee and evidence requirements not enforced at intake."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Meeting Requirement Date Gap",
+    "exception_description": "Petitioner claims in-person meeting within 2 years but date entered predates relationship start date on Part 3."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "Age-at-Entry Calculation Error",
+    "exception_description": "Beneficiary turns 21 before visa issuance; automatic K-2 child aging-out not flagged when DOB parsed in DD/MM vs MM/DD."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Prior Divorce Decree Missing",
+    "exception_description": "Petitioner has prior marriage; divorce decree not attached; system marks petition complete despite missing supporting doc."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "Fianc\u00e9(e) Already Admitted on B-2",
+    "exception_description": "Beneficiary is in US on tourist visa; K-1 filed from abroad while alien is present; creates dual intent conflict."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Foreign Date Format Misread",
+    "exception_description": "Civil document dates in DD-MM-YYYY format OCR'd as MM-DD-YYYY; inverts birth month and day fields."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "NVC Transfer Before USCIS Approval",
+    "exception_description": "Case forwarded to NVC before I-129F approval notice generated; creates orphan NVC record."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Good Faith Intent Narrative",
+    "exception_description": "LLM scores bona fide relationship narrative as low-confidence without flagging specific factual gaps to officer."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Same Alien Multiple K-1 Petitions",
+    "exception_description": "Two USC petitioners file K-1 for same beneficiary; second filing not blocked pending disposition of first."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Consular Interview Scheduled Pre-Approval",
+    "exception_description": "DOS schedules interview before USCIS I-129F approval; state machine allows forward jump."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "2-Year Marriage Deadline Tracking",
+    "exception_description": "K-1 visa issued; 90-day entry window and subsequent 2-year marriage requirement tracked in different fiscal year buckets."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "IBIS/CLASS Name Variant Not Flagged",
+    "exception_description": "Beneficiary's romanized name has variant spellings; only primary spelling checked against watch-list."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Romantic vs Platonic Text Classification",
+    "exception_description": "LLM misclassifies WhatsApp conversation evidence as platonic; reduces relationship-strength score incorrectly."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Attorney Portal Shared Packet Access",
+    "exception_description": "Two law firms share one employer portal; K-1 evidence packet of firm A visible to firm B users."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "K-2 Child Record Orphaned on Denial",
+    "exception_description": "Parent K-1 denied; K-2 derivative child record remains in active queue without cascade-delete or status update."
+  }
+]

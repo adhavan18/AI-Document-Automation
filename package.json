@@ -1,0 +1,16 @@
+{
+  "name": "ai-document-automation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI document automation suite — React frontend, Node (Express) backend, and FastAPI (USCIS notice processing) backend.",
+  "scripts": {
+    "dev:web": "npm --prefix frontend run dev",
+    "dev:node": "npm --prefix backend run dev",
+    "dev:api": "cd legal-backend && python start_server.py",
+    "dev": "concurrently -n web,node,api -c blue,green,magenta \"npm:dev:web\" \"npm:dev:node\" \"npm:dev:api\"",
+    "install:all": "npm install && npm --prefix frontend install && npm --prefix backend install && pip install -r legal-backend/requirements.txt"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

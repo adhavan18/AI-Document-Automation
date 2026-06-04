@@ -1,0 +1,22 @@
+# Python packages — install with: pip install -r requirements.txt
+# System packages (apt, not pip): poppler-utils tesseract-ocr
+
+fastapi
+uvicorn
+anthropic
+instructor
+pydantic
+python-multipart
+pypdf
+pdfplumber
+pypdfium2
+pytesseract
+opencv-python-headless
+sqlalchemy
+alembic
+psycopg2-binary
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+pydantic[email]
+python-dotenv

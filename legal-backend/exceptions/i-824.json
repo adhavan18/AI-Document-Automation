@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Base Petition Not Approved Before Filing",
+    "exception_description": "I-824 filed while underlying I-130/I-140 still pending; system issues receipt without checking base approval status."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Wrong Consulate Designated",
+    "exception_description": "I-824 requests consular notification to Embassy X but beneficiary resides in consular district of Embassy Y."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "Duplicate Fee Payment",
+    "exception_description": "Two I-824 fees collected for same petition when petitioner files both duplicate-notice and consular-notify requests simultaneously."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Beneficiary A-Number vs Receipt Number Swap",
+    "exception_description": "I-824 submitted with receipt number in A-Number field; lookup fails and creates phantom petition record."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "NVC Transfer Conflict with I-824",
+    "exception_description": "Petition already transferred to NVC; I-824 re-notifies consulate creating parallel track and duplicate interview scheduling."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Approval Notice Date OCR Ambiguity",
+    "exception_description": "Base approval notice date 06/07/YYYY OCR'd as July 6 instead of June 7; triggers wrong priority-date check."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "Revoked Petition Underlying I-824",
+    "exception_description": "Base petition revoked post-approval; I-824 proceeds to consulate without checking current petition status."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Duplicate vs New Petition Conflation",
+    "exception_description": "LLM treats I-824 for duplicate notice as new petition filing; generates new priority date in error."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Multiple I-824 Same Receipt Same Requestor",
+    "exception_description": "Petitioner submits three I-824s for same receipt; only one valid action; duplicates not deduplicated at intake."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Consulate Notification Sent Before USCIS Transmittal",
+    "exception_description": "DOS notified before USCIS transmits full file; consulate opens case without supporting documents."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Annual Priority Date Bulletin Cross-Check",
+    "exception_description": "Priority date on underlying petition was current at I-824 filing but retrogressed by the time consulate acts."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "Third-Party Requestor Without G-28",
+    "exception_description": "Attorney files I-824 without G-28 on file for that specific petition; no authorization check performed."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Consular vs USCIS Jurisdiction Edge",
+    "exception_description": "LLM advises I-824 appropriate when beneficiary now eligible to adjust status; should use I-485 instead."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Multi-National Company Petition Routing",
+    "exception_description": "Parent company petitioned; I-824 notification needed for subsidiary's consulate; entity routing logic fails."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "Consulate Code Not Updated in PIMS",
+    "exception_description": "I-824 consulate change not reflected in PIMS; interview packet sent to old embassy."
+  }
+]

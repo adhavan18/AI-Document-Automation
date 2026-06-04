@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Missing Supplement Section",
+    "exception_description": "Supplement H/O/L/TN not attached or mismatched to base classification; system must flag absent supplement pages before routing."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Invalid Visa Classification Code",
+    "exception_description": "Classification code in Part 2 (e.g., H-1B1 vs H-1B) does not match petitioner's stated purpose; triggers incorrect fee schedule."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "Incorrect Filing Fee Calculation",
+    "exception_description": "Base fee + ACWIA training fee + fraud prevention fee arithmetic error; premium processing fee ($2,805) added when box unchecked."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "EIN / FEIN Mismatch",
+    "exception_description": "Employer EIN on petition differs from LCA EIN; IRS records and DOL system must align or RFE is likely."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "LCA SOC Code vs Degree Mismatch",
+    "exception_description": "LCA specialty occupation SOC code is incompatible with beneficiary's foreign degree field; OCR may mis-read SOC digits."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Passport-Style Photo Skew",
+    "exception_description": "Photo uploaded at angle >5\u00b0; OCR facial-detection algorithm rejects biometric match against prior visa photo."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "I-94 Expiry Before Requested Start",
+    "exception_description": "Beneficiary's current I-94 expiry precedes requested employment start date; creates unlawful-presence risk if not flagged."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Ambiguous 'Same or Similar' Role",
+    "exception_description": "LLM classifies amended petition role as materially different when SOC codes are identical but job duties narrative changed >50%."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Duplicate Petition Same Beneficiary",
+    "exception_description": "Two petitions filed same cap year for same alien worker; lottery deduplication must reject the second receipt."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Premium Upgrade After Receipt",
+    "exception_description": "I-907 filed post-receipt triggers state change to premium; system must not reissue non-premium receipt notice."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Cap Gap Period Miscalculation",
+    "exception_description": "Gap between OPT expiry and H-1B Oct 1 start incorrectly calculated when fiscal year crosses two calendar years."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "Controlled Technology Check Skipped",
+    "exception_description": "Beneficiary works with export-controlled tech; OFAC/EAR review flag not triggered during intake screening."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Specialty Occupation Borderline",
+    "exception_description": "LLM borderline-passes specialty occupation test for liberal-arts degrees; requires human review escalation rule."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Sponsor Org Linked to Debarred Entity",
+    "exception_description": "Parent company of petitioner appears on SAM.gov exclusion list; subsidiary petition proceeds without block."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "H-1B Cap Count Not Decremented",
+    "exception_description": "Approved petition does not decrement annual H-1B cap counter in quota-tracking table; leads to over-issuance."
+  }
+]

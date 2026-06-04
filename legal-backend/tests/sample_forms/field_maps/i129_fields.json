@@ -1,0 +1,4486 @@
+{
+  "form1[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[0].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|1",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[1].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|2",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[2]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[2].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|3",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[3]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[3].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|4",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[4]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[4].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|5",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[5]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[5].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|6",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[6]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[6].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|7",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[7]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[7].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|8",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[8]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[8].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|9",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[9]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[9].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|10",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[10]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[10].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|11",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[11]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[11].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|12",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[12]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[12].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|13",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[13]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[13].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|14",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[14]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[14].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|15",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[15]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[15].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|16",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[16]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[16].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|17",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[17]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[17].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|18",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[18]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[18].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|19",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[19]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[19].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|20",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[20]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[20].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|21",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[21]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[21].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|22",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[22]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[22].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|23",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[23]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[23].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|24",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[24]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[24].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|25",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[25]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[25].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|26",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[26]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[26].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|27",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[27]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[27].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|28",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[28]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[28].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|29",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[29]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[29].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|30",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[30]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[30].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|31",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[31]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[31].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|32",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[32]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[32].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|33",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[33]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[33].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|34",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[34]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[34].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|35",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[35]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[35].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|36",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[36]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[36].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|37",
+    "type": "/Tx"
+  },
+  "form1[0].#pageSet[0].Page1[37]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#pageSet[0].Page1[37].PDF417BarCode1[0]": {
+    "value": "I-129|02/27/26|38",
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[0].Line1_MiddleName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].Line1_GivenName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].Line1_FamilyName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].Line3_CompanyorOrgName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].Line_CityTown[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].P1_Line3_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].P1_Line3_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[0].Line7a_InCareofName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].Line7b_StreetNumberName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].Line3_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[0].Line3_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[0].Line3_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[0].Line3_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].Line9_EmailAddress[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].TextField1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].P1_Line3_PostalCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].P1_Line3_Province[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].P1_Line3_Country[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].Line2_DaytimePhoneNumber1_Part8[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].Line3_MobilePhoneNumber1_Part8[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[0].P1Line6_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[0].P1Line6_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[1].Part2_ClassificationSymbol[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[1].continuation[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].new[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].previouschange[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].concurrent[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].change[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].amended[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].P2Checkbox4[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].P2Checkbox4[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].P2Checkbox4[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].P2Checkbox4[3]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].P2Checkbox4[4]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].P2Checkbox4[5]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].TtlNumbersofWorker[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[1].Part7LineD_Emp1Name[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[1].Part3_Line2_MiddleName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[1].Part3_Line2_GivenName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[1].Part3_Line2_FamilyName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[1].Line1_ReceiptNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[1].P3Line1_Checkbox[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].P3Line1_Checkbox[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[1].Line4_SSN[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[1].Line3_TaxNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[2].Line11e_ExpDate[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line5_SEVIS[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line5_EAD[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line8e_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[2].Line8f_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line8d_CityTown[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line6_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[2].Line6_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line6_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[2].Line6_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[2].Line8a_StreetNumberName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line11g_CurrentNon[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[2].Line11h_DateStatusExpires[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line11e_ExpDate[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line_CountryOfIssuance[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Part4Line3_DProvince[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Part3Line5_DateofArrival[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Part3Line5_PassportorTravDoc[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].OfficeAddressCity[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Part4_1c_State_or_Country[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].TypeofOffice[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[2].TypeofOffice[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[2].TypeofOffice[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[2].Part3Line4_CountryOfBirth[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Part3Line4_CountryOfCitizenship[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line1_AlienNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Part3Line5_ArrivalDeparture[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line6_DateOfBirth[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line1_Gender_P3[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[2].Line1_Gender_P3[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[2].Line5_SSN[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line3_GivenName2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line3_MiddleName2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line3_FamilyName3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line3_GivenName3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line3_MiddleName3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line3_FamilyName2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line3_MiddleName1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line3_GivenName1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[2].Line3_FamilyName1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[3].P4Line4_HowMany[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3].P4Line5_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line11a_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line11a_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line5_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line5_HowMany[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3].P4Line5_HowMany[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3].P4Line8[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line8[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line4_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line4_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line6_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line7[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line9_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line9_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line10_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line10_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line8a_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line8a_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line8b_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line8b_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line7[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line6_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4_Line11b[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3].P4Line3_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line3_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line3_HowMany[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3].P4Line2_Checkbox[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].P4Line2_Checkbox[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].Line2c_CityTown[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3].Line2b_StreetNumberName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3].Line2b2_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].Line2b2_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].Line2b2_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3].Line2b2_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[3].Line2g2_Province[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3].Line3f_PostalCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3].Line_Country[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[3].Line2g2_Province[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[4].P5Line5_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line5_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line4_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line6_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line6_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line4_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].Part5_Q10_DateFrom[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].Part5_Q10_DateTo[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line9_Hours[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line7_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line7_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].Line10_Explanation[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].Line8_Wages[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].Line8_Per[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line3a_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[4].P5Line3a_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line3a_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line3a_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line3a_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line3a_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line3a_StreetNumberName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line3a_CityTown[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].Part5_Q2_LCAorETA[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].Part5_Q1_JobTitle[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line3[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line3[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line3a_ThirdpartyOrganization[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line3b_State2[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[4].P5Line3b_ZipCode2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line3b_Unit2[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line3b_AptSteFlrNumber2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line3b_Unit2[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line3b_Unit2[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line3b_StreetNumberName2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line3b_CityTown[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[4].P5Line3Add[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line3Add[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[4].P5Line3b_ThirdpartyOrganization2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[5]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[5].Part5Line12_TypeofBusiness[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[5].P5Line13_YearEstablished[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[5].P5Line14_NumberofEmployees[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[5].Line15_GrossAnnualIncome[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[5].Line16_NetAnnualIncome[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[5].P5Line15_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[5].P5Line15_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[5].NoDeemed[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[5].Deemed[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[5].Line1a_PetitionerLastName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[5].Line1a_PetitionerLastName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[5].Line1b_PetitionerFirstName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[6].Line1b_DateofSignature[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].P5_Line6a_SignatureofApplicant[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].Pt7Line3_EmailAddress[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].Pt7Line3_DaytimePhoneNumber1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].Line_Signature[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].Line_DateofSignature[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].EmailAddress[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].Pt8Line4_DaytimePhoneNumber1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].Pt8Line4_DaytimePhoneNumber1[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].Line_PreparerFamilyName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].Line_PreparerGivenName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].Line_BusinessName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].Line_CityTown[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].P8_Line3_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].P8_Line3_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[6].Line7b_StreetNumberName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].Part8Line3_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[6].Part8Line3_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[6].Part8Line3_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[6].Part8Line3_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].P8_Line3_Province[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].P8_Line3_PostalCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[6].P8_Line3_Country[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[7].Line4_AdditionalInfo[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].Line3_AdditionalInfo[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].#area[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[7].#area[0].Line10_AlienNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].Line2a_PageNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].Line2b_PartNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].Line2c_ItemNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].Line4c_ItemNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].Line4b_PartNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].Line4a_PageNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].Line4a_PageNumber[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].Line4b_PartNumber[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].Line4c_ItemNumber[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[7].Line2_AdditionalInfo[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[8].Line1_FamilyName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].Line1_GivenName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].Line1_MiddleName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].E1_TreatyTrader[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[8].E2_TreatyInvestor[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[8].E2_CNMI[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[8].SupELine5_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[8].SupELine5_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[8].Line3_CompanyorOrgName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].Line_CityTown[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].S1_Line3_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].S1_Line3_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[8].Line7b_StreetNumberName[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].Sec1Line3_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[8].Sec1Line3_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[8].Sec1Line3_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[8].Sec1Line3_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].Line2_TtlNumberofEmployees[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].Line4_Description[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].SupELine1_NameofEmployer[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].S1_Line3_Province[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].S1_Line3_PostalCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].S1_Line3_Country[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].Line_Country[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[8].Line5_EmployeePositionDescription[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[9].Sect2_Parent[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[9].Sect2_Branch[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[9].Sect2_Subsidiary[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[9].Sect2_Affiliate[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[9].Sect2_JointVenture[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[9].Line2a_TypeofBusiness[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Line2b_DateEstablished[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[9].Table1[0].Row1[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[9].Table1[0].Row1[0].NAME_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row1[0].Nationality_line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row1[0].ImmigrationStatus_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row1[0].PercentOwnership_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row2[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[9].Table1[0].Row2[0].NAME_Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row2[0].Nationality_line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row2[0].ImmigrationStatus_Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row2[0].PercentOwnership_Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row3[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[9].Table1[0].Row3[0].NAME_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row3[0].Nationality_line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row3[0].ImmigrationStatus_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row3[0].PercentOwnership_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row4[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[9].Table1[0].Row4[0].NAME_Line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row4[0].Nationality_line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row4[0].ImmigrationStatus_Line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row4[0].PercentOwnership_Line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[9].Table1[0].Row5[0].NAME5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[0].Nationality_line5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[0].ImmigrationStatus_Line5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[0].PercentOwnership_Line5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[9].Table1[0].Row5[1].NAME_Line6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[1].Nationality_line6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[1].ImmigrationStatus_Line6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[1].PercentOwnership_Line6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[2]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[9].Table1[0].Row5[2].NAME_Line7[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[2].Nationality_line7[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[2].ImmigrationStatus_Line7[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Table1[0].Row5[2].PercentOwnership_Line7[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].P5Line_YearEstablished[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Line2d_GrossAnnualIncome[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Line2e_NetAnnualIncome[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].SupELine7a_HowMany[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].SupELine7b_HowMany[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].SupELine7c_TotalNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].SupELine7d_TotalNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].Line3_JobDescription[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].ESec3Line1_TtlAnnualGross[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].ESec4_Cash[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].ESec3Line2_YearEnding[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].ESec3Line3_PercentOfTtlGross[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].ESec4_Equipment[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].ESec4_Premises[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].ESec4_Inventory[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].ESec4_Other[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[9].ESec4_Totla[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[11]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[11].employer[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[11].employer[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[11].a_Canada[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[11].b_Mexico[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[11].c_Chile[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[11].e_Other[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[11].d_Singapore[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[11].f_ChileOrSingapore[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[11].TASupLine1_NameofPetitioner[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[11].TASupLine2b_DateofSignature[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[11].TASupLine5_Email[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[11].TASupLine1a_PetitionerLastName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[11].TASupLine1b_PetitionerFirstName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[11].Line4_Country[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[11].TASupLine1_NameofBeneficiary[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[11].TASupLine2_DaytimePhoneNumber1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[11].TASupLine3_MobilePhoneNumber1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[11].P5_Line6a_SignatureofApplicant[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[12].Line_CityTown[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].S3_Line3_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].S3_Line3_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[12].Line7b_StreetNumberName[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].Sec3Line3_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[12].Sec3Line3_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[12].Sec3Line3_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[12].Sec3Line3_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].Line_Signature[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].Line_DateofSignature[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].TASupLine5_Email[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].S3_Line3_Province[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].Line_BusinessName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].Line_PreparerFamilyName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].Line_PreparerGivenName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].S3_Line3_PostalCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].S3_Line3_Country[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].TASupLine2_DaytimePhoneNumber1[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[12].Pt8Line4_DaytimePhoneNumber1[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[13].Line1_PetitionerName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Line2_BeneficiaryName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Line2_TtlNumberofBeneficiaries[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[13].Table1[1].Row2[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[13].Table1[1].Row2[0].Name_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row2[0].DateFrom_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row2[0].DateTo_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row3[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[13].Table1[1].Row3[0].Name_Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row3[0].DateFrom_Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row3[0].DateTo_Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row4[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[13].Table1[1].Row4[0].Name_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row4[0].DateFrom_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row4[0].DateTo_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row5[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[13].Table1[1].Row5[0].Name_Line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row5[0].DateFrom_Line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row5[0].DateTo_Line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row6[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[13].Table1[1].Row6[0].Name_Line5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row6[0].DateFrom_Line5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row6[0].DateTo_Line5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row6[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[13].Table1[1].Row6[1].Name_Line6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row6[1].DateFrom_Line6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].Table1[1].Row6[1].DateTo_Line6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[13].SubHLine4_class[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[13].SubHLine4_class[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[13].SubHLine4_class[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[13].SubHLine4_class[3]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[13].SubHLine4_class[4]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[13].SubHLine4_class[5]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[13].SubHLine4_class[6]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[13].SubHLine4_class[7]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[13].SubHLine5_ConfirmationNum[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[15]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[15].ClassHLine5b_ExpDate[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[15].ClassHLine5b_CountryOfIssuance[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[15].ClassHLine5b_PassportorTravDoc[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[15].Line8a_Check[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[15].Line8a_Check[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[15].Line2_SummaryofWorkExperience[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[15].Line1_Duties[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[15].Line8b_Explain[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[15].SupHLine5_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[15].SupHLine5_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[15].SupHLine5_Yes[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[15].SupHLine5_No[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[15].Sect1_DateSignedByPetitioner[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[15].Sect1_PetitionerPrintedName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[15].P5_Line6a_SignatureofApplicant[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[16]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[16].Sect1_DateSignedByDODPM[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[16].Sect1_DODPMSignature[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[16].Sect1_DODPMName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[16].a_seasonal[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].b_peakload[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].d_onetime[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].c_recurrent[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].a_unpredictable[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].b_periodic[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].c_intermittent[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].Line3_Explanation[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[16].SupHLine5[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].SupHLine5[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].SupHLine6a[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].SupHLine6a[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].SupHLine6[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].SupHLine6\\": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[16].SupHLine6\\.[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[16].Sect1_AuthorizedOfficialSignature[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[16].Sect1_DateSignedByAuthorizedOfficial[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[16].Sect1_AuthorizedOfficialName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[17]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[17].SupHLine11[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].SupHLine11[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].SupHLine8c[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].SupHLine8c[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].SupHLine8a1_Types[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[17].Sec2Line7c_CityTown[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[17].Sec2Line7c_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[17].Sec2Line7c_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[17].Sec2Line7c_StreetNumberName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[17].Sec2Line7c_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].Sec2Line7c_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].Sec2Line7c_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].Sec2Line7c_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[17].SupHLine8a[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].SupHLine8a[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].SupHLine12[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].SupHLine12[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].SupHLine13[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].SupHLine13[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[17].Line7_RecruitOrganization[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[17].Line7_MiddleName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[17].Line7_GivenName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[17].Line7_FamilyName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[18]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[18].SupHLine14[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine14[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine15[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine15[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine16[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine16[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine17[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine17[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine18[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine18[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine19[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine19[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine20[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[18].SupHLine20[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[19]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[19].Sect3_PartA_DateSignedByPetitioner[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[19].Sect3_PartA_PetitionerName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[19].P5_Line6a_SignatureofApplicant[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[19].Date[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[19].Sect3_PartB_EmployerSignature[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[19].TextField5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[19].SupHLine21[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[19].SupHLine21[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[19].SupHLine22[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[19].SupHLine22[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[19].SupHLine23[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[19].SupHLine23[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[19].Line24_FamilyName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[19].Line24_GivenName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[19].Line24_MiddleName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[19].Line24_PetitionerName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[20].Sect3_PartC_DateSigned1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line24_CityTown[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line24_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line24_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[20].Line24_InCareofName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line24_StreetNumberName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line24_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[20].Line24_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[20].Line24_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[20].Line24_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line24_PostalCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line24_Province[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line24_Country[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line24_EmailAddress[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line24_DaytimePhoneNumber1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line24_MobilePhoneNumber1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line25_EIN[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line25_SSN[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line25_TaxNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line26_TypeofBusiness[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line26_YearEstablished[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line26_NumberofEmployees[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line26_GrossAnnualIncome[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line26_NetAnnualIncome[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line27_Title[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line27_GivenName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Line27_FamilyName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[20].Sect3_PartC_Signature1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[21]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[21].HSec3Line1a_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].HSec3Line1b_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].HSec3Line1c_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].HSec3Line1d_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].HSec3Line1e_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].HSec3Line7_Check[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].HSec3Line7_Check[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].HSec3Line1e_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].HSec3Line1d_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].HSec3Line1c_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].HSec3Line1b_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].HSec3Line1a_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[21].Line2_Explanation[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[22].Line1_FamilyName[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22].Line1_FamilyName[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22].a_no_diploma[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].b_HSDiploma[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].c_some_college[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].d_collegeplus[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].e_AssociateDegree[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].g_MasterDegree[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].h_ProfessionalDegree[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].f_BachelorDegree[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].i_DoctorateDegree[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1a_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1b_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1c_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1c1_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1c2_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1d_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1d1_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1d1_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1d_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1c2_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1c1_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1c_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1b_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].H1BSecALine1a_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[22].PartA_q3_Field_of_Study[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22].Line2f[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[22].Line2f[0].Line6_NAICSCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22].Line4_RateofPayPerYear[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22].Line7_Education[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22].Line8_FieldofStudy[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22].Line9_YearsofExperience[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22].Line10_SpecialSkills[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22].Line4_BeneficiarySupervisePositionTitles[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22].Line5_SOCCode1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[22].Line5_SOCCode2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[23]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[23].H1BSec2Line3_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line4_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line5_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line6_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line7_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line8_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line9_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line9_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line8_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line7_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line6_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line5_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line4_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line3_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line1_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line1_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line2_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].H1BSec2Line2_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].Cap[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].Cap[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].Cap[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].Cap[3]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].WageLevelBox[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].WageLevelBox[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].WageLevelBox[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[23].WageLevelBox[3]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[24].PartC_4aCheckbox[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].PartC_4cCheckbox[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].PartC_4bCheckbox[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].PartC_4eCheckbox[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].PartC_4fCheckbox[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].PartC_4dCheckbox[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].PartC_4gCheckbox[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].PartC_4hCheckbox[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].H1BSec4Line1a_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].H1BSec4Line1a_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].H1BSec4Line1b_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].H1BSec4Line1c_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].H1BSec4Line1c_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].H1BSec4Line1b_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].H1bSec3Line3c_TypeofDegree[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[24].H1bSec3Line3b_DateDegreeAwarded[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[24].H1bSec3Line3a_Name[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[24].Part7LineB_BEmp1City[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[24].Part7LineB_BEmp1State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[24].Part7LineB_BEmp1ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[24].H1bSec3Line3d_StreetName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[24].Sec3_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[24].Lineb_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].Lineb_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[24].Lineb_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[25].Line1_FamilyName[4]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].HSupLine2_FamilyName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].a_individual[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25].b_blanket[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25].LSuppLine4a[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25].LSuppLine4b_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25].LSuppLine4b_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25].LSuppLine4a[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25].Table2[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[25].Table2[0].Row1[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[25].Table2[0].Row1[0].Sect1_Name_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row1[0].DateFrom_line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row1[0].DateTo_line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row2[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[25].Table2[0].Row2[0].Sect1_Name_Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row2[0].DateFrom_line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row2[0].DateTo_line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row3[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[25].Table2[0].Row3[0].Sect1_Name_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row3[0].DateFrom_line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row3[0].DateTo_line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[25].Table2[0].Row4[0].Sect1_Name_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[0].DateFrom_line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[0].DateTo_line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[25].Table2[0].Row4[1].Sect1_Name_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[1].DateFrom_line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[1].DateTo_line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[2]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[25].Table2[0].Row4[2].Sect1_Name_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[2].DateFrom_line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[2].DateTo_line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[3]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[25].Table2[0].Row4[3].Sect1_Name_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[3].DateFrom_line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Table2[0].Row4[3].DateTo_line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].a_L1A[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25].b_L1B[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25].Part3Line2_City[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Part3Line2_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[25].Part3Line2_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Part3Line2_StreetName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Line2_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].LClassLine4_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25].LClassLine4_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25].LClassLine4_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[25].LSuppLine3_NameofEmployerAbroad[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Part3Line2_Province[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Part3Line2_Country[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[25].Part3Line2_PostalCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[27].Line3_JobDescription[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Line3_JobDescription[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[27].Table3[0].Row1[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[27].Table3[0].Row1[0].q5_DateFrom_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row1[0].q5_DateTo_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row1[0].q5_Explanation_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row2[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[27].Table3[0].Row2[0].q5_DateFrom_Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row2[0].q5_DateTo_Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row2[0].q5_Explanation_Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row3[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[27].Table3[0].Row3[0].q5_DateFrom_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row3[0].q5_DateTo_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row3[0].q5_Explanation_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row4[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[27].Table3[0].Row4[0].q5_DateFrom_Line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row4[0].q5_DateTo_Line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row4[0].q5_Explanation_Line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row4[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[27].Table3[0].Row4[1].q5_DateFrom_Line5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row4[1].q5_DateTo_Line5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row4[1].q5_Explanation_Line5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row4[2]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[27].Table3[0].Row4[2].q5_DateFrom_Line6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row4[2].q5_DateTo_Line6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Table3[0].Row4[2].q5_Explanation_Line6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].Line3_JobDescription[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[27].a_Parent[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[27].b_Branch[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[27].c_Subsidiary[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[27].d_Affiliate[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[27].e_JointVenture[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[29]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[29].Line3_JobDescription[4]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[29].Table4[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[29].Table4[0].Row1[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[29].Table4[0].Row1[0].Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[29].Table4[0].Row1[0].FEIN_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[29].Table4[0].Row2[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[29].Table4[0].Row2[0].Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[29].Table4[0].Row2[0].FEIN_Line2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[29].Table4[0].Row3[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[29].Table4[0].Row3[0].Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[29].Table4[0].Row3[0].FEIN_Line3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[29].Table4[0].Row4[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[29].Table4[0].Row4[0].Line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[29].Table4[0].Row4[0].FEIN_Line4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[29].Table4[0].Row4[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[29].Table4[0].Row4[1].Line5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[29].Table4[0].Row4[1].FEIN_Line5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[29].LSec1Line11_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[29].LSec1Line12_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[29].LSec1Line12[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[29].LSec1Line12[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[29].LSec1Line12_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[29].LSec1Line11_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[29].Line3_JobDescription[5]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[31].Table5[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[31].Table5[0].Row1[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[31].Table5[0].Row1[0].Cell1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row1[0].Cell2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row2[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[31].Table5[0].Row2[0].Cell1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row2[0].Cell2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row3[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[31].Table5[0].Row3[0].Cell1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row3[0].Cell2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row4[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[31].Table5[0].Row4[0].Cell1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row4[0].Cell2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row4[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[31].Table5[0].Row4[1].Cell1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row4[1].Cell2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row4[2]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[31].Table5[0].Row4[2].Cell1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row4[2].Cell2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row4[3]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[31].Table5[0].Row4[3].Cell1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row4[3].Cell2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row4[4]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[31].Table5[0].Row4[4].Cell1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[31].Table5[0].Row4[4].Cell2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[33]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[33].Line1_FamilyName[5]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[33].b_O1B[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[33].a_O1A[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[33].d_P1_majorleague[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[33].e_P1[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[33].c_O2[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[33].f_P1S[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[33].g_P2[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[33].h_P2S[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[33].i_P3[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[33].j_P3S[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[33].HSupLine2_FamilyName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[33].Line2_TtlNumberofBeneficiaries[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[33].Line3_JobDescription[6]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[33].Line3_JobDescription[7]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[33].Line3_JobDescription[8]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[33].OandPSuppLine7[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[33].OandPSuppLine7[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[34].Part7Line10b_EmpCity[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Part7Line10b_Emp1State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[34].Part7Line10b_Emp1ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Part7Line10b_Emp1StreetName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Part7Line10c_Emp1FromDate[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Line10b_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Line10b_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].Line10b_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].Line10b_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].LSuppLine10a_NameofPeer[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Part7Line11b_EmpCity[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Part7Line11b_Emp1State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[34].Part7Line11b_Emp1ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Part7Line11b_Emp1StreetName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Part7Lin11c_Emp1FromDate[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Line11b_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Line11b_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].Line11b_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].Line11b_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].LSuppLine11a_NameofPeer[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Part7Line12b_EmpCity[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Part7Line12b_Emp1State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[34].Part7Line12b_Emp1ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Part7Line12b_Emp1StreetName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Part7Line12c_Emp1FromDate[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Line12b_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Line12b_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].Line12b_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].Line12b_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].LSuppLine12a_NameofPeer[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].OandPSuppLine7_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].OandPSuppLine8[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].OandPSuppLine8[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].OandPSuppLine8[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].OandPSuppLine7_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[34].Line1_Duties[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Preparer_DaytimePhoneNumber1_10d[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Preparer_DaytimePhoneNumber1_11d[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[34].Preparer_DaytimePhoneNumber1_12d[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[35].Part7Line13b_EmpCity[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Part7Line13b_Emp1State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[35].Part7Line13b_Emp1ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Part7Line13b_Emp1StreetName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Part7Line13c_Emp1FromDate[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Line13b_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Line13b_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[35].Line13b_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[35].Line13b_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[35].LSuppLine13a_NameofPeer[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Line1_FamilyName[6]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Line1_GivenName[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Line1_MiddleName[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Line1b_DateofSignature[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Pt7Line3_EmailAddress[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Preparer_DaytimePhoneNumber1_13d[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].Pt7Line3_DaytimePhoneNumber1[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[35].P5_Line6a_SignatureofApplicant[4]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[36]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[36].Line1_FamilyName[7]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[36].HSupLine2_FamilyName[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[36].Line1_GivenName[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[36].Line1_MiddleName[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[36].Line1b_DateofSignature[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[36].Pt7Line3_EmailAddress[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[36].Pt7Line3_DaytimePhoneNumber1[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[36].P5_Line6a_SignatureofApplicant[5]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[36].Line1_FamilyName[8]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[37].TtlNumbersofWorker[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].TtlNumbersofWorker[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].TtlNumbersofWorker[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].TtlNumbersofWorker[4]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].R1Sec1Line2[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[37].R1Sec1Line2[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[37].Table2[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[37].Table2[1].Row1[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[37].Table2[1].Row1[0].FamilyMemberName_Line1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row1[0].FromDate1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row1[0].ToDate1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row2[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[37].Table2[1].Row2[0].FamilyMemberName2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row2[0].FromDate2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row2[0].ToDate2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[37].Table2[1].Row3[0].FamilyMemberName3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[0].FromDate3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[0].ToDate3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[37].Table2[1].Row3[1].FamilyMemberName4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[1].FromDate4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[1].ToDate4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[2]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[37].Table2[1].Row3[2].FamilyMemberName5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[2].FromDate5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[2].ToDate5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[3]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[37].Table2[1].Row3[3].FamilyMemberName6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[3].FromDate6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[3].ToDate6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[4]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[37].Table2[1].Row3[4].FamilyMemberName7[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[4].FromDate7[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Table2[1].Row3[4].ToDate7[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Line1_PetitionerName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[37].Line2_BeneficiaryName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[39].Line3_JobDescription[9]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Line3_JobDescription[10]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Line3_JobDescription[11]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[39].Table3[1].Row1[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[39].Table3[1].Row1[0].Position1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1].Row1[0].Summary1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1].Row2[0]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[39].Table3[1].Row2[0].Position2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1].Row2[0].Summary2[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1].Row2[1]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[39].Table3[1].Row2[1].Position3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1].Row2[1].Summary3[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1].Row2[2]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[39].Table3[1].Row2[2].Position4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1].Row2[2].Summary4[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1].Row2[3]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[39].Table3[1].Row2[3].Position5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1].Row2[3].Summary5[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1].Row2[4]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[39].Table3[1].Row2[4].Position6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Table3[1].Row2[4].Summary6[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Line3_JobDescription[12]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[39].Line3_JobDescription[13]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[41]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[41].R1Sec1Line6a1_Explanation[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[41].R1Sec1Line7a[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[41].R1Sec1Line7a[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[41].R1Sec1Line7a1_Explanation[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[41].Line3_JobDescription[14]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[41].R1Sec1Line6a[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[41].R1Sec1Line6a[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[41].R1Sec1Line8a[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[41].R1Sec1Line8a[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[41].R1Sec1Line8a1_Explanation[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[41].R1Sec1Line9a1_Explanation[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[41].R1Sec1Line9a[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[41].R1Sec1Line9a[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[42]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[42].R1Sec1Line10a1_Explanation[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[42].R1Sec1Line11a1_Explanation[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[42].R1Sec1Line12a1_Explanation[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[42].R1Sec1Line10a[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[42].R1Sec1Line10a[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[42].R1Sec1Line11a_Yes[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[42].R1Sec1Line11a_No[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[42].R1Sec1Line12a[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[42].R1Sec1Line12a[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[42].Part14_DateofSignature[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[42].Part14_PreparerPrintedName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[42].Line5_JobTitle[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[42].Part14_FirmName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[42].P5_Line6a_SignatureofApplicant[6]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[43].Part14_City[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Line2_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[43].Part14_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Part14_StreetName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Sec1_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Sec1_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[43].Sec1_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[43].Sec1_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[43].Part14_EmailAddress[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].EmployingOrgName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].NameOfReligiousDenomination[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Part14_DateofSignature[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].PreparerSignature[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Part14_City[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Line2_State[1]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[43].Part14_ZipCode[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Part14_StreetName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Attest_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Attest_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[43].Attest_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[43].Attest_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[43].Part14_FirmName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Part14_EmailAddress[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Part14_PreparerPrintedName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Line5_JobTitle[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Preparer_DaytimePhoneNumber1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Preparers_FaxPhoneNumber1[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Preparers_FaxPhoneNumber1[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[43].Preparer_DaytimePhoneNumber1[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[44].Line3_MiddleName1[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line3_GivenName1[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line3_FamilyName1[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line1_Gender[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[44].Line1_Gender[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[44].Line5_SSN[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line6_DateOfBirth[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line1_AlienNumber[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line3_MiddleName1[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line3_GivenName1[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line3_FamilyName1[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Part7LineA_EmpCity[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Part7LineA_Emp1State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[44].Part7LineA_Emp1ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Part7LineA_Emp1StreetName[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Att1_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Att1_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[44].Att1_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[44].Att1_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[44].Line_CityTown[4]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].A1_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].A1_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[44].Line7b_StreetNumberName[4]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].For_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[44].For_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[44].For_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[44].For_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].A1_Province[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].A1_PostalCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].A1_Country[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line_Country[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line_Country[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line14e_ExpDate[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line14a_ArrivalDeparture[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line15_CurrentNon[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[44].Line16_DateStatusExpires[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line14e_ExpDate[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line11a_DateofArrival[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line14b_Passport[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line14b_Passport[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line14b_Passport[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[44].Line_Country[4]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45]": {
+    "value": null,
+    "type": null
+  },
+  "form1[0].#subform[45].Line3_MiddleName1[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line3_GivenName1[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line3_FamilyName1[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line2_Gender[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[45].Line2_Gender[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[45].Line5_SSN[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line6_DateOfBirth[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line1_AlienNumber[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line3_MiddleName1[4]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line3_GivenName1[4]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line3_FamilyName1[4]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Part7LineA_EmpCity[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Part7LineA_Emp1State[1]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[45].Part7LineA_Emp1ZipCode[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Part7LineA_Emp1StreetName[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Att2_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Att2_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[45].Att2_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[45].Att2_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[45].Line_CityTown[5]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].FR_ZipCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].FR_State[0]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[45].Line7b_StreetNumberName[5]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].For2_Unit[0]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[45].For2_Unit[1]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[45].For2_Unit[2]": {
+    "value": null,
+    "type": "/Btn"
+  },
+  "form1[0].#subform[45].For2_AptSteFlrNumber[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].FR_Province[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].FR_PostalCode[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].FR_Country[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line_Country[5]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line_Country[6]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line14e_ExpDate[2]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line14a_ArrivalDeparture[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line15_CurrentNon[1]": {
+    "value": null,
+    "type": "/Ch"
+  },
+  "form1[0].#subform[45].Line16_DateStatusExpires[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line14e_ExpDate[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line11a_DateofArrival[1]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line14b_SEVIS[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line14b_EAD[0]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line14b_Passport[3]": {
+    "value": null,
+    "type": "/Tx"
+  },
+  "form1[0].#subform[45].Line_Country[7]": {
+    "value": null,
+    "type": "/Tx"
+  }
+}

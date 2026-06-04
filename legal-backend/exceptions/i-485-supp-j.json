@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Supp J Without Pending I-485",
+    "exception_description": "Supplement J submitted standalone; no associated pending I-485 receipt number; system accepts as floating record."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Employer EIN Changed Post-I-140",
+    "exception_description": "AC21 portability claim uses new employer EIN; system does not link to original sponsoring employer for same-or-similar test."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "180-Day Pendency Clock Reset on Transfer",
+    "exception_description": "I-485 transferred to different service center; day counter resets to zero; 180-day AC21 eligibility incorrectly denied."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "New Employer Entity vs Affiliate",
+    "exception_description": "AC21 same-or-similar role at parent company; entity relationship not validated against corporate structure records."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "SOC Code Portability Narrow Interpretation",
+    "exception_description": "LLM applies rigid SOC-code match for same-or-similar; misses cases where duties are functionally identical but SOC differs."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Job Offer Letter Date Misread",
+    "exception_description": "Offer letter date printed in European format; OCR inverts day/month; offer appears backdated before I-140 approval."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "I-140 Revocation After Supp J Filed",
+    "exception_description": "Sponsoring employer revokes I-140 after Supp J submitted; system does not cascade revocation to Supp J review."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Same vs Similar Occupation Borderline",
+    "exception_description": "LLM rates 'software engineer' \u2192 'data engineer' as dissimilar; SOC codes adjacent; requires human escalation."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Duplicate Supp J for Same I-485",
+    "exception_description": "Two Supplement Js filed for same I-485: one current employer, one AC21 employer; adjudicator sees only latest."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Supp J Filed After Interview Scheduled",
+    "exception_description": "Supplement J received after interview notice issued; interviewer not alerted to updated portability claim."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "AC21 Clock Fiscal Year Boundary",
+    "exception_description": "Pendency spans FY boundary; batch job resets pending-days counter on Oct 1; 180-day threshold not met in error."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "New Employer EPPA / FLSA Compliance",
+    "exception_description": "AC21 new employer listed on DOL wage-violation watchlist; no cross-check performed during Supp J review."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Functional Equivalence Test for Portability",
+    "exception_description": "LLM cannot reliably assess functional equivalence for highly specialized roles without domain-expert review trigger."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Large Law Firm Bulk Supp J Upload",
+    "exception_description": "100+ Supplement Js uploaded via bulk API; batch assigns wrong I-485 receipt numbers due to row-offset bug."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "Supp J Approval Not Linked to I-485 Record",
+    "exception_description": "Approved Supp J stored in separate table; I-485 adjudication system does not read portability approval; denies AOS."
+  }
+]

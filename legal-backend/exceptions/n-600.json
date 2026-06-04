@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Derivation vs Acquisition Path Mismatch",
+    "exception_description": "Applicant claims acquisition at birth abroad but form routed through derivation workflow; different evidence standards."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Parent's Naturalization Date vs Child's Birth Date",
+    "exception_description": "Parent naturalized after child turned 18; derivation clock not stopped at majority; certificate issued incorrectly."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "Physical Presence of USC Parent Calculation",
+    "exception_description": "INA \u00a7301(g) physical-presence transmission requirement: 5-year calculation for parent born after 1952 uses wrong threshold."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Adoptive vs Biological Parent Citizenship Path",
+    "exception_description": "Child adopted abroad; INA \u00a7320 automatic acquisition requires legal adoption finalized before age 16; age-check skipped."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "Former US Citizen Parent Relinquishment",
+    "exception_description": "Parent relinquished citizenship before child's birth; system still applies \u00a7301 transmission without checking parent's renunciation date."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Foreign Birth Certificate Translation",
+    "exception_description": "Certified translation of foreign birth certificate contains OCR-introduced errors in father's name; parentage check fails."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "Parent's Certificate of Naturalization vs USCIS Record",
+    "exception_description": "Certificate number on parent's N-550 does not match USCIS naturalization database record; derivation chain breaks."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "INA \u00a7320 vs \u00a7322 Route Selection",
+    "exception_description": "LLM routes child residing abroad to \u00a7320 (automatic) when \u00a7322 (applied-for, residing abroad) is the correct path."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Duplicate N-600 for Same Citizen Child",
+    "exception_description": "Two N-600 applications filed by each parent independently for same child; both proceed to certificate production."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Child Ages Out During Pendency",
+    "exception_description": "Child turns 18 during N-600 adjudication; \u00a7320 automatic citizenship already attached but interview not completed."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "INA Amendment Retroactivity",
+    "exception_description": "Statutory amendment (e.g., CCA 2000) extends citizenship retroactively; system applies current law to historical derivation date."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "INTERPOL Check for Foreign-Born Parent",
+    "exception_description": "Foreign-born USC parent's criminal history abroad not checked through INTERPOL channel before certificate issued."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Out-of-Wedlock Child Paternity Rules",
+    "exception_description": "LLM misapplies INA \u00a7309 paternity legitimation requirements for child born out of wedlock to USC father."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Embassy-Filed N-600K vs Domestic N-600",
+    "exception_description": "N-600K (abroad) and N-600 (domestic) filed simultaneously; parallel adjudication creates two certificate records."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "Certificate Not Linked to Naturalization Record",
+    "exception_description": "N-600 certificate issued but not linked to underlying parent's naturalization record; derivation chain cannot be audited."
+  }
+]

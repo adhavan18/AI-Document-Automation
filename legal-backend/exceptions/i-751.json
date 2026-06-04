@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Joint vs Waiver Filing Path Not Elected",
+    "exception_description": "Applicant checks neither joint petition nor waiver basis; system accepts incomplete form without requiring election."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Marriage Termination Date Conflict",
+    "exception_description": "Waiver based on divorce: marriage termination date entered after I-751 filing date; circular date logic not caught."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "90-Day Filing Window Calculation",
+    "exception_description": "Window opens 90 days before 2-year card expiry; system uses card issue date instead of expiry date as anchor."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Spouse's Identity in Joint Petition",
+    "exception_description": "Joint petition co-signed by person other than original sponsoring spouse; identity not verified against A-file."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "VAWA Waiver Without Abuse Evidence",
+    "exception_description": "I-751 VAWA waiver filed; system does not require contemporaneous evidence; waiver granted on declaration alone."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "2-Year Card Expiry Date OCR Inversion",
+    "exception_description": "Card expiry MM/YY OCR'd with month and year swapped; 90-day window computed from wrong date."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "I-485 Pending Alongside I-751",
+    "exception_description": "Conditional resident files I-751 while separate I-485 (different basis) pending; dual-path conflict not flagged."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Bona Fide Marriage Evidence Sufficiency",
+    "exception_description": "LLM rates evidence package as sufficient based on photo volume; does not check for joint financial-account evidence."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "I-751 Filed After Removal Proceedings Start",
+    "exception_description": "Conditional resident in removal proceedings files I-751; USCIS accepts without EOIR jurisdiction check."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Automatic Extension Stamp Not Issued",
+    "exception_description": "I-751 receipt notice should trigger 18-month (or 24-month) automatic extension on 2-year card; stamp not generated."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Extension Stamp Expiry Across FY",
+    "exception_description": "18-month extension stamp issued; stamp validity straddles fiscal year; I-9 reverification date computed incorrectly."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "Spousal Abuse Record Not Cross-Checked",
+    "exception_description": "Joint petitioning spouse has domestic violence arrest record; no cross-check against law enforcement database."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Good Faith Marriage Post-Entry Assessment",
+    "exception_description": "LLM cannot reliably assess marriage bona fides when couple married abroad and evidence is entirely foreign-language."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Immigration Attorney Bulk I-751 Submission",
+    "exception_description": "Firm submits 50 I-751 petitions; batch processing associates wrong spouse's biometrics with each petition."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "2-Year Card Not Invalidated Post-Approval",
+    "exception_description": "Approved I-751 issues 10-year card; prior 2-year card not revoked in USCIS card-validity database."
+  }
+]

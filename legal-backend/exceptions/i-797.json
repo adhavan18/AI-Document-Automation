@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Suffix Routing Misconfiguration",
+    "exception_description": "I-797A (approval with I-94) generated for petition type that should produce I-797B (approval without I-94); wrong suffix rules."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Receipt Number Format Violation",
+    "exception_description": "Receipt number deviates from EAC/WAC/LIN/SRC/NBC + 10-digit format; downstream FOIA and status-check systems reject lookup."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "Validity Period End Date Arithmetic",
+    "exception_description": "I-797 approval validity period end date calculated as start + duration but fails to account for month-length variation; 1-day error."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Notice Addressee vs Attorney of Record",
+    "exception_description": "I-797 mailed to beneficiary instead of attorney of record per G-28; counsel not notified; response deadline missed."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "RFE Response Deadline on I-797C",
+    "exception_description": "I-797C RFE notice states 87-day response window; system calculates deadline from mailing date not receipt date; discrepancy."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Barcode / QR Code Decode Failure",
+    "exception_description": "Machine-readable zone on I-797 card notice misprinted; barcode scanner at port of entry cannot decode; manual override required."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "I-797 vs SEVIS Record Mismatch",
+    "exception_description": "I-797 approval for F-1 extension not transmitted to SEVIS; DSO sees expired record while USCIS shows approval."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "RFE vs NOID vs NOIR Misclassification",
+    "exception_description": "LLM classifies Notice of Intent to Deny (NOID) as RFE; different response strategy and legal standard not applied."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Duplicate I-797 Receipt Notices",
+    "exception_description": "System generates two receipt notices for single filing; petitioner pays fee twice believing first notice was lost."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "I-797 Issued for Withdrawn Petition",
+    "exception_description": "Petition withdrawn by petitioner; approval notice already in mail queue; I-797 approval issued post-withdrawal."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Notice Date vs Fiscal Year Audit Trail",
+    "exception_description": "I-797 notice dated Sep 30 but printed Oct 1; fiscal-year attribution of adjudication differs between notice and internal log."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "Sensitive PII on I-797 Transport Letter",
+    "exception_description": "I-797D transport letter contains full SSN in plaintext; document transmitted via non-encrypted channel."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "RFE Evidence Checklist Generation",
+    "exception_description": "LLM generates generic RFE response checklist; does not tailor to specific deficiency language in I-797C notice."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Shared Employer Portal I-797 Delivery",
+    "exception_description": "Multiple companies on shared portal; I-797 approval for company A delivered to company B inbox."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "Approval Not Written to CLAIMS Before Notice Mailed",
+    "exception_description": "I-797 approval notice mailed before CLAIMS database updated; applicant calls to check status and system shows pending."
+  }
+]

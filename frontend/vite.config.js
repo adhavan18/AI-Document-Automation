@@ -6,6 +6,13 @@ export default defineConfig({
   server: {
     port: 3003,
     proxy: {
+      // legal_processing FastAPI backend (Notice Processing)
+      '/legal': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/legal/, ''),
+      },
+      // existing Node backend
       '/api': 'http://localhost:3002',
     },
   },

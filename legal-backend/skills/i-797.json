@@ -1,0 +1,114 @@
+{
+  "form_id": "I-797",
+  "form_title": "Notice of Action",
+  "fields": [
+    {
+      "name": "primary_flag",
+      "required": false,
+      "type": "boolean",
+      "hint": "Primary Flag \u2014 defaults to True"
+    },
+    {
+      "name": "sent_government_agency",
+      "required": false,
+      "type": "date",
+      "hint": "Date sent to government agency (MM/DD/YYYY)"
+    },
+    {
+      "name": "receipt_for",
+      "required": false,
+      "type": "string",
+      "hint": "Receipt For \u2014 matter/person lookup"
+    },
+    {
+      "name": "receipt_type",
+      "required": true,
+      "type": "enum",
+      "hint": "Receipt Type: USCIS Receipt Number, J Visa Application Number, NVC Matter Number, PERM Receipt, Other"
+    },
+    {
+      "name": "receipt_date",
+      "required": false,
+      "type": "date",
+      "hint": "Receipt Date (MM/DD/YYYY)"
+    },
+    {
+      "name": "receipt_notice_date",
+      "required": false,
+      "type": "date",
+      "hint": "Receipt Notice Date (MM/DD/YYYY)"
+    },
+    {
+      "name": "receipt_number",
+      "required": false,
+      "type": "string",
+      "hint": "Receipt Number (USCIS XXX0000000000)"
+    },
+    {
+      "name": "receipt_status",
+      "required": false,
+      "type": "enum",
+      "hint": "Receipt Status: Pending, Approved, Denied, RFE, Withdrawn, Shipped"
+    },
+    {
+      "name": "expiration_alert",
+      "required": false,
+      "type": "boolean",
+      "hint": "Expiration Alert \u2014 Yes/No, defaults to No"
+    },
+    {
+      "name": "receipt_notes",
+      "required": false,
+      "type": "string",
+      "hint": "Receipt Notes \u2014 free text"
+    },
+    {
+      "name": "notice_type",
+      "required": true,
+      "type": "string",
+      "hint": "Notice type header"
+    },
+    {
+      "name": "applicant_name",
+      "required": true,
+      "type": "string",
+      "hint": "Applicant/Beneficiary name line"
+    },
+    {
+      "name": "alien_registration_number",
+      "required": false,
+      "type": "string",
+      "hint": "A-Number if printed"
+    },
+    {
+      "name": "case_type",
+      "required": true,
+      "type": "string",
+      "hint": "Case type line"
+    },
+    {
+      "name": "notice_date",
+      "required": true,
+      "type": "date",
+      "hint": "Notice date field"
+    },
+    {
+      "name": "validity_start",
+      "required": false,
+      "type": "date",
+      "hint": "Valid from date"
+    },
+    {
+      "name": "validity_end",
+      "required": false,
+      "type": "date",
+      "hint": "Valid to/through date"
+    },
+    {
+      "name": "action_taken",
+      "required": true,
+      "type": "string",
+      "hint": "Action taken / approval language"
+    }
+  ]
+}

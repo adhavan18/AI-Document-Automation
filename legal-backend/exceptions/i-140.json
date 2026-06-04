@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Preference Category vs Basis Conflict",
+    "exception_description": "EB-1A extraordinary ability selected but petition built on employment offer; contradictory self-petition vs sponsored logic."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Priority Date vs Labor Cert Date",
+    "exception_description": "Priority date field populated with I-140 receipt date instead of underlying PERM labor certification date."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "EB-2 NIW National Interest Scoring",
+    "exception_description": "Automated NIW scoring algorithm applies three-prong Dhanasar test but arithmetic weight of prongs not normalized to 100%."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Petitioning Entity Name Change",
+    "exception_description": "Employer changed legal name post-PERM; I-140 lists new name; DOL PERM record shows prior name; cross-reference fails."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "Ability to Pay Look-Back Period",
+    "exception_description": "Ability-to-pay assessed using tax year T-2 but company fiscal year differs from calendar year; wrong year's return evaluated."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Foreign Degree Credential OCR Error",
+    "exception_description": "Foreign university name contains diacritics; OCR drops accents; degree equivalency database lookup fails."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "PERM Expiry Before I-140 Adjudication",
+    "exception_description": "PERM approval 180-day validity expires before I-140 adjudicated; petition proceeds on expired underlying labor cert."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "EB-1B Outstanding Researcher Threshold",
+    "exception_description": "LLM borderline-passes six-criteria test for EB-1B; marginal citation count accepted without peer-review depth analysis."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Priority Date Porting to New Petition",
+    "exception_description": "Beneficiary ports old priority date to new I-140; earlier petition was withdrawn; porting eligibility not verified."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Concurrent I-485 Filed Before I-140 Approval",
+    "exception_description": "I-485 filed concurrently; I-140 denied; I-485 auto-denied without notifying applicant of basis."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Visa Bulletin Cut-Off Retrogression",
+    "exception_description": "Priority date current at I-140 filing; retrogresses before adjudication; approval issued but I-485 cannot follow."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "EB-5 Source-of-Funds AML Check Skipped",
+    "exception_description": "EB-5 I-140 equivalent (I-526) investment-source AML screening not linked to OFAC watch-list check at intake."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Specialty vs Research Role for EB-2 vs EB-1B",
+    "exception_description": "LLM misroutes university researcher to EB-2 when EB-1B outstanding researcher criteria clearly met."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Large-Company Blanket I-140 Quota",
+    "exception_description": "Blanket petition covers 500 beneficiaries; individual beneficiary status updates not isolated; one denial cascades."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "Withdrawn I-140 Priority Date Retention",
+    "exception_description": "I-140 withdrawn by employer; beneficiary's priority date should survive per AC21 if 180 days elapsed; flag not set."
+  }
+]

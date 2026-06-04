@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Category Code vs Basis Mismatch",
+    "exception_description": "C26 (H-4 EAD) submitted but I-539 approval for H-4 not yet posted; basis document missing and not flagged."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "SSN Conflict on Re-Application",
+    "exception_description": "New EAD application SSN field blank; prior SSN in USCIS records not auto-populated; creates duplicate alien record."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "EAD Validity Period Overlap",
+    "exception_description": "New EAD start date overlaps prior EAD end date by one day; payroll system dual-activates authorizations."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Name Spelling Discrepancy vs Passport",
+    "exception_description": "Legal name on EAD differs from passport by middle-name inclusion; E-Verify tentative nonconfirmation triggered."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "OPT Cap-Gap EAD Issuance Timing",
+    "exception_description": "EAD issued for cap-gap period but H-1B lottery not yet confirmed; should be conditional pending cap selection."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Card Number Barcode Misprint",
+    "exception_description": "EAD barcode encodes transposed digit; E-Verify scan returns 'document not found' for valid card."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "I-485 Denial Not Propagating to C09 EAD",
+    "exception_description": "Underlying I-485 denied; C09 EAD still shows valid in employer's E-Verify; automatic revocation not triggered."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Category Code Ambiguity C08 vs C09",
+    "exception_description": "LLM routes C08 (asylum) application through C09 (AOS) workflow; different evidence requirements missed."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "EAD Filed Before Priority Date Current",
+    "exception_description": "C09 EAD filed when I-485 not yet eligible to file; receipt issued in error before visa bulletin check."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Renewal Auto-Extension Not Applied",
+    "exception_description": "H-4 EAD renewal filed within 180 days; auto-extension rule not applied; employer notified of lapse in error."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "AC21 Portability Year Boundary",
+    "exception_description": "180-day AC21 clock spans two fiscal years; day-count resets to zero on Oct 1 due to batch-job bug."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "EAD Issued to Deported Alien",
+    "exception_description": "Prior order of removal not checked before EAD issuance; alien re-entered without inspection."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "STEM OPT Extension Eligibility",
+    "exception_description": "LLM approves STEM OPT extension for CIP code not on STEM list; incorrect degree-field mapping."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Employer E-Verify Account Cross-Contamination",
+    "exception_description": "Multiple employer entities on same MOU; EAD verification results of one entity logged under sibling entity's account."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "EAD Expiry Not Written to Work-Auth Table",
+    "exception_description": "Approved EAD expiry date not propagated to employment-authorization table; I-9 compliance check uses NULL date."
+  }
+]

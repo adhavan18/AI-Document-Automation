@@ -8,15 +8,14 @@ import { Dashboard } from './modules/Dashboard.jsx';
 import { Uc1NoticeIngestion } from './modules/Uc1NoticeIngestion.jsx';
 import { Uc2ComplianceGeneration } from './modules/Uc2ComplianceGeneration.jsx';
 import { Uc3CrossValidation } from './modules/Uc3CrossValidation.jsx';
-import { Deadlines } from './modules/Deadlines.jsx';
+import { NoticeReviewQueue } from './modules/NoticeReviewQueue.jsx';
 import { search as searchApi } from './api.js';
 
 const MODULES = [
-  { id: 'dashboard', name: 'Dashboard',              blurb: 'Overview & deadlines',          icon: LayoutDashboard },
+  { id: 'dashboard', name: 'Dashboard',              blurb: 'Overview',                     icon: LayoutDashboard },
   { id: 'uc1',       name: 'Notice Processing',       blurb: 'Extract notices & auto-update', icon: Inbox },
   { id: 'uc2',       name: 'Compliance Doc (PAF)',     blurb: 'Generate H-1B compliance files', icon: FileCheck2 },
   { id: 'uc3',       name: 'Automate Filing (H4 EAD)', blurb: 'Auto-review & flag data mismatch', icon: ShieldCheck },
-  { id: 'deadlines', name: 'Deadlines',               blurb: 'Key dates & expiry alerts',    icon: Clock },
 ];
 
 function getInitials(name) {
@@ -108,13 +107,11 @@ export default function ConsoleApp({ session, onLogout }) {
       case 'dashboard':
         return <Dashboard onNavigate={navigate} />;
       case 'uc1':
-        return <Uc1NoticeIngestion key={activeNoticeId || 'notices'} search={search} initialNoticeId={activeNoticeId} />;
+        return <NoticeReviewQueue key={activeNoticeId || 'notices'} initialNoticeId={activeNoticeId} />;
       case 'uc2':
         return <Uc2ComplianceGeneration key={activeMatterId || 'matters'} search={search} session={session} initialMatterId={activeMatterId} />;
       case 'uc3':
         return <Uc3CrossValidation key={activeCaseId || 'list'} initialCaseId={activeCaseId} />;
-      case 'deadlines':
-        return <Deadlines />;
       default:
         return <Dashboard onNavigate={navigate} />;
     }
@@ -129,14 +126,14 @@ export default function ConsoleApp({ session, onLogout }) {
         {/* ── Sidebar ──────────────────────────────────────────────────── */}
         <aside className="w-64 shrink-0 h-full bg-white border-r border-slate-200/80 flex flex-col overflow-y-auto">
           {/* Brand */}
-          <div className="px-5 py-4 border-b border-slate-200/80">
+          <div className="px-5 py-5 border-b border-slate-200/80">
             <img
               src="https://gip-us.com/wp-content/uploads/2023/12/gipuheader.png"
               alt="GIP"
-              className="h-12 w-auto object-contain"
+              className="h-16 w-auto object-contain"
             />
-            <div className="text-[10px] text-slate-500 uppercase tracking-[0.1em] mt-2">
-              {session?.role ?? 'Immigration · Reviewer'}
+            <div className="text-[11px] text-slate-500 uppercase tracking-[0.1em] mt-2">
+              {session?.role}
             </div>
           </div>
 
@@ -171,7 +168,7 @@ export default function ConsoleApp({ session, onLogout }) {
         {/* ── Main ─────────────────────────────────────────────────────── */}
         <main className="flex-1 min-w-0 flex flex-col min-h-screen">
           {/* Header */}
-          <header className="sticky top-0 z-10 bg-white border-b border-slate-200/80 px-6 py-4 flex items-center justify-between">
+          <header className={`sticky top-0 z-10 bg-white border-b border-slate-200/80 px-6 py-4 flex items-center justify-between ${activeId === 'uc1' ? 'hidden' : ''}`}>
             <div>
               <div className="flex items-center gap-2 text-[11px] text-slate-500">
                 <span>Pilot Console</span>
@@ -221,7 +218,7 @@ export default function ConsoleApp({ session, onLogout }) {
             </div>
           </header>
 
-          <div className="p-6 flex-1 overflow-y-auto">
+          <div className={`flex-1 overflow-y-auto ${activeId === 'uc1' ? '' : 'p-6'}`}>
             <ErrorBoundary>
               {renderModule()}
             </ErrorBoundary>

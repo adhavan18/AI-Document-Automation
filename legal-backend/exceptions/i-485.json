@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Missing Medical Exam I-693 Seal",
+    "exception_description": "I-693 envelope seal broken or civil surgeon signature missing; AOS application accepted at intake without medical hold."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Inadmissibility Ground Not Disclosed",
+    "exception_description": "Applicant leaves prior removal order blank; system does not cross-check EOIR removal database at field entry."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "Unlawful Presence Day Count Error",
+    "exception_description": "3/10-year bar calculation incorrect when multiple entries; each period of unlawful presence not aggregated correctly."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "A-Number vs USCIS Online Account Mismatch",
+    "exception_description": "Applicant has two A-Numbers from separate proceedings; I-485 links to wrong alien file; prior removal order missed."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "Public Charge Means Test Calculation",
+    "exception_description": "Household size formula excludes sponsored co-habitant; income threshold computed against wrong federal poverty level."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Country of Birth vs Chargeability OCR",
+    "exception_description": "Country of birth field OCR'd from handwritten 'Iran' as 'Iraq'; assigns wrong per-country quota chargeability."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "Advance Parole Expires Mid-Adjudication",
+    "exception_description": "AP expires while I-485 pending; applicant travels; pending AOS deemed abandoned; system not notified of departure."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Criminal History Admissibility Screen",
+    "exception_description": "LLM flags CIMT conviction then clears it based on petty-offense exception without checking maximum-sentence threshold."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Concurrent Filing Date Stamp Error",
+    "exception_description": "I-140 and I-485 filed same day; I-140 time-stamped one minute after I-485; concurrent filing eligibility denied incorrectly."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Biometrics Expired During Long Adjudication",
+    "exception_description": "Biometrics collected 18 months prior; validity expired; system does not auto-trigger reappointment; interview scheduled on stale data."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Visa Availability Date vs Filing Date",
+    "exception_description": "Applicant uses filing-date chart; USCIS switches to final-action-date chart mid-fiscal-year; eligibility window incorrectly computed."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "FBI Name Check Clearance Expiry",
+    "exception_description": "FBI name check cleared but 15-month validity window expires before interview; interview conducted without re-clearance."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Complex Admissibility Waiver Routing",
+    "exception_description": "LLM approves AOS without flagging need for I-601 waiver for prior fraud misrepresentation ground."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Family-Based vs Employment-Based Mixed Queue",
+    "exception_description": "Couple files AOS; one employment-based, one family-based; cases split to different service centers; interview dates diverge."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "EOIR Removal Order Not Reflected in CLAIMS",
+    "exception_description": "Immigration court issued removal order; CLAIMS AOS record remains active; green card produced for removed alien."
+  }
+]

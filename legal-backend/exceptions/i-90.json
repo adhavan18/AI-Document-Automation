@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Incorrect Replacement Reason Code",
+    "exception_description": "Applicant selects 'never received' when card was issued but lost; triggers card-production audit instead of reprint."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "ADIT Stamp Accepted in Lieu of Card",
+    "exception_description": "Passport ADIT stamp date entered as card expiry; system treats stamp as valid LPR card for renewal eligibility."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "10-Year vs 2-Year Card Expiry Mix-Up",
+    "exception_description": "Conditional resident's 2-year card expiry treated as standard 10-year cycle; I-90 filed too early without I-751 filed first."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Name Change Not Reflected",
+    "exception_description": "Legal name changed by court order post-naturalization attempt; I-90 submitted with old name; biometrics mismatch."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "Reentry Permit Active During I-90",
+    "exception_description": "LPR abroad with valid reentry permit; I-90 filed from overseas; USCIS jurisdiction and biometrics scheduling conflict."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Green Card Magnetic Stripe OCR Error",
+    "exception_description": "OCR reads card-back magnetic data incorrectly; A-Number last digit transposed; wrong alien file pulled."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "I-551 Stamp vs Actual Card Conflict",
+    "exception_description": "I-551 stamp in passport valid but underlying permanent card revoked; I-90 system approves replacement."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Conditional vs Permanent LPR Routing",
+    "exception_description": "LLM routes conditional resident to I-90 instead of I-751; incorrect form accepted without error."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Duplicate I-90 After Card Production",
+    "exception_description": "Second I-90 filed while first in production; two cards printed for same alien; one must be recalled."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Biometrics Reuse Window Expired",
+    "exception_description": "Prior biometrics on file but 15-month reuse window expired; system does not schedule new appointment."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Card Expiry in Leap Year",
+    "exception_description": "Card expiry calculated as 10 years from issuance; Feb 29 issuance date creates invalid Feb 29 expiry in non-leap year."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "Lost Card Not Flagged in SAVE",
+    "exception_description": "Reported-lost card number not deactivated in SAVE system; employer continues verifying with invalid card."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "SB-1 Returning Resident Classification",
+    "exception_description": "LLM misclassifies extended-absence LPR as abandonment instead of SB-1 eligibility; routes to I-90 incorrectly."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Card Production Vendor Mismatch",
+    "exception_description": "Card personalization data sent to wrong regional production vendor; card printed with incorrect facility code."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "Old Card Not Invalidated in Database",
+    "exception_description": "Prior card record not marked 'superseded' after I-90 approval; two active card records coexist in CLAIMS."
+  }
+]

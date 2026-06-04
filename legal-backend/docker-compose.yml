@@ -1,0 +1,61 @@
+version: "3.9"
+
+# ---------------------------------------------------------------------------
+# USCIS Form Processor — FastAPI + PostgreSQL (no Celery/Redis)
+#
+# Services
+# --------
+#   postgres — persistent database (port 5432)
+#   app      — FastAPI web server (port 8001); runs the extraction pipeline
+#              synchronously inside the /upload request
+#
+# Usage
+# -----
+#   cp .env.example .env          # fill in secrets
+#   docker compose up --build
+#
+# For local dev without Docker you usually only need the `postgres` service
+# (run the API with `python start_server.py`):
+#   docker compose up -d postgres
+# ---------------------------------------------------------------------------
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       legal_processing
+      POSTGRES_USER:     uscis
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uscis -d legal_processing"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: uvicorn app:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL:      postgresql://uscis:${POSTGRES_PASSWORD}@postgres:5432/legal_processing
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      JWT_SECRET:        ${JWT_SECRET}
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  uploads_data:

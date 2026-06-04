@@ -98,64 +98,90 @@ export function Uc1NoticeIngestion({ search = '', initialNoticeId = null }) {
         {/* Upload + queue */}
         <div className="col-span-5 space-y-3">
 
-          {/* Drop zone */}
-          <div
-            onClick={() => !uploading && fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${uploading
-                ? 'border-slate-300 bg-slate-50 cursor-wait'
-                : 'border-slate-200 hover:border-slate-400 hover:bg-slate-50 cursor-pointer'
-              }`}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,image/*"
-              className="hidden"
-              onChange={handleUpload}
-            />
-            <Upload className={`w-6 h-6 mx-auto mb-2 ${uploading ? 'text-slate-300 animate-pulse' : 'text-slate-400'}`} />
-            <div className="text-sm font-medium text-slate-700">
-              {uploading ? 'Extracting via AI…' : 'Upload Notice'}
-            </div>
-            <div className="text-xs text-slate-400 mt-1">PDF or image · click to browse</div>
+          {/* Header */}
+          <div className="px-4 py-3">
+            <div className="text-[15px] font-semibold text-slate-900">Notice Processing</div>
+            <div className="text-[10.5px] text-slate-500 uppercase tracking-wider mt-1">Review Queue · USCIS Forms</div>
           </div>
 
+          {/* Upload Button */}
+          <button
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            disabled={uploading}
+            className="w-full mx-4 px-4 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors shadow-md hover:shadow-lg"
+            style={{ backgroundColor: '#204496' }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            {uploading ? 'Extracting via AI…' : 'Upload Document'}
+          </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,image/*"
+            className="hidden"
+            onChange={handleUpload}
+          />
+
           {error && (
-            <div className="px-3 py-2 rounded bg-rose-50 ring-1 ring-rose-200 text-xs text-rose-700">{error}</div>
+            <div className="mx-4 px-3 py-2 rounded-lg bg-orange-50 border border-orange-200 text-xs text-orange-700">{error}</div>
           )}
 
           {/* Queue */}
           {notices.length > 0 && (
-            <Section title="Processed notices" subtitle={q ? `${filtered.length} of ${notices.length} match` : `${notices.length} in session`}>
-              <div className="space-y-1.5">
-                {filtered.map((n) => (
-                  <button
-                    key={n.id}
-                    onClick={() => setSelectedId(n.id)}
-                    className={`w-full text-left p-3 rounded-md border transition-all ${selectedId === n.id
-                        ? 'border-slate-900 bg-slate-50 shadow-sm'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                      }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <StatusPill status={n.status} />
-                          {n.flags > 0 && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-700">
-                              <Flag className="w-2.5 h-2.5" />{n.flags}
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-1 text-sm font-medium text-slate-900 truncate">{n.beneficiary}</div>
-                        <div className="text-xs text-slate-500 truncate">{n.petitioner}</div>
-                      </div>
-                      <div className="text-[10px] text-slate-400 whitespace-nowrap">{n.received}</div>
-                    </div>
-                  </button>
-                ))}
+            <div className="px-4">
+              <div className="text-[11px] font-semibold text-slate-500 tracking-[0.08em] uppercase mb-3">
+                Processed Notices {q && <span className="text-[10px] font-normal">— {filtered.length} of {notices.length}</span>}
               </div>
-            </Section>
+              <div className="space-y-2">
+                {filtered.map((n) => {
+                  const statusColor = n.status === 'processing' ? '#b8791a' : n.status === 'ready' ? '#204496' : '#1f8a52';
+                  return (
+                    <button
+                      key={n.id}
+                      onClick={() => setSelectedId(n.id)}
+                      className={`w-full text-left p-3 rounded-lg border transition-all relative overflow-hidden ${selectedId === n.id
+                          ? 'border-blue-500 bg-white shadow-md'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                        }`}
+                    >
+                      {/* Left rail */}
+                      <div
+                        className="absolute left-0 top-0 bottom-0 w-0.5"
+                        style={{ backgroundColor: statusColor }}
+                      />
+
+                      <div className="flex items-start justify-between gap-2 pl-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <div className="font-semibold text-sm text-slate-900">{n.matter || 'N-400'}</div>
+                            {n.flags > 0 && (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded">
+                                HIGH
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-mono mt-0.5">#{n.id}</div>
+                          <div className="text-sm font-medium text-slate-900 mt-2">{n.beneficiary}</div>
+                          <div className="text-xs text-slate-500">{n.petitioner || 'Notice'}</div>
+                          <div className="flex items-center justify-between mt-2 gap-2">
+                            <div className="text-[10.5px] font-semibold uppercase tracking-wide" style={{ color: statusColor }}>
+                              {n.status === 'processing' ? 'Processing' : n.status === 'ready' ? 'Ready' : 'Completed'}
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono">{n.fields} fields</div>
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-slate-400 whitespace-nowrap text-right">{n.received}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
 

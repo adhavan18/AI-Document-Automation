@@ -1,0 +1,120 @@
+{
+  "form_id": "I-129F",
+  "form_title": "Petition for Alien Fiance(e)",
+  "fields": [
+    {
+      "name": "primary_flag",
+      "required": false,
+      "type": "boolean",
+      "hint": "Primary Flag \u2014 defaults to True"
+    },
+    {
+      "name": "sent_government_agency",
+      "required": false,
+      "type": "date",
+      "hint": "Date sent to government agency (MM/DD/YYYY)"
+    },
+    {
+      "name": "receipt_for",
+      "required": false,
+      "type": "string",
+      "hint": "Receipt For \u2014 matter/person lookup"
+    },
+    {
+      "name": "receipt_type",
+      "required": true,
+      "type": "enum",
+      "hint": "Receipt Type: USCIS Receipt Number, J Visa Application Number, NVC Matter Number, PERM Receipt, Other"
+    },
+    {
+      "name": "receipt_date",
+      "required": false,
+      "type": "date",
+      "hint": "Receipt Date (MM/DD/YYYY)"
+    },
+    {
+      "name": "receipt_notice_date",
+      "required": false,
+      "type": "date",
+      "hint": "Receipt Notice Date (MM/DD/YYYY)"
+    },
+    {
+      "name": "receipt_number",
+      "required": false,
+      "type": "string",
+      "hint": "Receipt Number (USCIS XXX0000000000)"
+    },
+    {
+      "name": "receipt_status",
+      "required": false,
+      "type": "enum",
+      "hint": "Receipt Status: Pending, Approved, Denied, RFE, Withdrawn, Shipped"
+    },
+    {
+      "name": "expiration_alert",
+      "required": false,
+      "type": "boolean",
+      "hint": "Expiration Alert \u2014 Yes/No, defaults to No"
+    },
+    {
+      "name": "receipt_notes",
+      "required": false,
+      "type": "string",
+      "hint": "Receipt Notes \u2014 free text"
+    },
+    {
+      "name": "petitioner_family_name",
+      "required": true,
+      "type": "string",
+      "hint": "Part 1, Item 1.a"
+    },
+    {
+      "name": "petitioner_given_name",
+      "required": true,
+      "type": "string",
+      "hint": "Part 1, Item 1.b"
+    },
+    {
+      "name": "petitioner_dob",
+      "required": true,
+      "type": "date",
+      "hint": "Part 1, Item 4"
+    },
+    {
+      "name": "beneficiary_family_name",
+      "required": true,
+      "type": "string",
+      "hint": "Part 2, Item 1.a"
+    },
+    {
+      "name": "beneficiary_given_name",
+      "required": true,
+      "type": "string",
+      "hint": "Part 2, Item 1.b"
+    },
+    {
+      "name": "beneficiary_dob",
+      "required": true,
+      "type": "date",
+      "hint": "Part 2, Item 4"
+    },
+    {
+      "name": "beneficiary_country_of_birth",
+      "required": true,
+      "type": "string",
+      "hint": "Part 2, Item 6"
+    },
+    {
+      "name": "date_met_beneficiary",
+      "required": true,
+      "type": "date",
+      "hint": "Part 3, Item 1 \u2014 date met in person"
+    },
+    {
+      "name": "prior_petitions",
+      "required": true,
+      "type": "string",
+      "hint": "Part 3, Item 3 \u2014 Yes/No prior K-1 petitions"
+    }
+  ]
+}

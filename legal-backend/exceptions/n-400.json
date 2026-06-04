@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Good Moral Character Period Miscounted",
+    "exception_description": "5-year (or 3-year spousal) GMC look-back period start date computed from filing date rather than interview date."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Selective Service Registration Gap",
+    "exception_description": "Male applicant aged 26\u201331; selective service registration not verified for ages 18\u201325; field left blank and accepted."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "Continuous Residence Day-Count Error",
+    "exception_description": "Single trip >6 months breaks continuous residence; multiple <6-month trips totaling >12 months not aggregated."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "LPR Card Expiry vs Green Card Validity",
+    "exception_description": "Applicant submits expired LPR card; system validates card number but not expiry date; interview scheduled for non-LPR."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "Tax Filing Obligation for Abroad Income",
+    "exception_description": "Applicant lived abroad 3 years as LPR; worldwide income tax-filing obligation not checked; good-moral-character issue missed."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Naturalization Certificate Number OCR",
+    "exception_description": "Prior naturalization certificate number (of parent for derivation claim) OCR'd with digit transposition; wrong certificate pulled."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "EOIR Removal Order Active During N-400",
+    "exception_description": "Immigration court removal order not yet final but pending; N-400 adjudicated without EOIR hold flag."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Disability Exception vs Standard Path",
+    "exception_description": "LLM routes applicant with hearing impairment to standard civics test; N-648 disability exception not flagged."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "N-400 Filed Before 5-Year Eligibility",
+    "exception_description": "Application filed 90 days early (per allowance); system miscounts and rejects as premature when within 90-day window."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Oath Ceremony Scheduling Post-Approval",
+    "exception_description": "Approval notice issued; oath ceremony not scheduled within statutory period; naturalization deemed incomplete."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Fee Schedule Change During Processing",
+    "exception_description": "N-400 filed at old fee; fee schedule increases; USCIS requests fee supplement mid-adjudication without legal basis."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "FBI Fingerprint Expiry Pre-Oath",
+    "exception_description": "FBI clearance expires between interview and oath ceremony; oath administered without refreshed clearance."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Civics Test Exemption Age + Years Rule",
+    "exception_description": "LLM misapplies 55/15 or 50/20 civics exemption; foreign-language interview not scheduled when eligible."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Mass Naturalization Ceremony Overflow",
+    "exception_description": "Batch oath ceremony scheduled for 500 applicants; 12 records with unresolved flags included in ceremony batch."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "Certificate Number Not Reserved Pre-Ceremony",
+    "exception_description": "Certificate of naturalization number not reserved before ceremony; duplicate number assigned to two new citizens."
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "AP vs Reentry Permit Form Variant",
+    "exception_description": "Single I-131 form used for advance parole and reentry permit; fee and validity period fields not branched by travel-doc type."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "Emergency AP Without Underlying Basis",
+    "exception_description": "Emergency advance parole requested; no pending humanitarian or AOS basis verified before issuance."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "AP Validity Overlap with Prior AP",
+    "exception_description": "New AP issued while prior AP still valid; overlap period creates ambiguity on which document governs reentry."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Refugee vs Asylee Travel Doc Routing",
+    "exception_description": "Asylee requests refugee travel document instead of asylee travel document; system routes to wrong production workflow."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "Reentry Permit for LPR Abroad >2 Years",
+    "exception_description": "Reentry permit filed from abroad by LPR absent >2 years; abandonment presumption not triggered at intake."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Biometric Photo Background Color OCR",
+    "exception_description": "Photo background slightly off-white; OCR background classifier rejects submission as non-compliant."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "I-485 Abandonment on AP Travel",
+    "exception_description": "Applicant travels on AP; I-485 not yet approved; system does not verify AP was properly issued pre-departure."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Humanitarian vs Personal Travel Intent",
+    "exception_description": "LLM accepts self-reported humanitarian purpose without checking whether travel destination contradicts claim."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "AP Used by Unauthorized Traveler",
+    "exception_description": "Advance parole document used by person other than named beneficiary; biometric check not performed at POE."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "AP Issued Post-I-485 Denial",
+    "exception_description": "I-485 denied while AP in production; AP card still mailed; presents as valid travel document for denied applicant."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Refugee Travel Doc 2-Year Renewal Cycle",
+    "exception_description": "Refugee travel document expiry straddles fiscal year; renewal fee schedule change not applied mid-cycle."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "TECS Hit on AP Issuance",
+    "exception_description": "Applicant has TECS border encounter record; AP issued without TECS clearance review."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Parole in Place Eligibility Assessment",
+    "exception_description": "LLM misidentifies military family member parole-in-place eligibility; routes to standard AP workflow."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "NGO Bulk Refugee AP Filing",
+    "exception_description": "NGO files bulk I-131 for 200 refugees; batch processing assigns sequential A-Numbers incorrectly due to off-by-one."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "AP Revocation Not Propagated to CBP",
+    "exception_description": "AP revoked by USCIS; revocation not transmitted to CBP TECS; alien re-enters on revoked document."
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "seq": 1,
+    "category": "Structural",
+    "exception_title": "Motion to Reopen vs Reconsider Conflation",
+    "exception_description": "Petitioner checks both boxes; system must require election of one ground or process under stricter standard."
+  },
+  {
+    "seq": 2,
+    "category": "Field-Level",
+    "exception_title": "33-Day Filing Window Miscalculation",
+    "exception_description": "33-calendar-day deadline computed from decision date; system uses business days; motion accepted when time-barred."
+  },
+  {
+    "seq": 3,
+    "category": "Numeric & Arithmetic",
+    "exception_title": "Fee Waiver Arithmetic on Multiple Motions",
+    "exception_description": "Multiple motions filed same day; fee waiver granted for one but not cascaded to companion filing; underpayment."
+  },
+  {
+    "seq": 4,
+    "category": "Identity & Entity",
+    "exception_title": "Petitioner vs Applicant Standing",
+    "exception_description": "I-290B filed by beneficiary on petition where only petitioner has standing; system accepts without standing check."
+  },
+  {
+    "seq": 5,
+    "category": "Contextual / Tax Logic",
+    "exception_title": "AAO vs Local Office Routing",
+    "exception_description": "Motion on I-140 denial must go to AAO; system routes to local adjudications office; wrong jurisdiction."
+  },
+  {
+    "seq": 6,
+    "category": "Formatting & OCR",
+    "exception_title": "Decision Date Stamp Illegible",
+    "exception_description": "Decision notice date stamp ink-bleed; OCR reads wrong date; 33-day window calculated from incorrect start."
+  },
+  {
+    "seq": 7,
+    "category": "Cross-Document",
+    "exception_title": "New Evidence Submitted on Motion to Reconsider",
+    "exception_description": "Motion to reconsider includes new evidence; legally impermissible; system accepts attachment without flagging."
+  },
+  {
+    "seq": 8,
+    "category": "LLM Interpretation",
+    "exception_title": "Legal Argument vs New Evidence Classification",
+    "exception_description": "LLM classifies new-fact submission as legal argument; allows it on reconsideration when it should be reopening."
+  },
+  {
+    "seq": 9,
+    "category": "Engagement Integrity",
+    "exception_title": "Stacked Motions on Same Decision",
+    "exception_description": "Petitioner files reopen, then reconsider on same RFE response denial; stacking not tracked; each toll different clock."
+  },
+  {
+    "seq": 10,
+    "category": "Workflow State",
+    "exception_title": "Motion Filed on Administratively Closed Case",
+    "exception_description": "I-290B filed on case closed by immigration court; USCIS lacks jurisdiction but issues receipt."
+  },
+  {
+    "seq": 11,
+    "category": "Cross-Year",
+    "exception_title": "Decision Date Straddles Fiscal Year",
+    "exception_description": "Decision issued Sep 30; I-290B filed Oct 5 of new FY; fee schedule change between dates causes underpayment."
+  },
+  {
+    "seq": 12,
+    "category": "Security & Compliance",
+    "exception_title": "Attorney Misconduct Flag Not Carried Forward",
+    "exception_description": "Prior I-290B flagged for attorney misconduct; flag not inherited by subsequent motion on same file."
+  },
+  {
+    "seq": 13,
+    "category": "LLM-Specific Domain",
+    "exception_title": "Futile Motion Detection",
+    "exception_description": "LLM does not flag motion as futile when controlling circuit precedent clearly bars the relief sought."
+  },
+  {
+    "seq": 14,
+    "category": "Multi-Tenant",
+    "exception_title": "Shared AAO Case Queue Visibility",
+    "exception_description": "Law firm with multi-client AAO queue can view motion status of other firms' cases through shared portal endpoint."
+  },
+  {
+    "seq": 15,
+    "category": "Data Persistence & Schema",
+    "exception_title": "Motion Outcome Not Written to Base Record",
+    "exception_description": "I-290B approved (reopen); base petition record remains 'denied'; downstream systems use stale denial status."
+  }
+]

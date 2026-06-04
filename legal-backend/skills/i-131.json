@@ -1,0 +1,120 @@
+{
+  "form_id": "I-131",
+  "form_title": "Application for Travel Document",
+  "fields": [
+    {
+      "name": "primary_flag",
+      "required": false,
+      "type": "boolean",
+      "hint": "Primary Flag \u2014 defaults to True"
+    },
+    {
+      "name": "sent_government_agency",
+      "required": false,
+      "type": "date",
+      "hint": "Date sent to government agency (MM/DD/YYYY)"
+    },
+    {
+      "name": "receipt_for",
+      "required": false,
+      "type": "string",
+      "hint": "Receipt For \u2014 matter/person lookup"
+    },
+    {
+      "name": "receipt_type",
+      "required": true,
+      "type": "enum",
+      "hint": "Receipt Type: USCIS Receipt Number, J Visa Application Number, NVC Matter Number, PERM Receipt, Other"
+    },
+    {
+      "name": "receipt_date",
+      "required": false,
+      "type": "date",
+      "hint": "Receipt Date (MM/DD/YYYY)"
+    },
+    {
+      "name": "receipt_notice_date",
+      "required": false,
+      "type": "date",
+      "hint": "Receipt Notice Date (MM/DD/YYYY)"
+    },
+    {
+      "name": "receipt_number",
+      "required": false,
+      "type": "string",
+      "hint": "Receipt Number (USCIS XXX0000000000)"
+    },
+    {
+      "name": "receipt_status",
+      "required": false,
+      "type": "enum",
+      "hint": "Receipt Status: Pending, Approved, Denied, RFE, Withdrawn, Shipped"
+    },
+    {
+      "name": "expiration_alert",
+      "required": false,
+      "type": "boolean",
+      "hint": "Expiration Alert \u2014 Yes/No, defaults to No"
+    },
+    {
+      "name": "receipt_notes",
+      "required": false,
+      "type": "string",
+      "hint": "Receipt Notes \u2014 free text"
+    },
+    {
+      "name": "family_name",
+      "required": true,
+      "type": "string",
+      "hint": "Part 1, Item 1.a"
+    },
+    {
+      "name": "given_name",
+      "required": true,
+      "type": "string",
+      "hint": "Part 1, Item 1.b"
+    },
+    {
+      "name": "alien_registration_number",
+      "required": true,
+      "type": "string",
+      "hint": "Part 1, Item 3 \u2014 A-Number"
+    },
+    {
+      "name": "date_of_birth",
+      "required": true,
+      "type": "date",
+      "hint": "Part 1, Item 5"
+    },
+    {
+      "name": "class_of_admission",
+      "required": false,
+      "type": "string",
+      "hint": "Part 1, Item 8"
+    },
+    {
+      "name": "date_of_admission",
+      "required": false,
+      "type": "date",
+      "hint": "Part 1, Item 9"
+    },
+    {
+      "name": "country_of_birth",
+      "required": true,
+      "type": "string",
+      "hint": "Part 1, Item 7"
+    },
+    {
+      "name": "travel_document_type",
+      "required": true,
+      "type": "string",
+      "hint": "Part 2 \u2014 advance_parole/reentry_permit/refugee_travel_document"
+    },
+    {
+      "name": "reason_for_travel",
+      "required": false,
+      "type": "string",
+      "hint": "Part 4 \u2014 reason"
+    }
+  ]
+}

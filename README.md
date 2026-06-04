@@ -1,23 +1,58 @@
 # Legal Document Intelligence
 
-3-tab  app showcasing AI document processing for immigration workflows.
+App showcasing AI document processing for immigration workflows.
+
+## Architecture
+
+Three services run together, all in this repo:
+
+| Service | Tech | Port | Purpose |
+|---------|------|------|---------|
+| `frontend/` | React + Vite | 3003 | UI. Proxies `/api` → Node, `/legal` → FastAPI |
+| `backend/` | Node + Express | 3002 | UC1/UC2/UC3, dashboard, deadlines, search |
+| `legal-backend/` | FastAPI + PostgreSQL | 8001 | USCIS Notice Processing (4-stage extraction pipeline) |
+
+> `legal-backend/` runs its extraction pipeline **synchronously** inside the `/upload`
+> request — no Celery/Redis. Requires a running PostgreSQL.
 
 ## Quick Start
 
-### 1. Backend
-cd backend
-cp .env.example .env
-# Fill in ANTHROPIC_API_KEY and GOOGLE_GEMINI_API_KEY in .env
-npm install
-node server.js
+### One-time setup
 
-### 2. Frontend
-cd frontend
-npm install
+```bash
+# Node deps (frontend + backend) and Python deps (legal-backend)
+npm run install:all
+
+# Each backend needs its own .env (copy the example and fill in secrets):
+cp backend/.env.example backend/.env             # ANTHROPIC_API_KEY, GOOGLE_GEMINI_API_KEY
+cp legal-backend/.env.example legal-backend/.env  # ANTHROPIC_API_KEY, JWT_SECRET, DATABASE_URL
+
+# PostgreSQL must be running for legal-backend. Either use your own, or:
+cd legal-backend && docker compose up -d postgres && python setup_db.py
+```
+
+### Run everything (one command)
+
+```bash
 npm run dev
+```
 
-Frontend: http://localhost:5173
-Backend health: http://localhost:3001/health
+Starts all three services with interleaved logs:
+- Frontend → http://localhost:3003
+- Node backend → http://localhost:3002
+- FastAPI backend → http://localhost:8001
+
+(You can also run any one service alone: `npm run dev:web`, `npm run dev:node`, `npm run dev:api`.)
+
+### Required environment variables (legal-backend)
+
+| Variable | Description |
+|----------|-------------|
+| `ANTHROPIC_API_KEY` | Claude API key for the LLM fallback stage |
+| `JWT_SECRET` | 32+ byte hex string for JWT signing |
+| `DATABASE_URL` | PostgreSQL connection string |
+
+(No `REDIS_URL` — Celery/Redis were removed.)
 
 ## Demo Flow (12 minutes)
 
