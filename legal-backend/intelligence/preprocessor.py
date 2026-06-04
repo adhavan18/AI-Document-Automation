@@ -61,9 +61,8 @@ def _log(msg: str) -> None:
 # Step 1 — AcroForm extraction
 # ---------------------------------------------------------------------------
 
-def _extract_acroform(pdf_path: str) -> dict[str, str | None]:
+def _extract_acroform(reader: pypdf.PdfReader) -> dict[str, str | None]:
     _log("Step 1 — extracting AcroForm fields with pypdf")
-    reader = pypdf.PdfReader(pdf_path)
     raw = reader.get_fields() or {}
     fields: dict[str, str | None] = {}
     for name, field in raw.items():
@@ -82,32 +81,32 @@ def _extract_acroform(pdf_path: str) -> dict[str, str | None]:
 # Step 2 — Text extraction
 # ---------------------------------------------------------------------------
 
-def _extract_text(pdf_path: str) -> tuple[str, list[str]]:
+def _page_has_fonts(page) -> bool:
+    """Return True if the page declares /Font resources (meaning it can have text)."""
+    try:
+        resources = page.get("/Resources", {})
+        return bool(resources.get("/Font"))
+    except Exception:
+        return True  # safe default — attempt extract_text on error
+
+
+def _extract_text(reader: pypdf.PdfReader) -> tuple[str, list[str]]:
     """
     Returns (full_raw_text, per_page_texts).
 
-    Uses pypdf for text extraction (10x faster than pdfplumber on digital PDFs).
-    Falls back to pdfplumber only if pypdf yields no text (e.g. image-only pages).
+    Checks /Font resources before calling extract_text().  Pages with no font
+    declarations are image-only (scanned) — skipping extract_text() on them
+    avoids parsing through large inline image data which can take 10+ s/page.
     """
-    _log("Step 2 — extracting text with pypdf (fast path)")
-    reader = pypdf.PdfReader(pdf_path)
-    pages_text: list[str] = [
-        (page.extract_text() or "") for page in reader.pages
-    ]
+    _log("Step 2 — extracting text with pypdf")
+    pages_text: list[str] = []
+    for page in reader.pages:
+        if not _page_has_fonts(page):
+            pages_text.append("")
+        else:
+            pages_text.append(page.extract_text() or "")
     raw_text = "\n".join(pages_text)
-    total = len(raw_text.strip())
     _log(f"  pypdf: {len(pages_text)} pages, {len(raw_text)} chars")
-
-    if total < 100:
-        # pypdf got nothing — fall back to pdfplumber (handles some edge cases)
-        _log("  pypdf yielded minimal text — falling back to pdfplumber")
-        pages_text = []
-        with pdfplumber.open(pdf_path) as pdf:
-            for page in pdf.pages:
-                pages_text.append(page.extract_text() or "")
-        raw_text = "\n".join(pages_text)
-        _log(f"  pdfplumber: {len(raw_text)} chars")
-
     return raw_text, pages_text
 
 
@@ -115,19 +114,13 @@ def _extract_text(pdf_path: str) -> tuple[str, list[str]]:
 # Step 3 — Form version detection
 # ---------------------------------------------------------------------------
 
-def _detect_form_version(pdf_path: str, page1_text: str) -> str | None:
+def _detect_form_version(reader: pypdf.PdfReader, page1_text: str) -> str | None:
     _log("Step 3 — detecting form edition date")
-    # Primary: search the pdfplumber text of page 1
     match = _EDITION_RE.search(page1_text)
     if match:
-        edition = match.group(1)
-        _log(f"  edition found in text layer: {edition}")
-        return edition
-
-    # Fallback: search AcroForm field names for edition pattern
+        _log(f"  edition found in text layer: {match.group(1)}")
+        return match.group(1)
     try:
-        reader = pypdf.PdfReader(pdf_path)
-        # Check PDF metadata
         info = reader.metadata or {}
         for v in info.values():
             if v and isinstance(v, str):
@@ -137,7 +130,6 @@ def _detect_form_version(pdf_path: str, page1_text: str) -> str | None:
                     return m.group(1)
     except Exception as exc:
         _log(f"  metadata check failed: {exc}")
-
     _log("  edition date not found")
     return None
 
@@ -214,6 +206,11 @@ def _rasterise_and_ocr(pdf_path: str, dpi: int = 150) -> tuple[str, list[np.ndar
     Rasterise every page with pypdfium2 at `dpi`, preprocess with OpenCV,
     run tesseract via subprocess, and return (ocr_text, list_of_raw_rgb_arrays).
     """
+    tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    if not Path(tesseract_cmd).exists():
+        _log("Step 5 — Tesseract not installed, skipping rasterization and OCR")
+        return "", []
+
     _log(f"Step 5 — rasterising at {dpi} DPI and running OCR")
     doc = pypdfium2.PdfDocument(pdf_path)
     page_texts: list[str] = []
@@ -335,16 +332,20 @@ def preprocess(pdf_path: str, form_type: str = "") -> PreprocessResult:
 
     _log(f"Starting pipeline for: {path.name}  form_type={form_type or '(unspecified)'}")
 
+    # Open the PDF once — reused across all extraction steps to avoid
+    # repeated 9 MB file parses that each take ~13 s on large scanned PDFs.
+    reader = pypdf.PdfReader(str(path), strict=False)
+
     # Step 1 — I-797 has no AcroForm; skip to avoid noise
     if form_type == "I-797":
         _log("Step 1 — skipped (I-797 has no AcroForm fields)")
         acroform_fields: dict[str, str | None] = {}
     else:
-        acroform_fields = _extract_acroform(str(path))
+        acroform_fields = _extract_acroform(reader)
 
     # Steps 2 + 3
-    raw_text, pages_text = _extract_text(str(path))
-    form_version = _detect_form_version(str(path), pages_text[0] if pages_text else "")
+    raw_text, pages_text = _extract_text(reader)
+    form_version = _detect_form_version(reader, pages_text[0] if pages_text else "")
 
     # Step 4 — detect scanned PDF
     # pdffonts (poppler) may not be on PATH on Windows; fall back to checking
@@ -358,8 +359,14 @@ def preprocess(pdf_path: str, form_type: str = "") -> PreprocessResult:
     raw_arrays: list[np.ndarray] | None = None
     ocr_text = ""
     if is_scanned or not acroform_fields:
-        _log("  OCR triggered (is_scanned or no AcroForm fields)")
-        ocr_text, raw_arrays = _rasterise_and_ocr(str(path))
+        # Prefer EasyOCR (pure-Python, no binary required) over Tesseract
+        from intelligence.easyocr_text import is_available as _easyocr_ok, ocr_pdf as _easyocr
+        if _easyocr_ok():
+            _log("Step 5 — running EasyOCR (neural OCR)")
+            ocr_text = _easyocr(str(path))
+        else:
+            _log("  EasyOCR unavailable — falling back to Tesseract path")
+            ocr_text, raw_arrays = _rasterise_and_ocr(str(path))
     else:
         _log("Step 5 — OCR skipped (native text + AcroForm fields present)")
 

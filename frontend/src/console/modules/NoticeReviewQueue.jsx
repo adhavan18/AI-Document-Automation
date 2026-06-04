@@ -143,7 +143,7 @@ export function NoticeReviewQueue({ initialNoticeId }) {
     if (!selectedId) { setDetail(null); return; }
     let cancelled = false;
     legal.getCase(selectedId)
-      .then((d) => { if (!cancelled) { setDetail(d); setEdits({}); } })
+      .then((d) => { if (!cancelled) { setDetail(d); setEdits({}); setError(null); } })
       .catch((err) => {
         if (!cancelled) setError(err?.response?.data?.detail || err.message || 'Failed to load case');
       });
@@ -157,11 +157,31 @@ export function NoticeReviewQueue({ initialNoticeId }) {
     setError(null);
     try {
       const res = await legal.upload(file);
-      const list = await loadQueue();
       const newId = res.case_id;
+      // Refresh queue so the "processing" card appears immediately
+      await loadQueue();
       if (newId) setSelectedId(newId);
-      else if (list.length) setSelectedId(list[0].case_id);
+
+      // Poll until pipeline finishes (status leaves "processing")
+      if (res.status === 'processing' && newId) {
+        const poll = async () => {
+          for (let i = 0; i < 120; i++) {          // max 10 min
+            await new Promise((r) => setTimeout(r, 5000)); // 5 s
+            try {
+              const s = await legal.getStatus(newId);
+              await loadQueue();
+              if (s.status !== 'processing') {
+                setSelectedId(newId);
+                break;
+              }
+            } catch (_) { break; }
+          }
+        };
+        poll(); // fire-and-forget — no await
+      }
     } catch (err) {
+      // Even on network error the server may have queued the job — refresh
+      await loadQueue().catch(() => {});
       setError(err?.response?.data?.detail || err.message || 'Upload failed');
     } finally {
       setUploading(false);

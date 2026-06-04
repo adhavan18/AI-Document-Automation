@@ -11,6 +11,8 @@ export default defineConfig({
         target: 'http://localhost:8001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/legal/, ''),
+        timeout: 300000,
+        proxyTimeout: 300000,
       },
       // existing Node backend
       '/api': 'http://localhost:3002',

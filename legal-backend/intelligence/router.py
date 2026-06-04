@@ -190,6 +190,7 @@ def _persist(
     stage_log: list[str],
     stage4_output: dict,
     edition_date: str | None,
+    preset_case_id: str | None = None,
 ) -> str | None:
     if not _DB_AVAILABLE:
         return None
@@ -203,9 +204,11 @@ def _persist(
         }
         for name, fr in _all_fields(final_schema).items()
     ]
+    import uuid as _uuid
     try:
         db = SessionLocal()
         try:
+            _cid = _uuid.UUID(preset_case_id) if preset_case_id else None
             case = crud.create_case(
                 db,
                 form_type=form_type,
@@ -213,6 +216,7 @@ def _persist(
                 page_count=len(pre.get('page_images', [])),
                 form_version=pre.get('form_version'),
                 edition_date=edition_date,
+                case_id=_cid,
             )
             crud.save_extracted_fields(db, case.id, fields_payload)
             crud.log_audit_event(
@@ -255,6 +259,7 @@ def run(
     pdf_path: str,
     api_key: str | None = None,
     form_type_override: str | None = None,
+    preset_case_id: str | None = None,
 ) -> PipelineResult:
     """
     Run the 4-stage extraction pipeline on a USCIS PDF.
@@ -317,8 +322,10 @@ def run(
             stage4={},
         )
 
-    # Re-run preprocessor with confirmed form_type for I-797 / I-290B special handling
-    pre = preprocessor.preprocess(pdf_path, form_type=form_id)
+    # Re-run preprocessor only for I-797 / I-290B which skip AcroForm extraction
+    # when the form_type is known.  All other forms re-use the Stage 1 result.
+    if form_id in ('I-797', 'I-290B'):
+        pre = preprocessor.preprocess(pdf_path, form_type=form_id)
 
     # ====================================================================
     # Stage 3 — Skills Extractor (manifest-driven native extraction)
@@ -338,16 +345,53 @@ def run(
     stage3_output = _build_stage3_output(form_id, native_schema, skills)
 
     # ====================================================================
-    # Stage 4 — Disabled (LLM correction manual-only)
+    # Stage 4 — NuExtract field correction
     #
-    # Native extraction only. User reviews extracted fields in the queue
-    # and manually triggers Claude correction if needed for any field.
-    # No automatic LLM API calls during pipeline.
+    # For every field whose native confidence is below the review threshold,
+    # NuExtract (numind/NuExtract-1.5-tiny) re-extracts the value from the
+    # OCR / raw text.  It is purely extractive — no hallucination possible.
+    # Falls back silently if the model is not available or text is empty.
     # ====================================================================
-    _stage(
-        f'Stage 4: skipped — native extraction only. '
-        f'User will manually request Claude in review queue if needed.'
-    )
+    _stage('Stage 4: running NuExtract field correction')
+    try:
+        from intelligence import nuextract as _nue
+        if not _nue.is_available():
+            _stage('Stage 4: NuExtract not available — skipped')
+        else:
+            _text_for_nue = pre.get('ocr_text') or pre.get('raw_text') or ''
+            if not _text_for_nue.strip():
+                _stage('Stage 4: no text available for NuExtract — skipped')
+            else:
+                _nue_fields = _nue.extract_fields(_text_for_nue, form_id)
+                _nue_receipt = _nue.extract_receipt_fields(_text_for_nue)
+
+                # Merge: NuExtract wins only for low-confidence native fields
+                _merged: dict = {}
+                for _fname, _fr in _all_fields(native_schema).items():
+                    if _fr.confidence < _LOW_CONFIDENCE_GATE:
+                        _nue_hit = _nue_fields.get(_fname) or _nue_receipt.get(_fname)
+                        if _nue_hit and _nue_hit.value:
+                            _merged[_fname] = _nue_hit
+                            continue
+                    _merged[_fname] = _fr
+
+                # Rebuild schema with merged values
+                from models.schemas import FORM_SCHEMAS as _FS
+                _schema_cls = _FS.get(form_id)
+                if _schema_cls and _merged:
+                    try:
+                        native_schema = _schema_cls(**_merged)
+                        improved = sum(
+                            1 for n, f in _all_fields(native_schema).items()
+                            if f.source.value == 'llm' and f.value
+                        )
+                        _stage(f'Stage 4: NuExtract improved {improved} field(s)')
+                    except Exception as _e:
+                        _stage(f'Stage 4: schema rebuild failed — {_e}')
+                else:
+                    _stage('Stage 4: no schema to rebuild — NuExtract results noted only')
+    except Exception as _exc:
+        _stage(f'Stage 4: NuExtract error — {_exc}')
 
     # ====================================================================
     # Persist to database
@@ -362,6 +406,7 @@ def run(
         stage_log=stage_log,
         stage4_output={},
         edition_date=edition_date,
+        preset_case_id=preset_case_id,
     )
     if case_id:
         _stage(f'Persisted: case_id={case_id}')

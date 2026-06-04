@@ -9,7 +9,7 @@ export const legal = {
     const fd = new FormData();
     fd.append('file', file);
     return http
-      .post('/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      .post('/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 300000 })
       .then((r) => r.data);
   },
 

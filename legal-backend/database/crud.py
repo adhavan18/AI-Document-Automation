@@ -28,11 +28,13 @@ def create_case(
     page_count: int = 0,
     form_version: str | None = None,
     edition_date: str | None = None,
+    case_id: uuid.UUID | None = None,
+    status: str = "pending",
 ) -> Case:
     case = Case(
-        id=uuid.uuid4(),
+        id=case_id or uuid.uuid4(),
         form_type=form_type,
-        status="pending",
+        status=status,
         pdf_path=pdf_path,
         page_count=page_count,
         form_version=form_version,

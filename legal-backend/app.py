@@ -39,14 +39,140 @@ except Exception as _router_exc:
 # POST /upload
 # ---------------------------------------------------------------------------
 
-@app.post("/upload", status_code=200)
-async def upload(file: UploadFile = File(...)) -> JSONResponse:
+_FORM_MAP: list[tuple[str, str]] = [
+    ('I485SUPPJ', 'I-485_SUPP_J'), ('I290B', 'I-290B'), ('I129F', 'I-129F'),
+    ('I485', 'I-485'), ('I797', 'I-797'), ('N400', 'N-400'),
+    ('I129', 'I-129'), ('I130', 'I-130'), ('I131', 'I-131'),
+    ('I140', 'I-140'), ('I539', 'I-539'), ('I751', 'I-751'),
+    ('I765', 'I-765'), ('I824', 'I-824'), ('I90', 'I-90'),
+    ('N600', 'N-600'),
+]
+
+
+def _match_form_keys(text: str) -> str | None:
+    """Return the first matching form ID from a normalised uppercase string."""
+    norm = text.upper().replace('-', '').replace('_', '').replace(' ', '')
+    for key, fid in _FORM_MAP:
+        if key in norm:
+            return fid
+    return None
+
+
+def _detect_form_type(filename: str, pdf_path: str | None = None) -> str | None:
     """
-    Accept a PDF upload, run the extraction pipeline synchronously,
-    persist results to the DB, and return the completed case_id.
+    Infer USCIS form type using three sources in priority order:
+      1. Filename
+      2. PDF document metadata (Title / Subject)
+      3. AcroForm field names and first-page text content
+    Falls back to None if no match found (classifier will handle it).
+    """
+    # 1 — filename
+    result = _match_form_keys(filename)
+    if result:
+        return result
+
+    if not pdf_path:
+        return None
+
+    # 2 — PDF metadata
+    try:
+        import pypdf
+        reader = pypdf.PdfReader(pdf_path, strict=False)
+        meta = reader.metadata or {}
+        meta_text = ' '.join(str(v) for v in meta.values() if v)
+        result = _match_form_keys(meta_text)
+        if result:
+            return result
+        # Also check AcroForm field names (contain form number for most USCIS PDFs)
+        acro_keys = ''
+        try:
+            fields = reader.get_fields() or {}
+            acro_keys = ' '.join(fields.keys())
+        except Exception:
+            pass
+        result = _match_form_keys(acro_keys)
+        if result:
+            return result
+    except Exception:
+        pass
+
+    # 3 — First two pages of text (pdfplumber, no OCR required)
+    try:
+        import pdfplumber
+        with pdfplumber.open(pdf_path) as pdf:
+            pages = pdf.pages[:2]
+            text = ' '.join((p.extract_text() or '') for p in pages)
+        result = _match_form_keys(text)
+        if result:
+            return result
+    except Exception:
+        pass
+
+    return None
+
+
+def _pipeline_background(
+    case_id_str: str,
+    pdf_path_str: str,
+    form_type_override: str | None,
+    api_key: str | None,
+) -> None:
+    """Run the extraction pipeline in a background thread and update the existing case."""
+    import os
+    from intelligence.router import run as run_pipeline
+    from database.connection import SessionLocal
+    from database import crud
+
+    try:
+        result = run_pipeline(
+            pdf_path_str,
+            api_key=api_key,
+            form_type_override=form_type_override,
+            preset_case_id=case_id_str,
+        )
+
+        # Update the placeholder case with the real form_type + status
+        db = SessionLocal()
+        try:
+            _cid = uuid.UUID(case_id_str)
+            case = crud.get_case(db, _cid)
+            if case:
+                case.form_type = result.form_type or form_type_override or 'unknown'
+                case.status = 'pending'
+                db.commit()
+        except Exception as _e:
+            db.rollback()
+            print(f'[UPLOAD] Case update failed: {_e}')
+        finally:
+            db.close()
+
+    except Exception as exc:
+        print(f'[UPLOAD] Pipeline failed for {case_id_str}: {exc}')
+        try:
+            from database.connection import SessionLocal
+            from database import crud
+            db = SessionLocal()
+            case = crud.get_case(db, uuid.UUID(case_id_str))
+            if case:
+                case.status = 'failed'
+                db.commit()
+            db.close()
+        except Exception:
+            pass
+
+
+@app.post("/upload", status_code=200)
+async def upload(
+    file: UploadFile = File(...),
+    background_tasks=None,
+) -> JSONResponse:
+    """
+    Accept a PDF upload, immediately create a 'processing' case in the DB,
+    fire the extraction pipeline as a background task, and return the case_id
+    right away — no more network timeouts on large or scanned PDFs.
     """
     import os
-    import traceback
+    from fastapi import BackgroundTasks  # import here to keep top-level clean
 
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Uploaded file must be a PDF.")
@@ -56,36 +182,51 @@ async def upload(file: UploadFile = File(...)) -> JSONResponse:
     contents = await file.read()
     pdf_path.write_bytes(contents)
 
+    # Detect form type from filename / PDF content (fast — no OCR)
+    form_type_override = _detect_form_type(file.filename, str(pdf_path))
+
+    # Create a placeholder case immediately so the queue shows it straight away
     try:
-        from intelligence.router import run as run_pipeline
+        from database.connection import SessionLocal
+        from database import crud
+        _db = SessionLocal()
+        try:
+            crud.create_case(
+                _db,
+                form_type=form_type_override or 'processing',
+                pdf_path=str(pdf_path),
+                case_id=case_id,
+                status='processing',
+            )
+            _db.commit()
+        except Exception:
+            _db.rollback()
+        finally:
+            _db.close()
+    except Exception as _e:
+        print(f'[UPLOAD] Could not pre-create case: {_e}')
 
-        # Run the 4-stage pipeline — it handles all DB persistence internally
-        result = run_pipeline(str(pdf_path), api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    # Schedule the heavy pipeline work in the background
+    import threading
+    _t = threading.Thread(
+        target=_pipeline_background,
+        args=(str(case_id), str(pdf_path), form_type_override,
+              os.environ.get("ANTHROPIC_API_KEY")),
+        daemon=True,
+    )
+    _t.start()
 
-        canonical_case_id = result.case_id or str(case_id)
-
-        fields_count = result.processing_stats.fields_total if result.schema else 0
-        exceptions_triggered = (
-            result.stage4.get("total_exceptions_triggered", 0)
-            if result.stage4 else 0
-        )
-
-        return JSONResponse(content={
-            "case_id": canonical_case_id,
-            "form_type": result.form_type,
-            "status": "pending",
-            "priority": result.priority,
-            "escalation_flags": result.escalation_flags,
-            "fields_extracted": fields_count,
-            "exceptions_triggered": exceptions_triggered,
-            "stage1": result.stage1,
-            "stage2": result.stage2,
-            "stage3": result.stage3,
-            "stage4": result.stage4,
-        })
-
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"{type(exc).__name__}: {exc}")
+    # Return immediately — frontend polls /cases/{id}/status
+    return JSONResponse(content={
+        "case_id": str(case_id),
+        "form_type": form_type_override or "processing",
+        "status": "processing",
+        "priority": "normal",
+        "escalation_flags": [],
+        "fields_extracted": 0,
+        "exceptions_triggered": 0,
+        "stage1": {}, "stage2": {}, "stage3": {}, "stage4": {},
+    })
 
 
 # ---------------------------------------------------------------------------
