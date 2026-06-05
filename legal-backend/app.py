@@ -36,6 +36,50 @@ except Exception as _router_exc:
 
 
 # ---------------------------------------------------------------------------
+# Model pre-warm
+#
+# The extraction pipeline lazy-loads two heavy models on first use: the
+# NuExtract transformer (intelligence/nuextract.py) and the EasyOCR reader
+# (intelligence/easyocr_text.py). On a cold process that first upload can hang
+# for 1–3 minutes while weights download/load. We warm both at startup in a
+# daemon thread so the server stays responsive and the first real upload only
+# pays for inference, not model loading.
+# ---------------------------------------------------------------------------
+
+def _warm_models() -> None:
+    import time
+    t0 = time.time()
+    print("[WARMUP] pre-loading extraction models…", flush=True)
+
+    # EasyOCR — instantiate the reader singleton (downloads detection +
+    # recognition models on first run, then caches them).
+    try:
+        from intelligence import easyocr_text
+        if easyocr_text.is_available():
+            easyocr_text._get_reader()
+            print("[WARMUP] EasyOCR reader ready", flush=True)
+    except Exception as exc:
+        print(f"[WARMUP] EasyOCR warm skipped: {exc}", flush=True)
+
+    # NuExtract — load the transformer weights + tokenizer singleton.
+    try:
+        from intelligence import nuextract
+        if nuextract.is_available():
+            nuextract._load()
+            print("[WARMUP] NuExtract model ready", flush=True)
+    except Exception as exc:
+        print(f"[WARMUP] NuExtract warm skipped: {exc}", flush=True)
+
+    print(f"[WARMUP] models ready ({time.time() - t0:.0f}s)", flush=True)
+
+
+@app.on_event("startup")
+def _on_startup() -> None:
+    import threading
+    threading.Thread(target=_warm_models, daemon=True).start()
+
+
+# ---------------------------------------------------------------------------
 # POST /upload
 # ---------------------------------------------------------------------------
 
@@ -184,12 +228,16 @@ async def upload(
                 status='processing',
             )
             _db.commit()
-        except Exception:
+            print(f'[UPLOAD] Pre-created case {str(case_id)[:8]} (form={form_type_override or "processing"})', flush=True)
+        except Exception as _ce:
             _db.rollback()
+            import traceback
+            print(f'[UPLOAD] create_case FAILED for {str(case_id)[:8]}: {_ce}', flush=True)
+            traceback.print_exc()
         finally:
             _db.close()
     except Exception as _e:
-        print(f'[UPLOAD] Could not pre-create case: {_e}')
+        print(f'[UPLOAD] Could not pre-create case: {_e}', flush=True)
 
     # Schedule the heavy pipeline work in the background
     import threading

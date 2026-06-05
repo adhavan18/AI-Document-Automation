@@ -71,17 +71,19 @@ def _load():
 # Low-level inference
 # ---------------------------------------------------------------------------
 
-def _run(text: str, schema: dict) -> dict:
+def _run(text: str, schema: dict, max_new_tokens: int = 320) -> dict:
     model, tokenizer = _load()
     if model is None:
         return {}
     import torch
 
-    # For long documents, prioritise the first 16 000 chars (covers most
-    # multi-page receipt notices). If the text is longer, also grab the last
-    # 4 000 chars where footer/summary info sometimes lives, then merge.
-    if len(text) > 16000:
-        excerpt = text[:14000] + "\n...\n" + text[-2000:]
+    # CPU inference cost scales with context length, so cap the excerpt. The
+    # identity/receipt fields NuExtract corrects live near the top of USCIS
+    # forms and notices, so the first ~6 000 chars (plus a short tail for
+    # footer/summary info) capture them while keeping a single generation
+    # pass fast enough for interactive use.
+    if len(text) > 7000:
+        excerpt = text[:6000] + "\n...\n" + text[-1000:]
     else:
         excerpt = text
 
@@ -94,13 +96,13 @@ def _run(text: str, schema: dict) -> dict:
     )
     device = next(model.parameters()).device
     inputs = tokenizer(
-        prompt, return_tensors="pt", max_length=16000, truncation=True
+        prompt, return_tensors="pt", max_length=8000, truncation=True
     ).to(device)
 
     with torch.no_grad():
         out_ids = model.generate(
             **inputs,
-            max_new_tokens=600,
+            max_new_tokens=max_new_tokens,
             do_sample=False,
             temperature=1.0,
             repetition_penalty=1.1,
@@ -176,15 +178,8 @@ _FORM_SCHEMAS: dict[str, dict] = {
         "offered_wage": "",
     },
     "I-797": {
-        "receipt_number": "",
         "notice_type": "",
-        "applicant_name": "",
-        "alien_registration_number": "",
         "case_type": "",
-        "notice_date": "",
-        "validity_start": "",
-        "validity_end": "",
-        "action_taken": "",
     },
     "I-751": {
         "alien_registration_number": "",
@@ -298,15 +293,18 @@ _FORM_SCHEMAS: dict[str, dict] = {
     },
 }
 
-# Shared receipt-record schema used across all USCIS forms
+# Shared receipt-record schema — all 10 fields shown in the review panel
 _RECEIPT_SCHEMA: dict = {
-    "receipt_number": "",
-    "receipt_date": "",
-    "receipt_notice_date": "",
+    "primary_flag": "",
+    "sent_government_agency": "",
     "receipt_for": "",
     "receipt_type": "",
+    "receipt_date": "",
+    "receipt_notice_date": "",
+    "receipt_number": "",
     "receipt_status": "",
-    "sent_government_agency": "",
+    "expiration_alert": "",
+    "receipt_notes": "",
 }
 
 
@@ -335,6 +333,34 @@ def _clean_ocr(text: str) -> str:
     # Normalise A-number formats: "A- 123456789" → "A-123456789"
     text = re.sub(r'\bA[-\s]+(\d{8,9})\b', r'A-\1', text)
     return text
+
+
+def extract_all_fields(text: str, form_type: str) -> tuple[dict[str, FieldResult], dict[str, FieldResult]]:
+    """Single-pass extraction: merges the form schema and receipt schema into one
+    _run() call so only one transformer generation pass is needed instead of two.
+    Returns (form_fields, receipt_fields) as separate dicts."""
+    if not text or not text.strip():
+        return {}, {}
+    form_schema = _FORM_SCHEMAS.get(form_type)
+    cleaned = _clean_ocr(text)
+    if form_schema:
+        combined_schema = {**form_schema, **_RECEIPT_SCHEMA}
+        print(f"[NUEXTRACT] Single-pass extraction for {form_type} ({len(cleaned)} chars, {len(combined_schema)} fields)")
+        raw = _run(cleaned, combined_schema)
+        form_keys = set(form_schema.keys())
+        receipt_keys = set(_RECEIPT_SCHEMA.keys())
+        all_results = _to_field_results(raw)
+        form_fields = {k: v for k, v in all_results.items() if k in form_keys}
+        receipt_fields = {k: v for k, v in all_results.items() if k in receipt_keys}
+        print(f"[NUEXTRACT] Single-pass found {len(form_fields)} form + {len(receipt_fields)} receipt fields")
+        return form_fields, receipt_fields
+    else:
+        # No form schema — receipt fields only
+        print(f"[NUEXTRACT] Receipt-only extraction for {form_type} ({len(cleaned)} chars)")
+        raw = _run(cleaned, _RECEIPT_SCHEMA, max_new_tokens=160)
+        receipt_fields = _to_field_results(raw)
+        print(f"[NUEXTRACT] Found {len(receipt_fields)} receipt fields")
+        return {}, receipt_fields
 
 
 def extract_fields(text: str, form_type: str) -> dict[str, FieldResult]:

@@ -6,6 +6,7 @@
 <title>GIP Reviewer — Automate Filing (H4 EAD)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/png" href="https://gip-us.com/wp-content/uploads/2023/12/gipuheader.png" />
 <style>
   :root{
     --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
@@ -39,18 +40,21 @@
     display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);}
   .sidebar.collapsed{width:74px;}
   .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
-  .brand-mark{width:36px;height:36px;border-radius:10px;flex-shrink:0;
-    background:linear-gradient(135deg,var(--primary),var(--accent));
-    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(32,68,150,.4);}
+  .brand-mini{width:36px;height:36px;border-radius:10px;flex-shrink:0;display:none;
+    background:#fff;color:var(--primary);font-weight:800;font-size:17px;
+    align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(32,68,150,.35);}
   .brand-txt{overflow:hidden;white-space:nowrap;}
-  .brand-name{font-size:18px;font-weight:800;color:#fff;letter-spacing:.04em;line-height:1;}
+  .brand-logo{display:inline-flex;align-items:center;background:#fff;border-radius:9px;
+    padding:7px 11px;box-shadow:0 2px 12px rgba(0,0,0,.28);}
+  .brand-logo img{height:26px;width:auto;display:block;}
   .brand-sub{font-size:9.5px;font-weight:600;color:var(--ink-faint);letter-spacing:.14em;
-    text-transform:uppercase;margin-top:3px;}
+    text-transform:uppercase;margin-top:8px;}
   .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
     background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;transition:background .15s;}
   .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
   .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
   .sidebar.collapsed .brand-txt,.sidebar.collapsed .collapse-btn{display:none;}
+  .sidebar.collapsed .brand-mini{display:flex;}
   .nav{flex:1;overflow-y:auto;padding:6px 12px;}
   .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
     text-transform:uppercase;padding:14px 10px 7px;}
@@ -242,12 +246,10 @@
   <!-- ═══ SIDEBAR ═══ -->
   <aside class="sidebar" id="sidebar">
     <div class="side-head">
-      <div class="brand-mark">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg>
-      </div>
+      <div class="brand-mini">G</div>
       <div class="brand-txt">
-        <div class="brand-name">GIP</div>
-        <div class="brand-sub">Immigration · Reviewer</div>
+        <div class="brand-logo"><img src="https://gip-us.com/wp-content/uploads/2023/12/gipuheader.png" alt="GIP" /></div>
+        <div class="brand-sub"></div>
       </div>
       <button class="collapse-btn" id="collapseBtn" title="Collapse">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
@@ -284,10 +286,28 @@
       <div class="top-actions">
         <div class="top-search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input placeholder="Search applicants…" />
+          <input id="searchInput" placeholder="Search applicants…" />
         </div>
         <button class="icon-btn-top"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="dot"></span></button>
-        <button class="btn-primary"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Filing</button>
+        <button id="uploadFilingBtn" class="btn-primary"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>New Case</button>
+      </div>
+    </div>
+
+    <!-- error banner -->
+    <div id="errBanner" style="display:none;margin:12px 30px 0;padding:9px 14px;border-radius:9px;background:var(--orange-soft);border:1px solid rgba(225,74,40,.25);font-size:12px;color:var(--orange);"></div>
+
+    <!-- New Case modal -->
+    <div id="newCaseModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:16px;padding:28px 28px 22px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+        <div style="font-size:16px;font-weight:700;margin-bottom:18px;">New H-4 EAD Case</div>
+        <label style="display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;">Applicant Name (H-4 holder)</label>
+        <input id="ncApplicant" placeholder="e.g. Priya Nair" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--line);font-family:var(--font);font-size:13.5px;margin-bottom:14px;outline:none;" />
+        <label style="display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;">H-1B Sponsor (spouse's name)</label>
+        <input id="ncSponsor" placeholder="e.g. Rohit Nair (H-1B)" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--line);font-family:var(--font);font-size:13.5px;margin-bottom:20px;outline:none;" />
+        <div style="display:flex;gap:10px;">
+          <button id="ncCancelBtn" style="flex:1;padding:10px;border-radius:9px;border:1px solid var(--line);background:#fff;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;">Cancel</button>
+          <button id="ncCreateBtn" style="flex:1;padding:10px;border-radius:9px;border:none;background:var(--primary);color:#fff;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;">Create &amp; Run</button>
+        </div>
       </div>
     </div>
 
@@ -315,7 +335,7 @@
             <div id="cPill"></div>
           </div>
           <div class="c-actions">
-            <button class="btn-ghost"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.5L21 8"/><polyline points="21 3 21 8 16 8"/></svg>Re-run check</button>
+            <button id="rerunBtn" class="btn-ghost"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.5L21 8"/><polyline points="21 3 21 8 16 8"/></svg>Re-run check</button>
             <button class="btn-file" id="fileBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>File to USCIS</button>
           </div>
         </div>
@@ -342,6 +362,8 @@
 </div>
 
 <script>
+const API = '/api';
+
 const ICONS = {
   dashboard:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>',
   notice:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>',
@@ -349,6 +371,7 @@ const ICONS = {
   filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
   arrow:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
   warn:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17"/></svg>',
+  spin:'<svg class="spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
 };
 
 const NAV = [
@@ -367,99 +390,65 @@ function renderNav(){
     </a>`).join('');
 }
 
-/* ─── Filings data ─── */
-const FILINGS = [
-  {
-    id:'FIL-241', applicant:'Priya Nair', spouse:'Rohit Nair (H-1B)', when:'2 hrs ago',
-    state:'review', mismatches:3, severity:'bad', score:74,
-    extracted:{
-      'Family Name':'Nair','Given Name':'Priya','Middle Name':'—',
-      'Date of Birth':'1991-04-22','Country of Birth':'India','A-Number':'A201-555-998',
-      'Marital Status':'Married','Spouse A-Number':'A201-555-432','I-94 Expiry':'2027-03-10',
-      'Mailing Address':'412 Oak Ridge Dr, Apt 5B, Plano, TX 75024',
-      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
-    },
-    record:{
-      'Family Name':'Nair','Given Name':'Priya','Middle Name':'Devi',
-      'Date of Birth':'1991-04-22','Country of Birth':'India','A-Number':'A201-555-998',
-      'Marital Status':'Married','Spouse A-Number':'A201-555-432','I-94 Expiry':'2027-03-10',
-      'Mailing Address':'412 Oak Ridge Drive, #5B, Plano, TX 75024',
-      'Eligibility Cat.':'(c)(26)','Filing Fee':'$410',
-    },
-    diffs:['Middle Name','Mailing Address','Filing Fee'],
-    warns:[],
-  },
-  {
-    id:'FIL-238', applicant:'Mei-Ling Zhao', spouse:'Hao Zhao (H-1B)', when:'5 hrs ago',
-    state:'clean', mismatches:0, severity:'clean', score:98,
-    extracted:{
-      'Family Name':'Zhao','Given Name':'Mei-Ling','Middle Name':'—',
-      'Date of Birth':'1989-11-03','Country of Birth':'China','A-Number':'A209-110-204',
-      'Marital Status':'Married','Spouse A-Number':'A209-110-203','I-94 Expiry':'2026-09-19',
-      'Mailing Address':'88 Willow Ln, Bellevue, WA 98004',
-      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
-    },
-    record:{
-      'Family Name':'Zhao','Given Name':'Mei-Ling','Middle Name':'—',
-      'Date of Birth':'1989-11-03','Country of Birth':'China','A-Number':'A209-110-204',
-      'Marital Status':'Married','Spouse A-Number':'A209-110-203','I-94 Expiry':'2026-09-19',
-      'Mailing Address':'88 Willow Ln, Bellevue, WA 98004',
-      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
-    },
-    diffs:[], warns:[],
-  },
-  {
-    id:'FIL-235', applicant:'Sara Khan', spouse:'Bilal Khan (H-1B)', when:'Yesterday',
-    state:'review', mismatches:1, severity:'warn', score:88,
-    extracted:{
-      'Family Name':'Khan','Given Name':'Sara','Middle Name':'—',
-      'Date of Birth':'1993-02-14','Country of Birth':'Pakistan','A-Number':'A215-302-771',
-      'Marital Status':'Married','Spouse A-Number':'A215-302-770','I-94 Expiry':'2026-12-01',
-      'Mailing Address':'1209 Hawthorn St, Jersey City, NJ 07310',
-      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
-    },
-    record:{
-      'Family Name':'Khan','Given Name':'Sara','Middle Name':'—',
-      'Date of Birth':'1993-02-14','Country of Birth':'Pakistan','A-Number':'A215-302-771',
-      'Marital Status':'Married','Spouse A-Number':'A215-302-770','I-94 Expiry':'2026-11-28',
-      'Mailing Address':'1209 Hawthorn St, Jersey City, NJ 07310',
-      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
-    },
-    diffs:[], warns:['I-94 Expiry'],
-  },
-  {
-    id:'FIL-231', applicant:'Anika Patel', spouse:'Vikram Patel (H-1B)', when:'2 days ago',
-    state:'filed', mismatches:0, severity:'clean', score:100,
-    extracted:{
-      'Family Name':'Patel','Given Name':'Anika','Middle Name':'R.',
-      'Date of Birth':'1990-08-30','Country of Birth':'India','A-Number':'A218-444-118',
-      'Marital Status':'Married','Spouse A-Number':'A218-444-117','I-94 Expiry':'2028-01-15',
-      'Mailing Address':'77 Magnolia Ct, Sunnyvale, CA 94086',
-      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
-    },
-    record:{
-      'Family Name':'Patel','Given Name':'Anika','Middle Name':'R.',
-      'Date of Birth':'1990-08-30','Country of Birth':'India','A-Number':'A218-444-118',
-      'Marital Status':'Married','Spouse A-Number':'A218-444-117','I-94 Expiry':'2028-01-15',
-      'Mailing Address':'77 Magnolia Ct, Sunnyvale, CA 94086',
-      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
-    },
-    diffs:[], warns:[],
-  },
-];
-
-let activeId = 'FIL-241';
+/* ─── State ─── */
+let CASES = [];
+let activeId = null;
 let filter = 'all';
+let searchQ = '';
 
 const SEV_COLOR = {clean:'var(--green)', warn:'var(--amber)', bad:'var(--orange)'};
-const SEV_LABEL = {clean:'Clean', warn:'1 Warning', bad:'Needs Review'};
+const SEV_LABEL = {clean:'Clean', warn:'Warning', bad:'Needs Review'};
 
+/* ─── Field groupings for compare panel ─── */
+const SECTIONS = [
+  ['Applicant Identity', ['Full Legal Name','Date of Birth','Passport Number','Passport Expiry','Country of Birth']],
+  ['Entry & Status',     ['Most Recent Entry Date','Visa Class on Entry']],
+  ['Filing Detail',      ['Current Address']],
+];
+
+/* ─── Error banner ─── */
+function setError(msg){
+  const el = document.getElementById('errBanner');
+  if(msg){ el.textContent = msg; el.style.display = 'block'; }
+  else { el.style.display = 'none'; el.textContent = ''; }
+}
+
+/* ─── Map UC3 case to display severity ─── */
+function caseSeverity(c){
+  const counts = c.counts||{};
+  if(counts.Error > 0) return 'bad';
+  if(counts.Warning > 0) return 'warn';
+  return 'clean';
+}
+
+function caseScore(c){
+  const counts = c.counts||{};
+  const total = counts.Total||0;
+  if(!total) return 0;
+  return Math.round(((counts.Match||0)/total)*100);
+}
+
+function caseMismatches(c){
+  const counts = c.counts||{};
+  return (counts.Error||0) + (counts.Warning||0);
+}
+
+function caseState(c){
+  const status = c.status||c.counts?.status||'';
+  if(status==='Filed') return 'filed';
+  if(caseMismatches(c) > 0) return 'review';
+  return 'clean';
+}
+
+/* ─── Render tabs ─── */
 function renderTabs(){
+  const q = searchQ.toLowerCase();
+  const visible = q ? CASES.filter(c=>c.applicant.toLowerCase().includes(q)) : CASES;
   const counts = {
-    all:FILINGS.length,
-    flagged:FILINGS.filter(f=>f.severity!=='clean' && f.state!=='filed').length,
-    clean:FILINGS.filter(f=>f.severity==='clean' && f.state!=='filed').length,
-    filed:FILINGS.filter(f=>f.state==='filed').length,
+    all: visible.length,
+    flagged: visible.filter(c=>caseSeverity(c)!=='clean' && caseState(c)!=='filed').length,
+    clean: visible.filter(c=>caseSeverity(c)==='clean' && caseState(c)!=='filed').length,
+    filed: visible.filter(c=>caseState(c)==='filed').length,
   };
   const tabs = [['all','All'],['flagged','Flagged'],['clean','Clean'],['filed','Filed']];
   document.getElementById('tabs').innerHTML = tabs.map(([k,l])=>
@@ -468,71 +457,96 @@ function renderTabs(){
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{filter=b.dataset.tab;renderTabs();renderList();});
 }
 
-function passFilter(f){
+function passFilter(c){
   if(filter==='all') return true;
-  if(filter==='flagged') return f.severity!=='clean' && f.state!=='filed';
-  if(filter==='clean') return f.severity==='clean' && f.state!=='filed';
-  if(filter==='filed') return f.state==='filed';
+  if(filter==='flagged') return caseSeverity(c)!=='clean' && caseState(c)!=='filed';
+  if(filter==='clean') return caseSeverity(c)==='clean' && caseState(c)!=='filed';
+  if(filter==='filed') return caseState(c)==='filed';
+  return true;
 }
 
+/* ─── Render list ─── */
 function renderList(){
-  const list = FILINGS.filter(passFilter);
-  document.getElementById('caseList').innerHTML = list.map(f=>{
-    const sev = f.severity;
-    const badge = f.state==='filed'
+  const q = searchQ.toLowerCase();
+  let list = q ? CASES.filter(c=>c.applicant.toLowerCase().includes(q)) : CASES;
+  list = list.filter(passFilter);
+  if(!list.length){
+    document.getElementById('caseList').innerHTML = `<div style="text-align:center;color:var(--ink-faint);font-size:12.5px;padding:30px 10px;">${CASES.length?'No filings match this filter.':'No cases yet. Click <b>New Case</b> to create one.'}</div>`;
+    return;
+  }
+  document.getElementById('caseList').innerHTML = list.map(c=>{
+    const sev = caseSeverity(c);
+    const state = caseState(c);
+    const mm = caseMismatches(c);
+    const badge = state==='filed'
       ? `<span class="mismatch-badge clean">FILED</span>`
-      : `<span class="mismatch-badge ${sev}">${f.mismatches} ${f.mismatches===1?'mismatch':'mismatches'}</span>`;
-    return `<button class="case ${f.id===activeId?'active':''}" data-id="${f.id}">
+      : `<span class="mismatch-badge ${sev}">${mm} ${mm===1?'mismatch':'mismatches'}</span>`;
+    const when = c.createdAt ? new Date(c.createdAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    return `<button class="case ${c.id===activeId?'active':''}" data-id="${c.id}">
       <span class="rail" style="background:${SEV_COLOR[sev]};"></span>
       <div class="case-top">
         <div>
-          <div class="case-name">${f.applicant}</div>
-          <div class="case-sub">Spouse · ${f.spouse}</div>
+          <div class="case-name">${c.applicant}</div>
+          <div class="case-sub">Sponsor: ${c.primary||'—'}</div>
         </div>
-        <span class="case-id">#${f.id}</span>
+        <span class="case-id">#${c.id.slice(-6)}</span>
       </div>
-      <div class="case-meta">
-        ${badge}
-        <span class="when">${f.when}</span>
-      </div>
+      <div class="case-meta">${badge}<span class="when">${when}</span></div>
     </button>`;
-  }).join('') || `<div style="text-align:center;color:var(--ink-faint);font-size:12.5px;padding:30px 10px;">No filings match this filter.</div>`;
+  }).join('');
   document.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{activeId=b.dataset.id;renderAll();});
 }
 
+/* ─── Render compare panel ─── */
 function renderCompare(){
-  const f = FILINGS.find(x=>x.id===activeId) || FILINGS[0];
-  document.getElementById('cTitle').textContent = `${f.applicant} — I-765 · H4-EAD`;
-  document.getElementById('cSub').textContent = `Filing ${f.id} · Spouse: ${f.spouse}`;
-  document.getElementById('cPill').innerHTML = `<span class="c-pill ${f.severity}">${SEV_LABEL[f.severity]}</span>`;
+  const c = CASES.find(x=>x.id===activeId);
+  if(!c){
+    document.getElementById('cTitle').textContent = 'Select a case';
+    document.getElementById('cSub').textContent = '';
+    document.getElementById('cPill').innerHTML = '';
+    document.getElementById('cBody').innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-faint);">Select a case from the list.</div>';
+    document.getElementById('fileBtn').disabled = true;
+    document.getElementById('rerunBtn').disabled = true;
+    return;
+  }
+  document.getElementById('rerunBtn').disabled = false;
+  document.getElementById('cTitle').textContent = `${c.applicant} — I-765 · H4-EAD`;
+  document.getElementById('cSub').textContent = `Case ${c.id.slice(-6)} · Sponsor: ${c.primary||'—'}`;
+  const sev = caseSeverity(c);
+  document.getElementById('cPill').innerHTML = `<span class="c-pill ${sev}">${SEV_LABEL[sev]}</span>`;
   const fileBtn = document.getElementById('fileBtn');
-  if(f.state==='filed'){
-    fileBtn.textContent = '✓ Filed to USCIS';
+  const state = caseState(c);
+  if(state==='filed'){
+    fileBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Filed to USCIS';
     fileBtn.disabled = true;
   } else {
-    fileBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>File to USCIS`;
-    fileBtn.disabled = f.severity==='bad';
+    fileBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>File to USCIS';
+    fileBtn.disabled = sev === 'bad';
   }
 
-  const SECTIONS = [
-    ['Applicant Identity',['Family Name','Given Name','Middle Name','Date of Birth','Country of Birth','A-Number']],
-    ['Family & Status',   ['Marital Status','Spouse A-Number','I-94 Expiry']],
-    ['Filing Detail',     ['Mailing Address','Eligibility Cat.','Filing Fee']],
-  ];
+  const rows = c.rows||[];
+  const extracted = {}; const record = {};
+  rows.forEach(r=>{ extracted[r.field]=r.extracted||'—'; record[r.field]=r.questionnaire||'—'; });
+  const errorFields = rows.filter(r=>r.severity==='error').map(r=>r.field);
+  const warnFields = rows.filter(r=>r.severity==='warning').map(r=>r.field);
 
-  let html = `
-    <div class="compare-head">
-      <span>Extracted from Filing <span class="src">(Form I-765)</span></span>
-      <span></span>
-      <span class="col-r">Case Record <span class="src">(GIP master)</span></span>
-    </div>
-    <div class="compare-rows">`;
+  if(!rows.length){
+    document.getElementById('cBody').innerHTML = `<div style="padding:40px;text-align:center;color:var(--ink-faint);">
+      <div style="font-size:13px;font-weight:600;color:var(--ink-soft);">No extraction yet</div>
+      <div style="font-size:12px;margin-top:6px;">Click <b>Re-run check</b> to extract fields from documents.</div>
+    </div>`;
+    return;
+  }
+
+  let html = `<div class="compare-head">
+    <span>Extracted <span class="src">(documents)</span></span><span></span>
+    <span class="col-r">Questionnaire <span class="src">(GIP record)</span></span>
+  </div><div class="compare-rows">`;
   SECTIONS.forEach(([sec,keys])=>{
     html += `<div class="sec-head" style="grid-column:1/-1;padding:14px 16px 6px;font-size:11px;font-weight:700;color:var(--ink-faint);background:var(--bg);border-bottom:1px solid var(--line-soft);text-transform:uppercase;letter-spacing:.06em;">${sec}</div>`;
     keys.forEach(k=>{
-      const ev = f.extracted[k] ?? '—';
-      const rv = f.record[k] ?? '—';
-      const cls = f.diffs.includes(k) ? 'diff' : f.warns.includes(k) ? 'warn' : '';
+      const ev = extracted[k]??'—'; const rv = record[k]??'—';
+      const cls = errorFields.includes(k)?'diff':warnFields.includes(k)?'warn':'';
       html += `<div class="crow ${cls}">
         <div class="v"><span class="key">${k}</span><span class="extracted">${ev}</span></div>
         <div class="arrow">${cls?ICONS.warn:ICONS.arrow}</div>
@@ -540,38 +554,44 @@ function renderCompare(){
       </div>`;
     });
   });
-  html += `</div>`;
+  html += '</div>';
   document.getElementById('cBody').innerHTML = html;
 }
 
+/* ─── Render audit panel ─── */
 function scoreColor(s){ return s>=95?'var(--green)':s>=80?'var(--amber)':'var(--orange)'; }
 
 function renderAudit(){
-  const f = FILINGS.find(x=>x.id===activeId) || FILINGS[0];
-  const issues = [
-    ...f.diffs.map(k=>({key:k, sev:'bad',
-      msg:`Filing shows <b>${f.extracted[k]}</b>, case record has <b>${f.record[k]}</b>.`})),
-    ...f.warns.map(k=>({key:k, sev:'warn',
-      msg:`Filing shows <b>${f.extracted[k]}</b>, case record has <b>${f.record[k]}</b> — within tolerance but worth confirming.`})),
-  ];
+  const c = CASES.find(x=>x.id===activeId);
+  if(!c){ document.getElementById('scorecard').innerHTML=''; document.getElementById('auditList').innerHTML=''; return; }
+  const score = caseScore(c);
+  const rows = c.rows||[];
+  const issues = rows.filter(r=>r.severity==='error'||r.severity==='warning').map(r=>({
+    key: r.field, sev: r.severity==='error'?'bad':'warn',
+    msg: `Extracted <b>${r.extracted||'—'}</b>, questionnaire has <b>${r.questionnaire||'—'}</b>${r.note?'. '+r.note:'.'}`
+  }));
+  const totalFields = rows.length || Object.keys(c.questionnaire||{}).length || 8;
 
   document.getElementById('scorecard').innerHTML = `
-    <div class="score-ring" style="background:${scoreColor(f.score)};">${f.score}</div>
+    <div class="score-ring" style="background:${scoreColor(score)};">${score}</div>
     <div class="score-info">
       <div class="score-lbl">Filing Readiness</div>
-      <div class="score-head">${f.score>=95?'Ready to file':f.score>=80?'Review before filing':'Blocking issues'}</div>
-      <div class="score-note">${issues.length} issue${issues.length===1?'':'s'} detected across ${Object.keys(f.extracted).length} fields</div>
+      <div class="score-head">${score>=95?'Ready to file':score>=80?'Review before filing':rows.length?'Blocking issues':'Run extraction first'}</div>
+      <div class="score-note">${issues.length} issue${issues.length===1?'':'s'} across ${totalFields} fields</div>
     </div>`;
 
   const list = document.getElementById('auditList');
-  if(issues.length===0){
+  if(!rows.length){
+    list.innerHTML = `<div style="padding:30px 14px;text-align:center;color:var(--ink-faint);font-size:12.5px;">Run extraction to see issues.</div>`;
+    return;
+  }
+  if(!issues.length){
     list.innerHTML = `<div style="padding:40px 14px;text-align:center;color:var(--ink-faint);">
-      <div style="width:54px;height:54px;border-radius:14px;background:var(--green-soft);color:var(--green);
-        margin:0 auto 14px;display:flex;align-items:center;justify-content:center;">
+      <div style="width:54px;height:54px;border-radius:14px;background:var(--green-soft);color:var(--green);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <div style="font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-.005em;">All fields match</div>
-      <div style="font-size:12px;margin-top:6px;">No discrepancies between the filing and case record.</div>
+      <div style="font-size:14px;font-weight:700;color:var(--ink);">All fields match</div>
+      <div style="font-size:12px;margin-top:6px;">No discrepancies between documents and questionnaire.</div>
     </div>`;
     return;
   }
@@ -583,21 +603,122 @@ function renderAudit(){
       </div>
       <div class="issue-body">${i.msg}</div>
       <div class="issue-actions">
-        <button>Keep filing value</button>
-        <button class="fix">Use record value</button>
+        <button data-field="${i.key}" data-choice="document">Keep doc value</button>
+        <button class="fix" data-field="${i.key}" data-choice="questionnaire">Use record value</button>
       </div>
     </div>`).join('');
 }
 
+/* ─── Load cases from API ─── */
+async function loadCases(selectId){
+  try {
+    const d = await fetch(API+'/uc3/cases').then(r=>r.json());
+    CASES = d.cases||[];
+    if(selectId) activeId = selectId;
+    else if(!activeId && CASES.length) activeId = CASES[0].id;
+    setError(null);
+  } catch(e){
+    setError('Could not load cases: '+e.message);
+  }
+  renderAll();
+}
+
+/* ─── Re-run check ─── */
+document.getElementById('rerunBtn').onclick = async () => {
+  if(!activeId) return;
+  const btn = document.getElementById('rerunBtn');
+  const orig = btn.innerHTML; btn.innerHTML = ICONS.spin + ' Running…'; btn.disabled = true;
+  setError(null);
+  try {
+    const resp = await fetch(API+'/uc3/cases/'+activeId+'/run', {method:'POST'});
+    if(!resp.ok){ const e=await resp.json().catch(()=>({})); throw new Error(e.error||('HTTP '+resp.status)); }
+    await loadCases(activeId);
+  } catch(err){ setError('Extraction failed: '+err.message); }
+  finally { btn.innerHTML = orig; btn.disabled = false; }
+};
+
+/* ─── Resolve mismatch buttons (delegated) ─── */
+document.getElementById('auditList').onclick = async e => {
+  const btn = e.target.closest('[data-choice]'); if(!btn||!activeId) return;
+  const field = btn.dataset.field; const choice = btn.dataset.choice;
+  setError(null);
+  try {
+    const resp = await fetch(API+'/uc3/cases/'+activeId+'/resolve', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({field, choice})
+    });
+    if(!resp.ok){ const e=await resp.json().catch(()=>({})); throw new Error(e.error||('HTTP '+resp.status)); }
+    await loadCases(activeId);
+  } catch(err){ setError('Resolve failed: '+err.message); }
+};
+
+/* ─── File to USCIS (download I-765 PDF) ─── */
+document.getElementById('fileBtn').onclick = async () => {
+  if(!activeId) return;
+  const btn = document.getElementById('fileBtn');
+  const orig = btn.innerHTML; btn.innerHTML = ICONS.spin + ' Filing…'; btn.disabled = true;
+  setError(null);
+  try {
+    const resp = await fetch(API+'/uc3/cases/'+activeId+'/save', {method:'POST'});
+    if(!resp.ok){ const e=await resp.json().catch(()=>({})); throw new Error(e.error||('HTTP '+resp.status)); }
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = 'Form_I-765.pdf'; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    await loadCases(activeId);
+  } catch(err){ setError('Filing failed: '+err.message); }
+  finally { btn.innerHTML = orig; }
+};
+
+/* ─── New Case modal ─── */
+document.getElementById('uploadFilingBtn').onclick = () => {
+  document.getElementById('newCaseModal').style.display = 'flex';
+  document.getElementById('ncApplicant').focus();
+};
+document.getElementById('ncCancelBtn').onclick = () => {
+  document.getElementById('newCaseModal').style.display = 'none';
+};
+document.getElementById('ncCreateBtn').onclick = async () => {
+  const applicant = document.getElementById('ncApplicant').value.trim();
+  const primary = document.getElementById('ncSponsor').value.trim();
+  if(!applicant){ document.getElementById('ncApplicant').focus(); return; }
+  const btn = document.getElementById('ncCreateBtn');
+  const orig = btn.textContent; btn.textContent = 'Creating…'; btn.disabled = true;
+  setError(null);
+  try {
+    const resp = await fetch(API+'/uc3/cases', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({applicant, primary: primary||'—', visaType:'H-4'})
+    });
+    if(!resp.ok){ const e=await resp.json().catch(()=>({})); throw new Error(e.error||('HTTP '+resp.status)); }
+    const d = await resp.json();
+    document.getElementById('newCaseModal').style.display = 'none';
+    document.getElementById('ncApplicant').value = '';
+    document.getElementById('ncSponsor').value = '';
+    await loadCases(d.case.id);
+    // Auto-run extraction immediately
+    try {
+      await fetch(API+'/uc3/cases/'+d.case.id+'/run', {method:'POST'});
+      await loadCases(d.case.id);
+    } catch(_){ /* extraction optional */ }
+  } catch(err){ setError('Create failed: '+err.message); }
+  finally { btn.textContent = orig; btn.disabled = false; }
+};
+
+/* ─── Search ─── */
+document.getElementById('searchInput').oninput = e => { searchQ = e.target.value; renderTabs(); renderList(); };
+
+/* ─── Render all ─── */
 function renderAll(){ renderNav(); renderTabs(); renderList(); renderCompare(); renderAudit(); }
 
-document.getElementById('collapseBtn').onclick = ()=>{
-  document.getElementById('sidebar').classList.toggle('collapsed');
-};
+/* ─── Sidebar & init ─── */
+document.getElementById('collapseBtn').onclick = () => document.getElementById('sidebar').classList.toggle('collapsed');
 document.getElementById('pageDate').textContent =
   new Date().toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
 
-renderAll();
+renderNav();
+loadCases();
 </script>
 </body>
 </html>

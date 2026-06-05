@@ -375,8 +375,7 @@ def run(
             if not _text_for_nue.strip():
                 _stage('Stage 4: no text available for NuExtract — skipped')
             else:
-                _nue_fields = _nue.extract_fields(_text_for_nue, form_id)
-                _nue_receipt = _nue.extract_receipt_fields(_text_for_nue)
+                _nue_fields, _nue_receipt = _nue.extract_all_fields(_text_for_nue, form_id)
 
                 # Merge: NuExtract wins only for low-confidence native fields
                 _merged: dict = {}

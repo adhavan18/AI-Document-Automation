@@ -158,29 +158,16 @@ export function NoticeReviewQueue({ initialNoticeId }) {
     try {
       const res = await legal.upload(file);
       const newId = res.case_id;
-      // Refresh queue so the "processing" card appears immediately
+      // Refresh queue so the new card appears immediately
       await loadQueue();
-      if (newId) setSelectedId(newId);
-
-      // Poll until pipeline finishes (status leaves "processing")
-      if (res.status === 'processing' && newId) {
-        const poll = async () => {
-          for (let i = 0; i < 120; i++) {          // max 10 min
-            await new Promise((r) => setTimeout(r, 5000)); // 5 s
-            try {
-              const s = await legal.getStatus(newId);
-              await loadQueue();
-              if (s.status !== 'processing') {
-                setSelectedId(newId);
-                break;
-              }
-            } catch (_) { break; }
-          }
-        };
-        poll(); // fire-and-forget — no await
+      if (newId) {
+        // Force detail re-fetch even if selectedId hasn't changed
+        setSelectedId(newId);
+        legal.getCase(newId)
+          .then((d) => { setDetail(d); setEdits({}); })
+          .catch(() => {});
       }
     } catch (err) {
-      // Even on network error the server may have queued the job — refresh
       await loadQueue().catch(() => {});
       setError(err?.response?.data?.detail || err.message || 'Upload failed');
     } finally {

@@ -11,13 +11,18 @@ load_dotenv(Path(__file__).parent / ".env")
 
 import uvicorn
 
-# Guard the entry point: uvicorn's reload=True spawns a child process that
-# re-imports this module. On Windows (spawn start method) an unguarded
-# uvicorn.run() at module level recursively spawns processes and crashes.
+# Guard the entry point so the module is import-safe.
+#
+# reload is OFF by default: on Windows the WatchFiles reloader spawns a child
+# worker process that re-imports the app, and if that child is orphaned (e.g.
+# the parent is killed) it keeps holding port 8001, producing "address already
+# in use" errors and zombie workers running stale code. Running a single
+# process avoids that entirely. Set RELOAD=1 to opt back in during active
+# backend development.
 if __name__ == "__main__":
     uvicorn.run(
         "app:app",
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 8001)),
-        reload=True,
+        reload=os.environ.get("RELOAD", "0") == "1",
     )

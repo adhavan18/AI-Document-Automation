@@ -6,6 +6,7 @@
 <title>GIP Reviewer — Notice Processing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/png" href="https://gip-us.com/wp-content/uploads/2023/12/gipuheader.png" />
 <style>
   :root{
     --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
@@ -40,19 +41,22 @@
     display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);}
   .sidebar.collapsed{width:74px;}
   .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
-  .brand-mark{width:36px;height:36px;border-radius:10px;flex-shrink:0;
-    background:linear-gradient(135deg,var(--primary),var(--accent));
-    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(32,68,150,.4);}
+  .brand-mini{width:36px;height:36px;border-radius:10px;flex-shrink:0;display:none;
+    background:#fff;color:var(--primary);font-weight:800;font-size:17px;
+    align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(32,68,150,.35);}
   .brand-txt{overflow:hidden;white-space:nowrap;}
-  .brand-name{font-size:18px;font-weight:800;color:#fff;letter-spacing:.04em;line-height:1;}
+  .brand-logo{display:inline-flex;align-items:center;background:#fff;border-radius:9px;
+    padding:7px 11px;box-shadow:0 2px 12px rgba(0,0,0,.28);}
+  .brand-logo img{height:26px;width:auto;display:block;}
   .brand-sub{font-size:9.5px;font-weight:600;color:var(--ink-faint);letter-spacing:.14em;
-    text-transform:uppercase;margin-top:3px;}
+    text-transform:uppercase;margin-top:8px;}
   .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
     background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;
     transition:background .15s;}
   .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
   .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
   .sidebar.collapsed .brand-txt,.sidebar.collapsed .collapse-btn{display:none;}
+  .sidebar.collapsed .brand-mini{display:flex;}
   .nav{flex:1;overflow-y:auto;padding:6px 12px;}
   .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
     text-transform:uppercase;padding:14px 10px 7px;}
@@ -241,12 +245,10 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="side-head">
-      <div class="brand-mark">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg>
-      </div>
+      <div class="brand-mini">G</div>
       <div class="brand-txt">
-        <div class="brand-name">GIP</div>
-        <div class="brand-sub">Immigration · Reviewer</div>
+        <div class="brand-logo"><img src="https://gip-us.com/wp-content/uploads/2023/12/gipuheader.png" alt="GIP" /></div>
+        <div class="brand-sub"></div>
       </div>
       <button class="collapse-btn" id="collapseBtn" title="Collapse">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>

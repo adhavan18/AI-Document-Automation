@@ -220,12 +220,16 @@ def list_queue(
     db: Annotated[Session, Depends(get_db)],
     limit: int = 50,
     offset: int = 0,
+    status: str = "active",
 ) -> QueueResponse:
-    cases: list[Case] = db.execute(
-        select(Case)
-        .where(Case.status.in_(_QUEUE_STATUSES))
-        .order_by(Case.uploaded_at.desc())
-    ).scalars().all()
+    # `status=active` (default) returns only cases needing review
+    # (processing/pending/in_review) — used by the live review queue.
+    # `status=all` returns every case including approved/rejected — used by the
+    # dashboard so its Completed KPI reflects finished work.
+    query = select(Case).order_by(Case.uploaded_at.desc())
+    if status != "all":
+        query = query.where(Case.status.in_(_QUEUE_STATUSES))
+    cases: list[Case] = db.execute(query).scalars().all()
 
     items: list[QueueItem] = []
     for case in cases:

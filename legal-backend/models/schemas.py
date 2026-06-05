@@ -111,15 +111,8 @@ class I140(ReceiptFieldsMixin):
 
 
 class I797(ReceiptFieldsMixin):
-    receipt_number: FieldResult
-    notice_type: FieldResult
-    applicant_name: FieldResult
-    alien_registration_number: FieldResult
-    case_type: FieldResult
-    notice_date: FieldResult
-    validity_start: FieldResult
-    validity_end: FieldResult
-    action_taken: FieldResult
+    notice_type: FieldResult    # USCIS form number — stored, not shown in review panel
+    case_type: FieldResult      # Processing center — stored, not shown in review panel
 
 
 class I751(ReceiptFieldsMixin):
@@ -328,24 +321,10 @@ class I140LLM(BaseModel):
 
 
 class I797LLM(BaseModel):
-    receipt_number: Optional[str] = None
-    receipt_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     notice_type: Optional[str] = None
     notice_type_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    applicant_name: Optional[str] = None
-    applicant_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     case_type: Optional[str] = None
     case_type_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    notice_date: Optional[str] = None
-    notice_date_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    validity_start: Optional[str] = None
-    validity_start_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    validity_end: Optional[str] = None
-    validity_end_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    action_taken: Optional[str] = None
-    action_taken_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     narrative_flags: List[str] = Field(default_factory=list)
 
 
