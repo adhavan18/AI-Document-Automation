@@ -13,6 +13,7 @@ Every case enters the human review queue.  escalation_flags drives priority:
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 from dataclasses import dataclass, field
 from typing import Any, Union
@@ -177,6 +178,72 @@ def _compute_stats(schema: AnyFormSchema) -> ProcessingStats:
     )
 
 
+def _nuextract_mode() -> str:
+    mode = os.environ.get("NUEXTRACT_MODE", "off").strip().lower()
+    return mode if mode in {"off", "auto", "always"} else "off"
+
+
+def _should_run_nuextract(schema: AnyFormSchema, low_fields: list[str]) -> bool:
+    mode = _nuextract_mode()
+    if mode == "off":
+        return False
+    if mode == "always":
+        return True
+    # Auto mode only spends transformer time when native extraction produced
+    # almost nothing useful. This avoids slowing down normal AcroForm PDFs.
+    populated = sum(1 for fr in _all_fields(schema).values() if fr.value)
+    return populated <= 3 and bool(low_fields)
+
+
+def _mark_case_for_review(
+    *,
+    case_id: str | None,
+    form_type: str,
+    pdf_path: str,
+    escalation_flags: list[str],
+    stage_log: list[str],
+    priority: str,
+    edition_date: str | None,
+) -> str | None:
+    """Update a pre-created upload row when classification cannot proceed."""
+    if not _DB_AVAILABLE or not case_id:
+        return None
+    import uuid as _uuid
+    try:
+        db = SessionLocal()
+        try:
+            cid = _uuid.UUID(case_id)
+            case = crud.get_case(db, cid)
+            if case is None:
+                return None
+            case.form_type = form_type
+            case.status = "pending"
+            case.pdf_path = pdf_path
+            case.edition_date = edition_date
+            crud.log_audit_event(
+                db,
+                event_type="case_created",
+                actor="pipeline",
+                case_id=case.id,
+                payload={
+                    "form_type": form_type,
+                    "priority": priority,
+                    "escalation_flags": escalation_flags,
+                    "stage_log": stage_log,
+                },
+            )
+            db.commit()
+            return str(case.id)
+        except Exception:
+            db.rollback()
+            raise
+        finally:
+            db.close()
+    except Exception as exc:
+        _log(f"DB warning: review mark failed — {exc}")
+        return None
+
+
 # ---------------------------------------------------------------------------
 # DB helper
 # ---------------------------------------------------------------------------
@@ -190,6 +257,7 @@ def _persist(
     stage_log: list[str],
     stage4_output: dict,
     edition_date: str | None,
+    priority: str,
     preset_case_id: str | None = None,
 ) -> str | None:
     if not _DB_AVAILABLE:
@@ -240,6 +308,7 @@ def _persist(
                 case_id=case.id,
                 payload={
                     'form_type': form_type,
+                    'priority': priority,
                     'escalation_flags': escalation_flags,
                     'stage_log': stage_log,
                 },
@@ -317,6 +386,15 @@ def run(
     if cls_result['confidence'] == 'low':
         _stage('Stage 2: low confidence — halting pipeline, routing to human review')
         escalation_flags.append('low_classifier_confidence')
+        case_id = _mark_case_for_review(
+            case_id=preset_case_id,
+            form_type=form_id,
+            pdf_path=pdf_path,
+            escalation_flags=escalation_flags,
+            stage_log=stage_log,
+            priority="high",
+            edition_date=edition_date,
+        )
         # Return minimal result — no extraction possible
         stage2_public = {k: v for k, v in cls_result.items() if not k.startswith('_')}
         return PipelineResult(
@@ -326,7 +404,7 @@ def run(
             escalation_flags=escalation_flags,
             stage_log=stage_log,
             processing_stats=ProcessingStats(),
-            case_id=None,
+            case_id=case_id,
             detection_confidence=detection_confidence,
             priority='high',
             stage1=dict(identity),
@@ -334,11 +412,6 @@ def run(
             stage3={},
             stage4={},
         )
-
-    # Re-run preprocessor only for I-797 / I-290B which skip AcroForm extraction
-    # when the form_type is known.  All other forms re-use the Stage 1 result.
-    if form_id in ('I-797', 'I-290B'):
-        pre = preprocessor.preprocess(pdf_path, form_type=form_id)
 
     # ====================================================================
     # Stage 3 — Skills Extractor (manifest-driven native extraction)
@@ -365,45 +438,12 @@ def run(
     # OCR / raw text.  It is purely extractive — no hallucination possible.
     # Falls back silently if the model is not available or text is empty.
     # ====================================================================
-    _stage('Stage 4: running NuExtract field correction')
-    try:
-        from intelligence import nuextract as _nue
-        if not _nue.is_available():
-            _stage('Stage 4: NuExtract not available — skipped')
-        else:
-            _text_for_nue = pre.get('ocr_text') or pre.get('raw_text') or ''
-            if not _text_for_nue.strip():
-                _stage('Stage 4: no text available for NuExtract — skipped')
-            else:
-                _nue_fields, _nue_receipt = _nue.extract_all_fields(_text_for_nue, form_id)
+    # Stage 4 disabled — NuExtract skipped for speed. Using native extraction only.
+    _stage('Stage 4: disabled (native extraction only)')
 
-                # Merge: NuExtract wins only for low-confidence native fields
-                _merged: dict = {}
-                for _fname, _fr in _all_fields(native_schema).items():
-                    if _fr.confidence < _LOW_CONFIDENCE_GATE:
-                        _nue_hit = _nue_fields.get(_fname) or _nue_receipt.get(_fname)
-                        if _nue_hit and _nue_hit.value:
-                            _merged[_fname] = _nue_hit
-                            continue
-                    _merged[_fname] = _fr
-
-                # Rebuild schema with merged values
-                from models.schemas import FORM_SCHEMAS as _FS
-                _schema_cls = _FS.get(form_id)
-                if _schema_cls and _merged:
-                    try:
-                        native_schema = _schema_cls(**_merged)
-                        improved = sum(
-                            1 for n, f in _all_fields(native_schema).items()
-                            if f.source.value == 'llm' and f.value
-                        )
-                        _stage(f'Stage 4: NuExtract improved {improved} field(s)')
-                    except Exception as _e:
-                        _stage(f'Stage 4: schema rebuild failed — {_e}')
-                else:
-                    _stage('Stage 4: no schema to rebuild — NuExtract results noted only')
-    except Exception as _exc:
-        _stage(f'Stage 4: NuExtract error — {_exc}')
+    stats = _compute_stats(native_schema)
+    low_fields_final = _fields_below(native_schema, _LOW_CONFIDENCE_GATE)
+    priority = 'high' if (escalation_flags or len(low_fields_final) > 0) else 'normal'
 
     # ====================================================================
     # Persist to database
@@ -418,6 +458,7 @@ def run(
         stage_log=stage_log,
         stage4_output={},
         edition_date=edition_date,
+        priority=priority,
         preset_case_id=preset_case_id,
     )
     if case_id:
@@ -428,13 +469,10 @@ def run(
     # ====================================================================
     # Routing / priority
     # ====================================================================
-    stats = _compute_stats(native_schema)
-    priority = 'high' if (escalation_flags or len(low_fields_pre) > 0) else 'normal'
-
     _stage(
         f'Routing: priority={priority!r} '
         f'escalation_flags={escalation_flags} '
-        f'low_confidence_fields={len(low_fields_pre)}'
+        f'low_confidence_fields={len(low_fields_final)}'
     )
 
     stage2_public = {k: v for k, v in cls_result.items() if not k.startswith('_')}
