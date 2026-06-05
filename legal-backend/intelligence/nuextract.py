@@ -71,19 +71,15 @@ def _load():
 # Low-level inference
 # ---------------------------------------------------------------------------
 
-def _run(text: str, schema: dict, max_new_tokens: int = 128) -> dict:
+def _run(text: str, schema: dict, max_new_tokens: int = 96) -> dict:
     model, tokenizer = _load()
     if model is None:
         return {}
     import torch
 
-    # CPU inference cost scales with context length, so cap the excerpt. The
-    # identity/receipt fields NuExtract corrects live near the top of USCIS
-    # forms and notices, so the first ~6 000 chars (plus a short tail for
-    # footer/summary info) capture them while keeping a single generation
-    # pass fast enough for interactive use.
-    if len(text) > 3000:
-        excerpt = text[:2000] + "\n...\n" + text[-500:]
+    # Aggressive context truncation: first 1500 chars (receipt fields live at top)
+    if len(text) > 1500:
+        excerpt = text[:1500]
     else:
         excerpt = text
 
@@ -96,7 +92,7 @@ def _run(text: str, schema: dict, max_new_tokens: int = 128) -> dict:
     )
     device = next(model.parameters()).device
     inputs = tokenizer(
-        prompt, return_tensors="pt", max_length=3500, truncation=True
+        prompt, return_tensors="pt", max_length=2000, truncation=True
     ).to(device)
 
     with torch.no_grad():
@@ -107,7 +103,7 @@ def _run(text: str, schema: dict, max_new_tokens: int = 128) -> dict:
             temperature=1.0,
             repetition_penalty=1.1,
             no_repeat_ngram_size=2,
-            length_penalty=0.8,
+            length_penalty=1.0,
         )
 
     decoded = tokenizer.decode(out_ids[0], skip_special_tokens=True)

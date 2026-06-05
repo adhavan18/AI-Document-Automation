@@ -438,8 +438,51 @@ def run(
     # OCR / raw text.  It is purely extractive — no hallucination possible.
     # Falls back silently if the model is not available or text is empty.
     # ====================================================================
-    # Stage 4 disabled — NuExtract skipped for speed. Using native extraction only.
-    _stage('Stage 4: disabled (native extraction only)')
+    if _should_run_nuextract(native_schema, low_fields_pre):
+        _stage(f'Stage 4: running NuExtract field correction (mode={_nuextract_mode()})')
+        try:
+            from intelligence import nuextract as _nue
+            if not _nue.is_available():
+                _stage('Stage 4: NuExtract not available — skipped')
+            else:
+                _text_for_nue = pre.get('ocr_text') or pre.get('raw_text') or ''
+                if not _text_for_nue.strip():
+                    _stage('Stage 4: no text available for NuExtract — skipped')
+                else:
+                    _nue_fields, _nue_receipt = _nue.extract_all_fields(
+                        _text_for_nue,
+                        form_id,
+                    )
+
+                    # Merge: NuExtract wins only for low-confidence native fields
+                    _merged: dict = {}
+                    for _fname, _fr in _all_fields(native_schema).items():
+                        if _fr.confidence < _LOW_CONFIDENCE_GATE:
+                            _nue_hit = _nue_fields.get(_fname) or _nue_receipt.get(_fname)
+                            if _nue_hit and _nue_hit.value:
+                                _merged[_fname] = _nue_hit
+                                continue
+                        _merged[_fname] = _fr
+
+                    # Rebuild schema with merged values
+                    from models.schemas import FORM_SCHEMAS as _FS
+                    _schema_cls = _FS.get(form_id)
+                    if _schema_cls and _merged:
+                        try:
+                            native_schema = _schema_cls(**_merged)
+                            improved = sum(
+                                1 for n, f in _all_fields(native_schema).items()
+                                if f.source.value == 'llm' and f.value
+                            )
+                            _stage(f'Stage 4: NuExtract improved {improved} field(s)')
+                        except Exception as _e:
+                            _stage(f'Stage 4: schema rebuild failed — {_e}')
+                    else:
+                        _stage('Stage 4: no schema to rebuild — NuExtract results noted only')
+        except Exception as _exc:
+            _stage(f'Stage 4: NuExtract error — {_exc}')
+    else:
+        _stage(f'Stage 4: NuExtract skipped (native extraction sufficient)')
 
     stats = _compute_stats(native_schema)
     low_fields_final = _fields_below(native_schema, _LOW_CONFIDENCE_GATE)
