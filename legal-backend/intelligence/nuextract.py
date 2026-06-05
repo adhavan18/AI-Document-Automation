@@ -71,7 +71,7 @@ def _load():
 # Low-level inference
 # ---------------------------------------------------------------------------
 
-def _run(text: str, schema: dict, max_new_tokens: int = 320) -> dict:
+def _run(text: str, schema: dict, max_new_tokens: int = 128) -> dict:
     model, tokenizer = _load()
     if model is None:
         return {}
@@ -82,8 +82,8 @@ def _run(text: str, schema: dict, max_new_tokens: int = 320) -> dict:
     # forms and notices, so the first ~6 000 chars (plus a short tail for
     # footer/summary info) capture them while keeping a single generation
     # pass fast enough for interactive use.
-    if len(text) > 7000:
-        excerpt = text[:6000] + "\n...\n" + text[-1000:]
+    if len(text) > 3000:
+        excerpt = text[:2000] + "\n...\n" + text[-500:]
     else:
         excerpt = text
 
@@ -96,7 +96,7 @@ def _run(text: str, schema: dict, max_new_tokens: int = 320) -> dict:
     )
     device = next(model.parameters()).device
     inputs = tokenizer(
-        prompt, return_tensors="pt", max_length=8000, truncation=True
+        prompt, return_tensors="pt", max_length=3500, truncation=True
     ).to(device)
 
     with torch.no_grad():
@@ -106,6 +106,8 @@ def _run(text: str, schema: dict, max_new_tokens: int = 320) -> dict:
             do_sample=False,
             temperature=1.0,
             repetition_penalty=1.1,
+            no_repeat_ngram_size=2,
+            length_penalty=0.8,
         )
 
     decoded = tokenizer.decode(out_ids[0], skip_special_tokens=True)
@@ -335,7 +337,11 @@ def _clean_ocr(text: str) -> str:
     return text
 
 
-def extract_all_fields(text: str, form_type: str) -> tuple[dict[str, FieldResult], dict[str, FieldResult]]:
+def extract_all_fields(
+    text: str,
+    form_type: str,
+    target_fields: list[str] | None = None,
+) -> tuple[dict[str, FieldResult], dict[str, FieldResult]]:
     """Single-pass extraction: merges the form schema and receipt schema into one
     _run() call so only one transformer generation pass is needed instead of two.
     Returns (form_fields, receipt_fields) as separate dicts."""
@@ -343,10 +349,19 @@ def extract_all_fields(text: str, form_type: str) -> tuple[dict[str, FieldResult
         return {}, {}
     form_schema = _FORM_SCHEMAS.get(form_type)
     cleaned = _clean_ocr(text)
+    wanted = set(target_fields or [])
     if form_schema:
-        combined_schema = {**form_schema, **_RECEIPT_SCHEMA}
+        if wanted:
+            combined_schema = {
+                **{k: v for k, v in form_schema.items() if k in wanted},
+                **{k: v for k, v in _RECEIPT_SCHEMA.items() if k in wanted},
+            }
+            if not combined_schema:
+                return {}, {}
+        else:
+            combined_schema = {**form_schema, **_RECEIPT_SCHEMA}
         print(f"[NUEXTRACT] Single-pass extraction for {form_type} ({len(cleaned)} chars, {len(combined_schema)} fields)")
-        raw = _run(cleaned, combined_schema)
+        raw = _run(cleaned, combined_schema, max_new_tokens=max(96, min(220, 32 + len(combined_schema) * 20)))
         form_keys = set(form_schema.keys())
         receipt_keys = set(_RECEIPT_SCHEMA.keys())
         all_results = _to_field_results(raw)
