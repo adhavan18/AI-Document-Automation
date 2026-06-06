@@ -431,56 +431,80 @@ def run(
     stage3_output = _build_stage3_output(form_id, native_schema, skills)
 
     # ====================================================================
-    # Stage 4 — NuExtract field correction
+    # Stage 4 — LLM field correction (Gemini → NuExtract fallback)
     #
-    # For every field whose native confidence is below the review threshold,
-    # NuExtract (numind/NuExtract-1.5-tiny) re-extracts the value from the
-    # OCR / raw text.  It is purely extractive — no hallucination possible.
-    # Falls back silently if the model is not available or text is empty.
+    # If GOOGLE_API_KEY is set, use Gemini 2.0 Flash for extraction (faster).
+    # Otherwise, fall back to NuExtract for any field below the review threshold.
     # ====================================================================
     if _should_run_nuextract(native_schema, low_fields_pre):
-        _stage(f'Stage 4: running NuExtract field correction (mode={_nuextract_mode()})')
+        _stage(f'Stage 4: running LLM field correction (mode={_nuextract_mode()})')
         try:
+            from intelligence import gemini_extractor
             from intelligence import nuextract as _nue
-            if not _nue.is_available():
-                _stage('Stage 4: NuExtract not available — skipped')
-            else:
-                _text_for_nue = pre.get('ocr_text') or pre.get('raw_text') or ''
-                if not _text_for_nue.strip():
-                    _stage('Stage 4: no text available for NuExtract — skipped')
-                else:
-                    _nue_fields, _nue_receipt = _nue.extract_all_fields(
-                        _text_for_nue,
+
+            _llm_fields, _llm_receipt = {}, {}
+            _used_gemini = False
+
+            # Try Gemini first if available
+            if gemini_extractor.is_available():
+                _stage('Stage 4: attempting Gemini 2.0 Flash extraction')
+                try:
+                    _pdf_bytes = open(pdf_path, 'rb').read()
+                    _text_for_llm = pre.get('ocr_text') or pre.get('raw_text') or ''
+                    _llm_fields, _llm_receipt = gemini_extractor.extract_all_fields(
+                        _pdf_bytes,
+                        _text_for_llm,
                         form_id,
                     )
+                    if _llm_fields or _llm_receipt:
+                        _stage(f'Stage 4: Gemini extracted {len(_llm_fields)} form + {len(_llm_receipt)} receipt fields')
+                        _used_gemini = True
+                except Exception as _e:
+                    _stage(f'Stage 4: Gemini extraction failed — {_e}, falling back to NuExtract')
 
-                    # Merge: NuExtract wins only for low-confidence native fields
-                    _merged: dict = {}
-                    for _fname, _fr in _all_fields(native_schema).items():
-                        if _fr.confidence < _LOW_CONFIDENCE_GATE:
-                            _nue_hit = _nue_fields.get(_fname) or _nue_receipt.get(_fname)
-                            if _nue_hit and _nue_hit.value:
-                                _merged[_fname] = _nue_hit
-                                continue
-                        _merged[_fname] = _fr
-
-                    # Rebuild schema with merged values
-                    from models.schemas import FORM_SCHEMAS as _FS
-                    _schema_cls = _FS.get(form_id)
-                    if _schema_cls and _merged:
-                        try:
-                            native_schema = _schema_cls(**_merged)
-                            improved = sum(
-                                1 for n, f in _all_fields(native_schema).items()
-                                if f.source.value == 'llm' and f.value
-                            )
-                            _stage(f'Stage 4: NuExtract improved {improved} field(s)')
-                        except Exception as _e:
-                            _stage(f'Stage 4: schema rebuild failed — {_e}')
+            # Fall back to NuExtract if Gemini didn't work
+            if not _used_gemini:
+                if not _nue.is_available():
+                    _stage('Stage 4: NuExtract not available — skipped')
+                else:
+                    _text_for_nue = pre.get('ocr_text') or pre.get('raw_text') or ''
+                    if not _text_for_nue.strip():
+                        _stage('Stage 4: no text available for NuExtract — skipped')
                     else:
-                        _stage('Stage 4: no schema to rebuild — NuExtract results noted only')
+                        _llm_fields, _llm_receipt = _nue.extract_all_fields(
+                            _text_for_nue,
+                            form_id,
+                        )
+                        _stage(f'Stage 4: NuExtract extracted {len(_llm_fields)} form + {len(_llm_receipt)} receipt fields')
+
+            # Merge: LLM results win only for low-confidence native fields
+            if _llm_fields or _llm_receipt:
+                _merged: dict = {}
+                for _fname, _fr in _all_fields(native_schema).items():
+                    if _fr.confidence < _LOW_CONFIDENCE_GATE:
+                        _llm_hit = _llm_fields.get(_fname) or _llm_receipt.get(_fname)
+                        if _llm_hit and _llm_hit.value:
+                            _merged[_fname] = _llm_hit
+                            continue
+                    _merged[_fname] = _fr
+
+                # Rebuild schema with merged values
+                from models.schemas import FORM_SCHEMAS as _FS
+                _schema_cls = _FS.get(form_id)
+                if _schema_cls and _merged:
+                    try:
+                        native_schema = _schema_cls(**_merged)
+                        improved = sum(
+                            1 for n, f in _all_fields(native_schema).items()
+                            if f.source.value == 'llm' and f.value
+                        )
+                        _stage(f'Stage 4: LLM improved {improved} field(s)')
+                    except Exception as _e:
+                        _stage(f'Stage 4: schema rebuild failed — {_e}')
+                else:
+                    _stage('Stage 4: no schema to rebuild — LLM results noted only')
         except Exception as _exc:
-            _stage(f'Stage 4: NuExtract error — {_exc}')
+            _stage(f'Stage 4: LLM extraction error — {_exc}')
     else:
         _stage(f'Stage 4: NuExtract skipped (native extraction sufficient)')
 
