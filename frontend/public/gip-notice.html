@@ -269,6 +269,7 @@
     transition:box-shadow .15s;}
   .field:hover{box-shadow:0 2px 12px rgba(28,26,23,.05);}
   .field.low{border-color:var(--orange);box-shadow:0 1px 10px rgba(225,74,40,.06);}
+  .field.default{border-color:#e05555;box-shadow:0 1px 10px rgba(224,85,85,.06);}
   .field-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
   .field-key{font-size:11.5px;font-weight:700;color:var(--ink-soft);letter-spacing:.005em;}
   .field-meta{display:flex;align-items:center;gap:10px;}
@@ -643,9 +644,13 @@ function renderFields(){
   renderSummary();
   document.getElementById('flist').innerHTML = FIELDS.map(f=>{
     const isNotes = f.type==='textarea';
-    const needsReview = !isNotes && (f.is_default || f.conf<80);
+    const isDefault = f.is_default;
+    const lowConf = !isNotes && !isDefault && f.conf<80;
     const tone = confTone(f.conf);
-    return `<div class="field ${needsReview?'low':''}">
+    let className = '';
+    if(isDefault) className = 'default';
+    else if(lowConf) className = 'low';
+    return `<div class="field ${className}">
       <div class="field-top">
         <span class="field-key">${f.key}</span>
         <div class="field-meta">
@@ -665,7 +670,7 @@ function renderFields(){
           ? `<input type="text" inputmode="numeric" value="${f.value??''}" />${ICON.pencil}`
           : `<input value="${f.value??''}" />${ICON.pencil}`}
       </div>
-      ${needsReview?`<div class="field-warn">${ICON.spark}Manual Review— verify against original</div>`:''}
+      ${lowConf?`<div class="field-warn">${ICON.spark}Manual Review— verify against original</div>`:''}
     </div>`;
   }).join('');
 }
