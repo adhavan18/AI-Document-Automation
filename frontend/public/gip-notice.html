@@ -636,46 +636,9 @@ function renderSummary(){
   ).join('');
 }
 
-const FIELD_DEFAULTS = {
-  'Primary Flag': {value:'True',conf:0,src:'native'},
-  'Sent Government Agency': {value:'',conf:0,src:'native'},
-  'Receipt For': {value:'',conf:0,src:'native'},
-  'Receipt Type': {value:'',conf:0,src:'native'},
-  'Receipt Date': {value:'',conf:0,src:'native'},
-  'Receipt Notice Date': {value:'',conf:0,src:'native'},
-  'Receipt Number': {value:'',conf:0,src:'native'},
-  'Receipt Status': {value:'',conf:0,src:'native'},
-  'Expiration Alert': {value:'No',conf:0,src:'native'},
-  'Receipt Notes': {value:'',conf:0,src:'native'},
-};
-
-function mergeWithDefaults(extracted){
-  const merged = {};
-  FIELDS.forEach(f=>{
-    const key = f.key;
-    if(extracted[key]){
-      merged[key] = {...f, ...extracted[key]};
-    } else {
-      const def = FIELD_DEFAULTS[key];
-      merged[key] = {...f, value:def.value, conf:def.conf, src:def.src};
-    }
-  });
-  return Object.values(merged);
-}
-
 function renderFields(){
   renderSummary();
-  const d = QUEUE.find(x=>x.id===activeId);
-  if(!d) return;
-
-  const extracted = d.extracted_fields ? d.extracted_fields.reduce((m,f)=>{
-    m[f.field_name] = f;
-    return m;
-  }, {}) : {};
-
-  const fields = mergeWithDefaults(extracted);
-
-  document.getElementById('flist').innerHTML = fields.map(f=>{
+  document.getElementById('flist').innerHTML = FIELDS.map(f=>{
     const isNotes = f.type==='textarea';
     const low = !isNotes && f.conf<80;
     const tone = confTone(f.conf);

@@ -269,8 +269,22 @@ def get_case_detail(
     case = _require_case(db, case_id)
     meta = _extract_pipeline_meta(db, case.id)
 
-    fields_out = [
-        ExtractedFieldOut(
+    # Receipt field defaults — always return all 10 fields, filling missing with defaults
+    RECEIPT_FIELD_DEFAULTS = {
+        'primary_flag': ('True', 0.0),
+        'sent_government_agency': ('', 0.0),
+        'receipt_for': ('', 0.0),
+        'receipt_type': ('', 0.0),
+        'receipt_date': ('', 0.0),
+        'receipt_notice_date': ('', 0.0),
+        'receipt_number': ('', 0.0),
+        'receipt_status': ('', 0.0),
+        'expiration_alert': ('No', 0.0),
+        'receipt_notes': ('', 0.0),
+    }
+
+    extracted = {
+        f.field_name: ExtractedFieldOut(
             field_name=f.field_name,
             raw_value=f.raw_value,
             normalized_value=f.normalized_value,
@@ -279,7 +293,23 @@ def get_case_detail(
             page_number=f.page_number,
         )
         for f in get_extracted_fields(db, case.id)
-    ]
+    }
+
+    fields_out = []
+    for field_name, (default_val, default_conf) in RECEIPT_FIELD_DEFAULTS.items():
+        if field_name in extracted:
+            fields_out.append(extracted[field_name])
+        else:
+            fields_out.append(
+                ExtractedFieldOut(
+                    field_name=field_name,
+                    raw_value=default_val,
+                    normalized_value=default_val,
+                    confidence=default_conf,
+                    source='native',
+                    page_number=None,
+                )
+            )
 
     audit_out = [
         AuditEventOut(
