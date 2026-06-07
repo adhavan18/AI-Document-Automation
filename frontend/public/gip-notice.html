@@ -302,7 +302,6 @@
     resize:vertical;min-height:64px;line-height:1.4;transition:all .15s;}
   .field-input textarea:focus{border-color:var(--primary);background:#fff;}
   .field-warn{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--orange);font-weight:500;}
-  .field-warn.default{color:var(--blue);}
 </style>
 </head>
 <body>
@@ -644,16 +643,9 @@ function renderFields(){
   renderSummary();
   document.getElementById('flist').innerHTML = FIELDS.map(f=>{
     const isNotes = f.type==='textarea';
-    const isDefault = f.is_default;
-    const low = !isNotes && !isDefault && f.conf<80;
+    const needsReview = !isNotes && (f.is_default || f.conf<80);
     const tone = confTone(f.conf);
-    let warning = '';
-    if(isDefault){
-      warning = `<div class="field-warn default">${ICON.spark}Default value — verify against original</div>`;
-    } else if(low){
-      warning = `<div class="field-warn">${ICON.spark}Manual Review— verify original notice</div>`;
-    }
-    return `<div class="field ${low||isDefault?'low':''}">
+    return `<div class="field ${needsReview?'low':''}">
       <div class="field-top">
         <span class="field-key">${f.key}</span>
         <div class="field-meta">
@@ -673,7 +665,7 @@ function renderFields(){
           ? `<input type="text" inputmode="numeric" value="${f.value??''}" />${ICON.pencil}`
           : `<input value="${f.value??''}" />${ICON.pencil}`}
       </div>
-      ${warning}
+      ${needsReview?`<div class="field-warn">${ICON.spark}Manual Review— verify against original</div>`:''}
     </div>`;
   }).join('');
 }
