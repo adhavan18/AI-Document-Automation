@@ -44,7 +44,7 @@
   .sidebar.collapsed{width:74px;}
 
   .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
-  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-logo{height:40px;width:auto;max-width:170px;object-fit:contain;flex-shrink:0;display:block;background:#fff;border-radius:8px;padding:6px 10px;box-shadow:0 2px 8px rgba(0,0,0,.25);}
   .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
     background:transparent;border:none;padding:0;cursor:pointer;
     color:var(--side-text);display:none;align-items:center;justify-content:center;
@@ -469,51 +469,112 @@ function renderNav(){
     </a>`).join('');
 }
 
-/* ─── notice review page state ─── */
+/* ─── notice review page — LIVE backend integration ─── */
+const API = '/legal';
+
 const STATUS = {
   processing:{label:'Processing', color:'var(--amber)'},
   ready:{label:'Ready for Review', color:'var(--primary)'},
   completed:{label:'Completed', color:'var(--green)'},
 };
 
-const QUEUE = [
-  {id:'0588250d',type:'I-797',label:'Notice of Action',applicant:'Elena Rodriguez',status:'ready',priority:'normal',fields:7,pages:14,time:'Jun 2, 2026 · 10:43 PM',primary:true,extracted_fields:[
-    {field_name:'Primary Flag',normalized_value:'True',confidence:0.95,source:'native',is_default:false},
-    {field_name:'Sent Government Agency',normalized_value:'05/28/2026',confidence:0.94,source:'native',is_default:false},
-    {field_name:'Receipt For',normalized_value:'Elena Rodriguez',confidence:0.95,source:'native',is_default:false},
-    {field_name:'Receipt Type',normalized_value:'USCIS Receipt Number',confidence:0.92,source:'native',is_default:false},
-    {field_name:'Receipt Date',normalized_value:'05/30/2026',confidence:0.95,source:'native',is_default:false},
-    {field_name:'Receipt Notice Date',normalized_value:'06/01/2026',confidence:0.93,source:'native',is_default:false},
-    {field_name:'Receipt Number',normalized_value:'ABC1234567890',confidence:0.88,source:'native',is_default:false},
-    {field_name:'Receipt Status',normalized_value:'',confidence:0.0,source:'native',is_default:true},
-    {field_name:'Expiration Alert',normalized_value:'No',confidence:0.0,source:'native',is_default:true},
-    {field_name:'Receipt Notes',normalized_value:'',confidence:0.0,source:'native',is_default:true},
-  ]},
-  {id:'0344f1a2',type:'I-130',label:'Petition for Alien Relative',applicant:'Marcus Chen',status:'processing',priority:'high',fields:4,pages:12,time:'Jun 3, 2026 · 11:04 AM',progress:62,extracted_fields:[]},
-  {id:'0991ccde',type:'I-485',label:'Application for Adjustment',applicant:'Priya Nair',status:'ready',priority:'high',fields:9,pages:6,time:'Jun 3, 2026 · 09:12 AM',primary:true,extracted_fields:[
-    {field_name:'Primary Flag',normalized_value:'True',confidence:0.95,source:'native',is_default:false},
-    {field_name:'Receipt Number',normalized_value:'XYZ9876543210',confidence:0.90,source:'native',is_default:false},
-  ]},
-];
+/* Field display config: friendly label + input type + options, keyed by the
+   backend snake_case field_name. Anything not listed renders as a text input. */
+const FIELD_CONFIG = {
+  primary_flag:           {label:'Primary Flag',           type:'select', options:['True','False']},
+  sent_government_agency: {label:'Sent Government Agency',  type:'date'},
+  receipt_for:            {label:'Receipt For',            type:'text'},
+  receipt_type:           {label:'Receipt Type',           type:'select', options:['USCIS Receipt Number','J Visa Application Number','NVC Matter Number','PERM Receipt','Others']},
+  receipt_date:           {label:'Receipt Date',           type:'date'},
+  receipt_notice_date:    {label:'Receipt Notice Date',    type:'date'},
+  receipt_number:         {label:'Receipt Number',         type:'text'},
+  receipt_status:         {label:'Receipt Status',         type:'select', options:['Pending','Approved','Denied','RFE','Withdrawn','Shipped']},
+  expiration_alert:       {label:'Expiration Alert',       type:'select', options:['Yes','No']},
+  receipt_notes:          {label:'Receipt Notes',          type:'textarea'},
+  // common I-485 / applicant fields
+  alien_registration_number:{label:'Alien Registration No.', type:'text'},
+  family_name:            {label:'Family Name',            type:'text'},
+  given_name:             {label:'Given Name',             type:'text'},
+  date_of_birth:          {label:'Date of Birth',          type:'date'},
+  country_of_birth:       {label:'Country of Birth',        type:'text'},
+  date_of_entry:          {label:'Date of Entry',          type:'date'},
+  class_of_admission:     {label:'Class of Admission',     type:'text'},
+  ssn:                    {label:'SSN',                    type:'text'},
+};
 
-const FIELDS = [
-  {key:'Primary Flag',value:'True',conf:96,src:'native',type:'select',options:['True','False']},
-  {key:'Sent Government Agency',value:'2026-05-28',conf:94,src:'native',type:'date'},
-  {key:'Receipt For',value:'Elena Rodriguez',conf:95,src:'native',type:'text'},
-  {key:'Receipt Type',value:'USCIS Receipt Number',conf:92,src:'native',type:'select',
-    options:['USCIS Receipt Number','J Visa Application Number','NVC Matter Number','PERM Receipt','Others']},
-  {key:'Receipt Date',value:'2026-05-30',conf:95,src:'native',type:'date'},
-  {key:'Receipt Notice Date',value:'2026-06-01',conf:93,src:'native',type:'date'},
-  {key:'Receipt Number',value:'MSC2190123456',conf:88,src:'native',type:'number'},
-  {key:'Receipt Status',value:'Pending',conf:90,src:'llm',type:'select',
-    options:['Pending','Approved','Denied','RFE','Withdrawn','Shipped']},
-  {key:'Expiration Alert',value:'No',conf:74,src:'llm',type:'select',options:['Yes','No']},
-  {key:'Receipt Notes',value:'',conf:0,src:'llm',type:'textarea'},
-];
+function fieldLabel(name){
+  if(FIELD_CONFIG[name]) return FIELD_CONFIG[name].label;
+  return String(name).replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+}
 
-let activeId = '0588250d';
-let filter = 'all';
+/* Live state */
+let QUEUE = [];          // [{id, type, label, applicant, status, priority, fields, pages, time, primary, page_count}]
+let DETAIL = null;       // full case detail for the active case
+let FIELDS = [];         // mapped field rows for the active case
+let activeId = null;
+let batchIds = null;     // optional subset from the list page's bulk action
 let page = 1;
+let pollTimer = null;
+
+const FORM_LABELS = {
+  'I-485':'Application to Adjust Status','I-130':'Petition for Alien Relative',
+  'I-797':'Notice of Action','N-400':'Application for Naturalization',
+  'I-765':'Application for Employment Auth.','I-140':'Immigrant Petition',
+  'I-539':'Extend/Change Status','I-131':'Travel Document','I-129':'Nonimmigrant Worker',
+  'I-90':'Replace Green Card','N-600':'Certificate of Citizenship','I-751':'Remove Conditions',
+};
+
+function apiStatusToView(s){
+  if(s==='processing') return 'processing';
+  if(s==='approved'||s==='completed'||s==='rejected') return 'completed';
+  return 'ready'; // pending | in_review
+}
+
+function mapQueueCase(c){
+  const short = (c.case_id||'').replace(/-/g,'').slice(0,8);
+  return {
+    id: c.case_id,
+    type: c.form_type || '—',
+    label: FORM_LABELS[c.form_type] || 'USCIS Notice',
+    applicant: 'Case #' + short.toUpperCase(),
+    status: apiStatusToView(c.status),
+    raw_status: c.status,
+    priority: c.priority || 'normal',
+    fields: c.field_count || 0,
+    pages: c.page_count || 0,
+    time: c.uploaded_at ? new Date(c.uploaded_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '',
+    primary: c.priority === 'high',
+    progress: c.status==='processing' ? 60 : undefined,
+  };
+}
+
+/* convert a backend MM/DD/YYYY or other date string to yyyy-mm-dd for <input type=date> */
+function toDateInput(v){
+  if(!v) return '';
+  const m = String(v).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m){ return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`; }
+  const m2 = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m2) return `${m2[1]}-${m2[2]}-${m2[3]}`;
+  return v;
+}
+
+function mapField(f){
+  const cfg = FIELD_CONFIG[f.field_name] || {type:'text'};
+  let val = f.normalized_value ?? f.raw_value ?? '';
+  if(cfg.type==='date') val = toDateInput(val);
+  return {
+    name: f.field_name,
+    key: fieldLabel(f.field_name),
+    value: val,
+    conf: Math.round((f.confidence||0)*100),
+    src: (f.source==='llm'||f.source==='llm_fallback') ? 'llm' : 'native',
+    type: cfg.type,
+    options: cfg.options,
+    is_default: !!f.is_default,   // upstream flag: system default vs extracted value
+  };
+}
+
+let filter = 'all';
 
 const ICON = {
   spin:'<svg class="spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
@@ -552,7 +613,7 @@ function renderList(){
           <span class="ctype">${d.type}</span>
           ${d.priority==='high'?'<span class="hi">HIGH</span>':''}
         </div>
-        <span class="cid">#${d.id}</span>
+        <span class="cid">#${(d.id||'').slice(0,8)}</span>
       </div>
       <div class="capp">${d.applicant}</div>
       <div class="clabel">${d.label}</div>
@@ -560,12 +621,53 @@ function renderList(){
       ${d.status==='processing'?`<div class="cbar"><i style="width:${d.progress}%;"></i></div>`:''}
     </button>`;
   }).join('');
-  document.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{activeId=b.dataset.id;page=1;renderViewer();renderFields();renderList();});
+  document.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{ selectCase(b.dataset.id); });
 }
+
+/* Load the full detail (fields) for a case from the backend, then render. */
+async function selectCase(id){
+  activeId = id;
+  page = 1;
+  renderList();
+  renderViewer();          // PDF shows immediately
+  // fetch fields
+  try{
+    const r = await fetch(`${API}/queue/${encodeURIComponent(id)}`);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    DETAIL = await r.json();
+    FIELDS = (DETAIL.extracted_fields || [])
+      .filter(f => (f.normalized_value ?? f.raw_value ?? '') !== '' || FIELD_CONFIG[f.field_name])
+      .map(mapField);
+  }catch(e){
+    console.error('[GIP] case detail load failed', e);
+    DETAIL = null; FIELDS = [];
+  }
+  renderFields();
+  // If this case is still processing, poll until fields are ready
+  const d = QUEUE.find(x=>x.id===id);
+  if(d && d.status==='processing') startPolling(id);
+  else stopPolling();
+}
+
+function startPolling(id){
+  stopPolling();
+  pollTimer = setInterval(async ()=>{
+    try{
+      const s = await fetch(`${API}/cases/${encodeURIComponent(id)}/status`).then(r=>r.json());
+      if(s.status !== 'processing'){
+        stopPolling();
+        await loadQueue();          // refresh sidebar statuses
+        if(activeId===id) await selectCase(id);  // reload fields + PDF
+      }
+    }catch(e){ /* keep polling */ }
+  }, 5000);
+}
+function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
 
 function renderViewer(){
   const d = QUEUE.find(x=>x.id===activeId) || QUEUE[0];
-  document.getElementById('vTitle').textContent = `${d.type} — ${d.id}…`;
+  if(!d){ return; }
+  document.getElementById('vTitle').textContent = `${d.type} — ${(d.id||'').slice(0,8)}…`;
   document.getElementById('vSub').textContent = `${d.applicant} · ${d.time}`;
   const idx = QUEUE.findIndex(x=>x.id===d.id);
   const total = QUEUE.length;
@@ -575,51 +677,21 @@ function renderViewer(){
   document.getElementById('nextPg').disabled = idx >= total-1;
 
   const canvas = document.getElementById('canvas');
-  if(d.status==='processing'){
-    canvas.innerHTML = `<div class="proc">
-      <svg class="spin" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#b8791a" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-      <h3>Extracting fields…</h3>
-      <p>${d.fields} of ~${d.pages} pages parsed · ${d.progress}%</p>
-      <div class="proc-bar"><i style="width:${d.progress}%;"></i></div>
-    </div>`;
-  } else {
-    canvas.innerHTML = docPreview();
-  }
-}
-
-function docPreview(){
-  return `<div class="doc">
-    <div class="doc-head">
-      <div class="seal">USCIS</div>
-      <div style="text-align:center;flex:1;">
-        <div class="doc-title">Application for Naturalization</div>
-        <div style="font-size:10px;margin-top:3px;">Department of Homeland Security</div>
-        <div style="font-size:9px;color:#444;">U.S. Citizenship and Immigration Services</div>
-      </div>
-      <div style="text-align:right;font-size:9px;">
-        <div style="font-weight:700;">USCIS</div><div>Form N-400</div><div style="color:#666;">OMB No. 1615-0052</div>
-      </div>
-    </div>
-    <div class="doc-rule">
-      <div>For USCIS Use Only</div><div>Date Stamp</div><div>Receipt</div><div>Action Block</div>
-    </div>
-    <div class="sec">Part 1. Information About Your Eligibility</div>
-    <div style="margin-top:10px;font-size:10px;">
-      <div style="margin-bottom:7px;"><b>A.</b> <span class="ckbox">✓</span>General Provision.</div>
-      <div style="margin-bottom:6px;color:#333;"><span class="ckbox"></span>B. Spouse of U.S. Citizen</div>
-      <div style="margin-bottom:6px;color:#333;"><span class="ckbox"></span>C. VAWA</div>
-      <div style="margin-bottom:6px;color:#333;"><span class="ckbox"></span>D. Qualified Employment Outside the U.S.</div>
-    </div>
-    <div class="sec" style="margin-top:14px;">Part 2. Information About You</div>
-    <div style="margin-top:8px;font-size:9px;">Your Current Legal Name</div>
-    <div class="nm-grid">
-      <div><div class="f-l">Family Name</div><div class="f-v">Rodriguez</div></div>
-      <div><div class="f-l">Given Name</div><div class="f-v">Elena</div></div>
-      <div><div class="f-l">Middle Name</div><div class="f-v">Maria</div></div>
-    </div>
-    <div style="margin-top:26px;display:flex;justify-content:space-between;font-size:8px;color:#666;">
-      <span>Form N-400 · Edition 01/20/25</span><span>Page 1 of 14</span>
-    </div>
+  // Always render the REAL uploaded PDF from the backend. While the case is
+  // still processing, overlay a small "extracting" badge on top of it.
+  const badge = d.status==='processing'
+    ? `<div style="position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:5;
+         display:flex;align-items:center;gap:8px;background:#1a1f2e;color:#fbf0db;
+         padding:7px 15px;border-radius:999px;font-size:12px;font-weight:600;
+         box-shadow:0 4px 16px rgba(0,0,0,.4);">
+         <svg class="spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b8791a" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+         Extracting fields… auto-updates when ready</div>`
+    : '';
+  canvas.innerHTML = `<div style="position:relative;width:100%;height:100%;display:flex;">
+    ${badge}
+    <iframe title="notice pdf" src="${API}/queue/${encodeURIComponent(d.id)}/pdf#toolbar=1"
+      style="flex:1;width:100%;height:100%;min-height:520px;border:none;border-radius:6px;
+      background:#fff;box-shadow:0 8px 40px rgba(0,0,0,.32);"></iframe>
   </div>`;
 }
 
@@ -642,6 +714,15 @@ function renderSummary(){
 
 function renderFields(){
   renderSummary();
+  const d = QUEUE.find(x=>x.id===activeId);
+  if(!FIELDS.length){
+    const msg = (d && d.status==='processing')
+      ? 'Extraction in progress… fields will appear automatically.'
+      : 'No fields extracted for this case.';
+    document.getElementById('flist').innerHTML =
+      `<div style="padding:24px;color:var(--ink-faint);font-size:13px;text-align:center;">${msg}</div>`;
+    return;
+  }
   document.getElementById('flist').innerHTML = FIELDS.map(f=>{
     const isNotes = f.type==='textarea';
     const isDefault = f.is_default;
@@ -679,24 +760,42 @@ function renderAll(){ renderNav(); renderList(); renderViewer(); renderFields();
 
 document.getElementById('prevPg').onclick=()=>{
   const i = QUEUE.findIndex(x=>x.id===activeId);
-  if(i>0){ activeId = QUEUE[i-1].id; page=1; renderViewer(); renderList(); renderFields(); }
+  if(i>0) selectCase(QUEUE[i-1].id);
 };
 document.getElementById('nextPg').onclick=()=>{
   const i = QUEUE.findIndex(x=>x.id===activeId);
-  if(i<QUEUE.length-1){ activeId = QUEUE[i+1].id; page=1; renderViewer(); renderList(); renderFields(); }
+  if(i<QUEUE.length-1) selectCase(QUEUE[i+1].id);
 };
 
-document.getElementById('confirmBtn').onclick=()=>{
-  const i = QUEUE.findIndex(x=>x.id===activeId);
-  if(i<0) return;
-  QUEUE.splice(i,1);
-  if(QUEUE.length===0){
-    window.location.href = 'gip-notice-list.html';
-    return;
+/* Confirm — collect current field values and POST to the backend, then advance. */
+document.getElementById('confirmBtn').onclick = async ()=>{
+  if(!activeId) return;
+  const btn = document.getElementById('confirmBtn');
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.textContent = 'Saving…';
+  // gather edited values from the rendered inputs (in FIELDS order)
+  const inputs = document.querySelectorAll('#flist .field-input input, #flist .field-input select, #flist .field-input textarea');
+  const fields = FIELDS.map((f,i)=>({
+    field_name: f.name,
+    confirmed_value: (inputs[i] && inputs[i].value != null) ? inputs[i].value : (f.value||'')
+  }));
+  try{
+    const r = await fetch(`${API}/queue/${encodeURIComponent(activeId)}/confirm`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({fields})
+    });
+    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.detail||('HTTP '+r.status)); }
+    const doneId = activeId;
+    await loadQueue();
+    // advance to the next remaining review case, else go back to the list
+    const remaining = QUEUE.filter(x=>x.id!==doneId && x.status!=='completed');
+    if(remaining.length){ selectCase(remaining[0].id); }
+    else { window.location.href = 'gip-notice-list.html'; }
+  }catch(e){
+    console.error('[GIP] confirm failed', e);
+    alert('Save failed: ' + e.message);
+    btn.disabled=false; btn.innerHTML = orig;
   }
-  activeId = QUEUE[Math.min(i, QUEUE.length-1)].id;
-  page = 1;
-  renderList(); renderViewer(); renderFields();
 };
 
 document.getElementById('collapseBtn').onclick = ()=>{
@@ -712,28 +811,58 @@ document.getElementById('qToggle').onclick = ()=>{
   document.getElementById('qToggle').title = collapsed ? 'Expand panel' : 'Collapse panel';
 };
 
-/* apply list-page selection: hide queue for single, filter for selected subset */
-(function(){
-  const params = new URLSearchParams(window.location.search);
-  const count = parseInt(params.get('count') || '', 10);
-  const fns = params.get('fns');
-  if(fns){
-    const wanted = new Set(fns.split('|').filter(Boolean));
-    for(let i=QUEUE.length-1;i>=0;i--){
-      if(!wanted.has(QUEUE[i].applicant)) QUEUE.splice(i,1);
+/* ─── Load the queue + the requested case from the backend ─── */
+async function loadQueue(){
+  try{
+    const data = await fetch(`${API}/queue?status=all&limit=500`).then(r=>r.json());
+    let rows = (data.cases || []).map(mapQueueCase);
+    // If a batch subset was passed from the list page, restrict the queue to it
+    if(batchIds && batchIds.length){
+      const set = new Set(batchIds);
+      rows = rows.filter(x=>set.has(x.id));
     }
-    if(QUEUE.length && !QUEUE.find(d=>d.id===activeId)) activeId = QUEUE[0].id;
+    QUEUE = rows;
+    renderList();
+  }catch(e){
+    console.error('[GIP] queue load failed', e);
+    QUEUE = [];
+    renderList();
   }
-  if(count === 1){
-    document.getElementById('workspace').classList.add('q-hidden');
+}
+
+(async function init(){
+  renderNav();
+
+  const params = new URLSearchParams(window.location.search);
+  const caseParam = params.get('case');
+  const batchParam = params.get('batch');
+  if(batchParam) batchIds = batchParam.split(',').filter(Boolean);
+
+  await loadQueue();
+
+  // Pick the case to show: explicit ?case=, else first in queue
+  let target = caseParam && QUEUE.find(x=>x.id===caseParam) ? caseParam
+             : (QUEUE[0] && QUEUE[0].id);
+
+  if(target){
+    await selectCase(target);
+  } else {
+    // empty queue
+    document.getElementById('vTitle').textContent = 'No cases';
+    document.getElementById('vSub').textContent = 'Upload a notice from the queue list';
+    document.getElementById('flist').innerHTML =
+      '<div style="padding:24px;color:var(--ink-faint);font-size:13px;">No cases to review.</div>';
   }
+
+  // auto-refresh countdown indicator (cosmetic) + periodic queue refresh
+  let r = 30;
+  setInterval(()=>{
+    r = r<=1 ? 30 : r-1;
+    const el = document.getElementById('refresh');
+    if(el) el.textContent = r;
+    if(r===30) loadQueue();
+  }, 1000);
 })();
-
-
-let r = 28;
-setInterval(()=>{ r = r<=1?30:r-1; document.getElementById('refresh').textContent=r; }, 1000);
-
-renderAll();
 </script>
 </body>
 </html>

@@ -44,7 +44,7 @@
   .sidebar.collapsed{width:74px;}
 
   .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
-  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-logo{height:40px;width:auto;max-width:170px;object-fit:contain;flex-shrink:0;display:block;background:#fff;border-radius:8px;padding:6px 10px;box-shadow:0 2px 8px rgba(0,0,0,.25);}
   .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
     background:transparent;border:none;padding:0;cursor:pointer;
     color:var(--side-text);display:none;align-items:center;justify-content:center;
@@ -973,7 +973,8 @@ function renderNav(){
     </a>`).join('');
 }
 
-/* ─── threshold slider ─── */
+/* ─── threshold slider (live, backed by /legal/settings) ─── */
+const API = '/legal';
 const thrSlider = document.getElementById('thrSlider');
 const thrVal = document.getElementById('thrVal');
 const thrEcho = document.getElementById('thrEcho');
@@ -984,6 +985,18 @@ function syncThr(){
 }
 thrSlider.addEventListener('input', syncThr);
 syncThr();
+
+/* Load the saved threshold from the backend on page open. */
+async function loadSettings(){
+  try{
+    const s = await fetch(`${API}/settings`).then(r=>r.json());
+    const pct = s.confidence_threshold_pct
+      ?? Math.round((s.confidence_threshold ?? 0.7) * 100);
+    thrSlider.value = pct;
+    syncThr();
+  }catch(e){ console.error('[GIP] settings load failed', e); }
+}
+loadSettings();
 
 /* ─── document path ─── */
 const docPath = document.getElementById('docPath');
@@ -1074,19 +1087,42 @@ document.querySelectorAll('.switch').forEach(sw=>{
   sw.onclick = ()=> sw.classList.toggle('on');
 });
 
-/* ─── save/reset (stubs) ─── */
+/* ─── save / reset — persists the confidence threshold to the backend ─── */
 function flash(msg){
   const btn = document.getElementById('saveBtn');
-  const orig = btn.innerHTML;
+  const orig = btn.dataset.orig || btn.innerHTML;
+  btn.dataset.orig = orig;
   btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ${msg}`;
-  setTimeout(()=>{ btn.innerHTML = orig; }, 1400);
+  setTimeout(()=>{ btn.innerHTML = orig; }, 1600);
 }
-document.getElementById('saveBtn').onclick = ()=> flash('Saved');
-document.getElementById('resetBtn').onclick = ()=>{
-  thrSlider.value = 92; syncThr();
-  document.getElementById('llmTemp').value = 0.2;
-  document.getElementById('llmTokens').value = 4096;
-  flash('Reset');
+
+async function saveSettings(){
+  const pct = parseInt(thrSlider.value, 10);
+  try{
+    const r = await fetch(`${API}/settings`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ confidence_threshold_pct: pct })
+    });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    flash('Saved');
+  }catch(e){
+    console.error('[GIP] settings save failed', e);
+    flash('Save failed');
+  }
+}
+document.getElementById('saveBtn').onclick = saveSettings;
+
+document.getElementById('resetBtn').onclick = async ()=>{
+  thrSlider.value = 70; syncThr();   // default threshold = 70%
+  const t = document.getElementById('llmTemp'); if(t) t.value = 0.2;
+  const k = document.getElementById('llmTokens'); if(k) k.value = 4096;
+  try{
+    await fetch(`${API}/settings`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ confidence_threshold_pct: 70 })
+    });
+    flash('Reset');
+  }catch(e){ flash('Reset (local)'); }
 };
 
 /* ─── settings tabs ─── */

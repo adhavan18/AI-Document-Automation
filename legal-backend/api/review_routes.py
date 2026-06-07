@@ -204,8 +204,18 @@ def _field_counts(db: Session, case_id: uuid.UUID) -> tuple[int, int]:
         select(ExtractedField).where(ExtractedField.case_id == case_id)
     ).scalars().all()
     total = len(rows)
-    low = sum(1 for r in rows if r.confidence < _LOW_CONF)
+    threshold = _current_threshold()
+    low = sum(1 for r in rows if r.confidence < threshold)
     return total, low
+
+
+def _current_threshold() -> float:
+    """Live confidence threshold from the operator Settings (falls back to _LOW_CONF)."""
+    try:
+        from settings_store import get_threshold
+        return get_threshold()
+    except Exception:
+        return _LOW_CONF
 
 
 def _dt(dt: Any) -> str | None:

@@ -40,3 +40,4 @@ __pycache__/
 legal-backend/.venv/
 legal-backend/venv/
 legal-backend/*.egg-info/
+legal-backend/settings.json

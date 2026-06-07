@@ -15,7 +15,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / ".env")
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 
 # Uploads directory — persisted across requests
@@ -248,6 +248,40 @@ async def upload(
 # ---------------------------------------------------------------------------
 # GET /cases/{case_id}/status
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Settings — operator-tunable platform config (confidence threshold, …)
+# Read live by the pipeline + review queue so changes apply everywhere.
+# ---------------------------------------------------------------------------
+
+@app.get("/settings")
+async def get_settings_endpoint() -> JSONResponse:
+    from settings_store import get_settings
+    s = get_settings()
+    # also surface the threshold as whole-percent for the UI slider
+    s = dict(s)
+    s["confidence_threshold_pct"] = round(s.get("confidence_threshold", 0.7) * 100)
+    return JSONResponse(content=s)
+
+
+@app.post("/settings")
+async def update_settings_endpoint(request: Request) -> JSONResponse:
+    from settings_store import update_settings
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    # accept either {confidence_threshold: 0.85} or {confidence_threshold_pct: 85}
+    patch: dict = {}
+    if "confidence_threshold" in body:
+        patch["confidence_threshold"] = body["confidence_threshold"]
+    elif "confidence_threshold_pct" in body:
+        patch["confidence_threshold"] = body["confidence_threshold_pct"]
+    updated = update_settings(patch)
+    updated = dict(updated)
+    updated["confidence_threshold_pct"] = round(updated.get("confidence_threshold", 0.7) * 100)
+    return JSONResponse(content=updated)
+
 
 @app.get("/cases/{case_id}/status")
 async def case_status(case_id: str) -> JSONResponse:

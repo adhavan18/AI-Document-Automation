@@ -47,7 +47,16 @@ AnyFormSchema = Union[
 BASE_DIR = pathlib.Path(__file__).parent.parent
 SKILLS_DIR = BASE_DIR / 'skills'
 
-_LOW_CONFIDENCE_GATE = 0.7
+_LOW_CONFIDENCE_GATE = 0.7   # default fallback
+
+
+def _gate() -> float:
+    """Live confidence gate from operator Settings (falls back to the default)."""
+    try:
+        from settings_store import get_threshold
+        return get_threshold()
+    except Exception:
+        return _LOW_CONFIDENCE_GATE
 
 
 def _log(msg: str) -> None:
@@ -173,7 +182,7 @@ def _compute_stats(schema: AnyFormSchema) -> ProcessingStats:
         fields_native=sum(1 for fr in all_f.values() if fr.source == Source.native),
         fields_llm=sum(1 for fr in all_f.values() if fr.source == Source.llm),
         fields_below_threshold=sum(
-            1 for fr in all_f.values() if fr.confidence < _LOW_CONFIDENCE_GATE
+            1 for fr in all_f.values() if fr.confidence < _gate()
         ),
     )
 
@@ -418,10 +427,11 @@ def run(
 
     _stage('Stage 3: running native extraction (AcroForm + Textract merge)')
     native_schema: AnyFormSchema = native.extract(pre, form_id, textract_fields)
-    low_fields_pre = _fields_below(native_schema, _LOW_CONFIDENCE_GATE)
+    _threshold = _gate()
+    low_fields_pre = _fields_below(native_schema, _threshold)
     _stage(
         f'Stage 3 done: {len(_all_fields(native_schema))} fields extracted, '
-        f'{len(low_fields_pre)} below {_LOW_CONFIDENCE_GATE} threshold'
+        f'{len(low_fields_pre)} below {_threshold} threshold'
     )
 
     stage3_output = _build_stage3_output(form_id, native_schema, skills)
@@ -459,7 +469,7 @@ def run(
         _stage('Stage 4: all fields above threshold — Claude correction skipped')
 
     stats = _compute_stats(native_schema)
-    low_fields_final = _fields_below(native_schema, _LOW_CONFIDENCE_GATE)
+    low_fields_final = _fields_below(native_schema, _gate())
     priority = 'high' if (escalation_flags or len(low_fields_final) > 0) else 'normal'
 
     # ====================================================================

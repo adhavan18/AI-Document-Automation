@@ -44,7 +44,8 @@
   .sidebar.collapsed{width:74px;}
 
   .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
-  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-logo{height:40px;width:auto;max-width:170px;object-fit:contain;flex-shrink:0;display:block;
+    background:#fff;border-radius:8px;padding:6px 10px;box-shadow:0 2px 8px rgba(0,0,0,.25);}
   .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
     background:transparent;border:none;padding:0;cursor:pointer;
     color:var(--side-text);display:none;align-items:center;justify-content:center;
@@ -421,7 +422,7 @@
       <div class="top-actions">
         <div class="top-search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input placeholder="Search files, applicants…" />
+          <input id="searchInput" placeholder="Search files, applicants…" />
         </div>
       </div>
     </div>
@@ -553,28 +554,62 @@ function renderNav(){
     </a>`).join('');
 }
 
-/* ─── grid data ─── */
-const AUTO_QUE = [
-  {file:'I130_Chen_Marcus_2026-06-03.pdf', size:'2.4 MB', date:'Jun 3, 2026', form:'I-130', fn:'Marcus Chen', accuracy:94, status:'completed'},
-  {file:'I485_Hassan_Ahmed_2026-06-03.pdf', size:'3.1 MB', date:'Jun 3, 2026', form:'I-485', fn:'Ahmed Hassan', accuracy:97, status:'completed'},
-  {file:'N400_Tanaka_Yuki_2026-06-03.pdf', size:'1.8 MB', date:'Jun 3, 2026', form:'N-400', fn:'Yuki Tanaka', accuracy:99, status:'completed'},
-  {file:'I765_Silva_Paulo_2026-06-03.pdf', size:'2.0 MB', date:'Jun 3, 2026', form:'I-765', fn:'Paulo Silva', accuracy:96, status:'completed'},
-  {file:'H4EAD_Kapoor_Riya_2026-06-03.pdf', size:'1.5 MB', date:'Jun 3, 2026', form:'H4-EAD', fn:'Riya Kapoor', accuracy:93, status:'completed'},
-  {file:'I140_Volkov_Anton_2026-06-02.pdf', size:'2.6 MB', date:'Jun 2, 2026', form:'I-140', fn:'Anton Volkov', accuracy:95, status:'completed'},
-  {file:'N400_Dubois_Camille_2026-06-02.pdf', size:'2.2 MB', date:'Jun 2, 2026', form:'N-400', fn:'Camille Dubois', accuracy:98, status:'completed'},
-  {file:'I539_Wong_Mei_2026-06-01.pdf', size:'1.7 MB', date:'Jun 1, 2026', form:'I-539', fn:'Mei Wong', accuracy:94, status:'completed'},
-];
+/* ─── grid data — populated live from the backend (/legal/queue) ─── */
+const API = '/legal';
+let AUTO_QUE = [];     // Processed Notices  (approved / rejected / completed)
+let REVIEW_QUE = [];   // Review Que         (processing / pending / in_review)
 
-const REVIEW_QUE = [
-  {file:'N400_Rodriguez_Elena_2026-06-02.pdf', size:'2.7 MB', date:'Jun 2, 2026', form:'N-400', fn:'Elena Rodriguez', accuracy:91, status:'ready'},
-  {file:'H4EAD_Nair_Priya_2026-06-03.pdf', size:'1.9 MB', date:'Jun 3, 2026', form:'H4-EAD', fn:'Priya Nair', accuracy:88, status:'ready'},
-  {file:'I765_Okafor_David_2026-06-01.pdf', size:'2.2 MB', date:'Jun 1, 2026', form:'I-765', fn:'David Okafor', accuracy:84, status:'ready'},
-  {file:'N400_Mendez_Sofia_2026-06-01.pdf', size:'2.5 MB', date:'Jun 1, 2026', form:'N-400', fn:'Sofia Mendez', accuracy:78, status:'ready'},
-  {file:'I130_Bauer_Klaus_2026-05-31.pdf', size:'3.0 MB', date:'May 31, 2026', form:'I-130', fn:'Klaus Bauer', accuracy:73, status:'ready'},
-  {file:'I485_Park_Jiwoo_2026-05-31.pdf', size:'2.8 MB', date:'May 31, 2026', form:'I-485', fn:'Jiwoo Park', accuracy:68, status:'ready'},
-  {file:'I140_Costa_Mariana_2026-05-30.pdf', size:'2.3 MB', date:'May 30, 2026', form:'I-140', fn:'Mariana Costa', accuracy:89, status:'ready'},
-  {file:'I539_Al-Sayed_Omar_2026-05-30.pdf', size:'2.1 MB', date:'May 30, 2026', form:'I-539', fn:'Omar Al-Sayed', accuracy:82, status:'ready'},
-];
+/* Map a backend case record → the row shape this grid renders. */
+function mapCase(c){
+  const fc = c.field_count || 0;
+  const low = c.low_confidence_count || 0;
+  // accuracy = share of high-confidence fields; null while still processing / no fields
+  const accuracy = (c.status === 'processing' || fc === 0)
+    ? null
+    : Math.round(((fc - low) / fc) * 100);
+  const d = c.uploaded_at ? new Date(c.uploaded_at) : null;
+  const dateStr = d ? d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+  // Friendly file name from the form + short id
+  const shortId = (c.case_id || '').replace(/-/g,'').slice(0,8).toUpperCase();
+  return {
+    case_id: c.case_id,
+    file: `${c.form_type || 'DOC'}_${shortId}.pdf`,
+    size: fc ? `${fc} fields` : 'Processing…',
+    date: dateStr,
+    form: c.form_type || '—',
+    fn: 'Case #' + shortId,
+    accuracy,
+    status: mapStatus(c.status),
+    raw_status: c.status,
+    progress: c.status === 'processing' ? 60 : undefined,
+    _sel: false,
+  };
+}
+
+/* Backend status → grid status bucket */
+function mapStatus(s){
+  if(s === 'processing')                 return 'processing';
+  if(s === 'pending' || s === 'in_review') return 'ready';
+  if(s === 'approved' || s === 'completed') return 'completed';
+  if(s === 'rejected')                   return 'failed';
+  return 'queued';
+}
+
+/* Fetch all cases and split into the two tabs. */
+async function loadQueue(){
+  try{
+    const r = await fetch(`${API}/queue?status=all&limit=500`);
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const rows = (data.cases || []).map(mapCase);
+    REVIEW_QUE = rows.filter(x => x.status === 'processing' || x.status === 'ready');
+    AUTO_QUE   = rows.filter(x => x.status === 'completed'  || x.status === 'failed');
+    renderGrids();
+    renderAgent();
+  }catch(e){
+    console.error('[GIP] queue load failed', e);
+  }
+}
 
 const STATUS = {
   processing:{label:'Processing'},
@@ -638,9 +673,10 @@ function statusCell(row){
   return `<span class="pill ${row.status}">${STATUS[row.status]?.label || row.status}</span>`;
 }
 
-function actionsCell(){
+function actionsCell(row){
+  const cid = row && row.case_id ? encodeURIComponent(row.case_id) : '';
   return `<div class="actions" style="justify-content:center;">
-    <a class="act-btn" href="gip-notice.html?count=1" title="View">${ICON.eye}</a>
+    <a class="act-btn" href="gip-notice.html?case=${cid}" title="View">${ICON.eye}</a>
   </div>`;
 }
 
@@ -667,7 +703,7 @@ function rowHTML(row, opts){
     <td><span class="fn-name">${row.fn}</span></td>
     <td>${accuracyCell(row.accuracy)}</td>
     <td>${statusCell(row)}</td>
-    <td>${actionsCell()}</td>
+    <td>${actionsCell(row)}</td>
   </tr>`;
 }
 
@@ -691,7 +727,15 @@ const TAB_META = {
   },
 };
 
-function activeData(){ return activeTab==='review' ? REVIEW_QUE : AUTO_QUE; }
+let searchQ = '';
+function activeData(){
+  const base = activeTab==='review' ? REVIEW_QUE : AUTO_QUE;
+  if(!searchQ) return base;
+  const q = searchQ.toLowerCase();
+  return base.filter(r =>
+    (r.file + ' ' + r.form + ' ' + r.fn).toLowerCase().includes(q)
+  );
+}
 
 function renderHead(){
   document.getElementById('gridHead').innerHTML = `<tr>
@@ -834,23 +878,8 @@ document.getElementById('pageSize').onchange = (e)=>{
   renderGrids();
 };
 
-/* simulate processing progress ticking */
-function tickProgress(){
-  let dirty = false;
-  AUTO_QUE.forEach(r=>{
-    if(r.status==='processing'){
-      r.progress = Math.min(100, r.progress + Math.random()*3);
-      if(r.progress>=100){
-        r.status='completed';
-        r.accuracy = 82 + Math.floor(Math.random()*15);
-      }
-      dirty = true;
-    }
-  });
-  if(dirty) renderGrids();
-  renderAgent();
-}
-setInterval(tickProgress, 1500);
+/* Poll the backend every 5s so processing → ready transitions appear live. */
+setInterval(loadQueue, 5000);
 
 /* ─── Processing Agent widget ─── */
 /* widget view-state: 'min' | 'med' | 'max' — defaults to medium */
@@ -865,8 +894,10 @@ function renderAgent(){
   if(paState==='min') widget.classList.add('min');
   else if(paState==='med') widget.classList.add('med');
 
-  const active = AUTO_QUE.find(r=>r.status==='processing');
-  const pipeline = AUTO_QUE.filter(r=>r.status==='processing' || r.status==='queued');
+  // Processing cases live in REVIEW_QUE (status 'processing')
+  const allRows = REVIEW_QUE.concat(AUTO_QUE);
+  const active = allRows.find(r=>r.status==='processing');
+  const pipeline = allRows.filter(r=>r.status==='processing' || r.status==='queued');
   statusTxt.textContent = active ? 'Processing' : 'Listening';
 
   if(paState==='min') return; /* body hidden */
@@ -1016,11 +1047,12 @@ menu.querySelectorAll('.menu-item').forEach(item=>{
     if(targets.length===0) return;
     menu.classList.remove('open');
     if(action==='review-all' || action==='review-selected'){
+      // Open the first target's detail page; the detail page can page through the rest
+      const first = targets[0];
+      const ids = targets.map(t=>t.case_id).filter(Boolean).join(',');
       const params = new URLSearchParams();
-      params.set('count', targets.length);
-      if(action==='review-selected'){
-        params.set('fns', targets.map(t=>t.fn).join('|'));
-      }
+      if(first && first.case_id) params.set('case', first.case_id);
+      if(ids) params.set('batch', ids);
       window.location.href = `gip-notice.html?${params.toString()}`;
       return;
     }
@@ -1028,8 +1060,24 @@ menu.querySelectorAll('.menu-item').forEach(item=>{
   };
 });
 
+/* ─── search ─── */
+const _searchEl = document.getElementById('searchInput');
+if(_searchEl){
+  _searchEl.addEventListener('input', e=>{
+    searchQ = e.target.value.trim();
+    currentPage = 1;
+    renderGrids();
+  });
+}
+
+
+/* ─── refresh button in panel head ─── */
+document.querySelector('.icon-btn-sm[title="Refresh"]')?.addEventListener('click', loadQueue);
+
+/* ─── init ─── */
 renderNav();
 renderGrids();
+loadQueue();
 </script>
 </body>
 </html>

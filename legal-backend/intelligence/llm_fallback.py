@@ -71,8 +71,21 @@ from intelligence.receipt_fields import RECEIPT_FIELD_NAMES
 # ---------------------------------------------------------------------------
 
 MODEL = "claude-sonnet-4-6"
-CONFIDENCE_THRESHOLD = 0.7
+_DEFAULT_CONFIDENCE_THRESHOLD = 0.7
 ESCALATION_THRESHOLD = 0.5
+
+
+def _conf_threshold() -> float:
+    """Live confidence threshold from operator Settings (falls back to default)."""
+    try:
+        from settings_store import get_threshold
+        return get_threshold()
+    except Exception:
+        return _DEFAULT_CONFIDENCE_THRESHOLD
+
+
+# Backwards-compatible module attribute (some logs reference it directly)
+CONFIDENCE_THRESHOLD = _DEFAULT_CONFIDENCE_THRESHOLD
 
 # Narrative flag values that trigger mandatory human review regardless of
 # field confidence scores.
@@ -248,7 +261,7 @@ def _describe_field(name: str, fr: FieldResult) -> str:
         reasons.append(f"extracted as {val_repr}")
         if fr.confidence <= 0.4:
             reasons.append("very low confidence — possible OCR character confusion")
-        elif fr.confidence < CONFIDENCE_THRESHOLD:
+        elif fr.confidence < _conf_threshold():
             reasons.append("moderate confidence — needs verification")
     return f"  - {name}: {', '.join(reasons)} (current confidence {fr.confidence:.2f})"
 
@@ -335,7 +348,7 @@ def _get_low_confidence_fields(
     return {
         name: fr
         for name, fr in _get_form_fields(schema_instance).items()
-        if fr.confidence < CONFIDENCE_THRESHOLD
+        if fr.confidence < _conf_threshold()
     }
 
 
@@ -449,7 +462,7 @@ def run_llm_fallback(
         return schema_instance, []
 
     _log(
-        f"Fields below threshold ({CONFIDENCE_THRESHOLD}): "
+        f"Fields below threshold ({_conf_threshold()}): "
         + ", ".join(
             f"{k}={v.confidence:.2f}" for k, v in low_fields.items()
         )
@@ -603,7 +616,7 @@ def run_receipt_llm_fallback(
         name: getattr(schema_instance, name)
         for name in RECEIPT_FIELD_NAMES
         if name in schema_instance.model_fields
-        and getattr(schema_instance, name).confidence < CONFIDENCE_THRESHOLD
+        and getattr(schema_instance, name).confidence < _conf_threshold()
     }
     if not low_fields:
         _log("All receipt fields above threshold — no LLM call needed.")
