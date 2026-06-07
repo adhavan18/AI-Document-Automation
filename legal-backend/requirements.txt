@@ -1,5 +1,4 @@
 # Python packages — install with: pip install -r requirements.txt
-# No system binaries required (EasyOCR + NuExtract are pure-Python)
 
 fastapi
 uvicorn
@@ -10,9 +9,6 @@ python-multipart
 pypdf
 pdfplumber
 pypdfium2
-# Tesseract kept for fallback but not required — EasyOCR is the primary OCR
-pytesseract
-opencv-python-headless
 sqlalchemy
 alembic
 psycopg2-binary
@@ -21,8 +17,5 @@ passlib[bcrypt]
 bcrypt==4.0.1
 pydantic[email]
 python-dotenv
-# Neural OCR — replaces Tesseract binary requirement
-easyocr
-# NuExtract structured field extraction
-transformers
-torch
+# AWS Textract — replaces EasyOCR + NuExtract for OCR and extraction
+boto3

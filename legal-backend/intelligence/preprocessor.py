@@ -3,8 +3,8 @@ PDF pre-processing pipeline for USCIS form extraction.
 
 Returns a PreprocessResult dict with:
     acroform_fields  – dict of AcroForm field names → values
-    raw_text         – concatenated pdfplumber text across all pages
-    ocr_text         – pytesseract output (empty string if not needed/run)
+    raw_text         – concatenated pypdf text across all pages
+    ocr_text         – AWS Textract output (empty string if not needed/run)
     page_images      – list of base64-encoded PNG strings, one per page
     form_version     – edition date string parsed from page 1 (e.g. "01/17/23")
     is_scanned       – True when the PDF contains no embedded fonts
@@ -16,23 +16,15 @@ skip AcroForm extraction and go straight to regex-based text parsing.
 from __future__ import annotations
 
 import base64
+import io
 import re
 import subprocess
-import tempfile
 from pathlib import Path
 from typing import TypedDict
 
-import os
-import cv2
-import numpy as np
-import pdfplumber
 import pypdf
 import pypdfium2
-import pytesseract
 
-# Point pytesseract to Tesseract binary on Windows
-os.environ['TESSERACT_CMD'] = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-pytesseract.pytesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # ---------------------------------------------------------------------------
 # Return type
@@ -82,22 +74,14 @@ def _extract_acroform(reader: pypdf.PdfReader) -> dict[str, str | None]:
 # ---------------------------------------------------------------------------
 
 def _page_has_fonts(page) -> bool:
-    """Return True if the page declares /Font resources (meaning it can have text)."""
     try:
         resources = page.get("/Resources", {})
         return bool(resources.get("/Font"))
     except Exception:
-        return True  # safe default — attempt extract_text on error
+        return True
 
 
 def _extract_text(reader: pypdf.PdfReader) -> tuple[str, list[str]]:
-    """
-    Returns (full_raw_text, per_page_texts).
-
-    Checks /Font resources before calling extract_text().  Pages with no font
-    declarations are image-only (scanned) — skipping extract_text() on them
-    avoids parsing through large inline image data which can take 10+ s/page.
-    """
     _log("Step 2 — extracting text with pypdf")
     pages_text: list[str] = []
     for page in reader.pages:
@@ -147,14 +131,12 @@ def _detect_scanned(pdf_path: str) -> bool:
             text=True,
             timeout=30,
         )
-        # pdffonts header is 2 lines; any data line means fonts are present
         lines = [l for l in result.stdout.splitlines() if l.strip()]
-        has_fonts = len(lines) > 2
-        is_scanned = not has_fonts
-        _log(f"  pdffonts returned {max(0, len(lines) - 2)} font entries → is_scanned={is_scanned}")
+        is_scanned = len(lines) <= 2
+        _log(f"  pdffonts: {max(0, len(lines) - 2)} font(s) → is_scanned={is_scanned}")
         return is_scanned
     except FileNotFoundError:
-        _log("  pdffonts not found on PATH — skipping font check, defaulting is_scanned=False")
+        _log("  pdffonts not on PATH — defaulting is_scanned=False")
         return False
     except subprocess.TimeoutExpired:
         _log("  pdffonts timed out — defaulting is_scanned=False")
@@ -165,140 +147,44 @@ def _detect_scanned(pdf_path: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Step 5 — Rasterise, preprocess, OCR
+# Step 5 — AWS Textract OCR
 # ---------------------------------------------------------------------------
 
-def _deskew(image: np.ndarray) -> np.ndarray:
-    """Rotate the image to correct skew using Hough-line angle estimation."""
-    coords = np.column_stack(np.where(image > 0))
-    if coords.size == 0:
-        return image
-    angle = cv2.minAreaRect(coords)[-1]
-    # minAreaRect returns angles in [-90, 0); map to [-45, 45)
-    if angle < -45:
-        angle = 90 + angle
-    if abs(angle) < 0.5:  # negligible skew
-        return image
-    h, w = image.shape[:2]
-    center = (w // 2, h // 2)
-    M = cv2.getRotationMatrix2D(center, angle, 1.0)
-    rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC,
-                              borderMode=cv2.BORDER_REPLICATE)
-    return rotated
-
-
-def _preprocess_image(img_array: np.ndarray) -> np.ndarray:
-    """Grayscale → adaptive threshold → deskew."""
-    gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
-    binary = cv2.adaptiveThreshold(
-        gray, 255,
-        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY,
-        blockSize=31,
-        C=10,
-    )
-    deskewed = _deskew(binary)
-    return deskewed
-
-
-def _rasterise_and_ocr(pdf_path: str, dpi: int = 150) -> tuple[str, list[np.ndarray]]:
-    """
-    Rasterise every page with pypdfium2 at `dpi`, preprocess with OpenCV,
-    run tesseract via subprocess, and return (ocr_text, list_of_raw_rgb_arrays).
-    """
-    tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-    if not Path(tesseract_cmd).exists():
-        _log("Step 5 — Tesseract not installed, skipping rasterization and OCR")
-        return "", []
-
-    _log(f"Step 5 — rasterising at {dpi} DPI and running OCR")
-    doc = pypdfium2.PdfDocument(pdf_path)
-    page_texts: list[str] = []
-    raw_arrays: list[np.ndarray] = []
-
-    scale = dpi / 72.0  # pypdfium2 default unit is 72 pt/inch
-    tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
-    for page_idx in range(len(doc)):
-        page = doc[page_idx]
-        bitmap = page.render(scale=scale, rotation=0)
-        pil_image = bitmap.to_pil()
-        img_array = np.array(pil_image)
-        raw_arrays.append(img_array)
-
-        processed = _preprocess_image(img_array)
-        text = ""
-
-        try:
-            # Save preprocessed image to temp file
-            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
-                tmp_path = tmp.name
-                bgr = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR) if len(processed.shape) == 2 else processed
-                cv2.imwrite(tmp_path, bgr)
-
-            # Call tesseract via subprocess
-            result = subprocess.run(
-                [tesseract_cmd, tmp_path, 'stdout'],
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
-            text = result.stdout.strip()
-            Path(tmp_path).unlink(missing_ok=True)
-        except FileNotFoundError:
-            _log(f"  Tesseract binary not found at {tesseract_cmd} — OCR skipped for page {page_idx + 1}")
-            text = ""
-        except subprocess.TimeoutExpired:
-            _log(f"  Tesseract timeout on page {page_idx + 1}")
-            text = ""
-        except Exception as exc:
-            _log(f"  OCR error on page {page_idx + 1}: {exc}")
-            text = ""
-
-        page_texts.append(text)
-        _log(f"  page {page_idx + 1}: OCR produced {len(text)} chars")
-
-    ocr_text = "\n".join(page_texts)
-    _log(f"  total ocr_text length: {len(ocr_text)} chars")
-    return ocr_text, raw_arrays
+def _run_textract(pdf_path: str) -> str:
+    from intelligence.textract_ocr import is_available, ocr_pdf
+    if not is_available():
+        _log("Step 5 — Textract unavailable (check AWS credentials)")
+        return ""
+    _log("Step 5 — running AWS Textract OCR")
+    return ocr_pdf(pdf_path)
 
 
 # ---------------------------------------------------------------------------
-# Step 6 — Base64-encode page images
+# Step 6 — Base64-encode page images (for LLM vision fallback)
 # ---------------------------------------------------------------------------
 
-def _encode_images(
-    pdf_path: str,
-    raw_arrays: list[np.ndarray] | None,
-    dpi: int = 150,
-) -> list[str]:
-    """
-    Encode pages as base64 PNG strings.
-    Uses already-rasterised arrays when available; otherwise rasterises now.
-    """
-    _log("Step 6 — encoding page images to base64")
-
-    if raw_arrays is None:
-        _log("  rasterising for image encoding (OCR path was not taken)")
+def _encode_images(pdf_path: str, dpi: int = 150) -> list[str]:
+    _log("Step 6 — encoding page images to base64 PNG")
+    try:
         doc = pypdfium2.PdfDocument(pdf_path)
-        scale = dpi / 72.0
-        raw_arrays = []
-        for page_idx in range(len(doc)):
-            bitmap = doc[page_idx].render(scale=scale, rotation=0)
-            raw_arrays.append(np.array(bitmap.to_pil()))
+    except Exception as exc:
+        _log(f"  failed to open PDF for image encoding: {exc}")
+        return []
 
+    scale = dpi / 72.0
     encoded: list[str] = []
-    for i, arr in enumerate(raw_arrays):
-        # arr is RGB from pypdfium2/PIL; cv2.imencode expects BGR
-        bgr = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
-        success, buffer = cv2.imencode(".png", bgr)
-        if not success:
-            _log(f"  failed to encode page {i + 1} as PNG — skipping")
+    for i in range(len(doc)):
+        try:
+            bitmap = doc[i].render(scale=scale, rotation=0)
+            pil_image = bitmap.to_pil()
+            buf = io.BytesIO()
+            pil_image.save(buf, format="PNG")
+            b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+            encoded.append(b64)
+            _log(f"  page {i + 1}: {len(b64)} base64 chars")
+        except Exception as exc:
+            _log(f"  page {i + 1} encoding failed: {exc}")
             encoded.append("")
-            continue
-        b64 = base64.b64encode(buffer).decode("ascii")
-        encoded.append(b64)
-        _log(f"  page {i + 1}: {len(b64)} base64 chars")
 
     return encoded
 
@@ -316,15 +202,12 @@ def preprocess(pdf_path: str, form_type: str = "") -> PreprocessResult:
     pdf_path:
         Absolute or relative path to the PDF file.
     form_type:
-        One of "I-485", "N-400", "I-129", "I-140", "I-797".
-        When "I-797", AcroForm extraction is skipped entirely because
-        notices of action are USCIS-generated PDFs with no fillable fields.
+        One of "I-485", "N-400", "I-129", "I-140", "I-797", etc.
+        When "I-797", AcroForm extraction is skipped.
 
     Returns
     -------
-    PreprocessResult dict with keys:
-        acroform_fields, raw_text, ocr_text, page_images,
-        form_version, is_scanned.
+    PreprocessResult dict.
     """
     path = Path(pdf_path)
     if not path.exists():
@@ -332,11 +215,9 @@ def preprocess(pdf_path: str, form_type: str = "") -> PreprocessResult:
 
     _log(f"Starting pipeline for: {path.name}  form_type={form_type or '(unspecified)'}")
 
-    # Open the PDF once — reused across all extraction steps to avoid
-    # repeated 9 MB file parses that each take ~13 s on large scanned PDFs.
     reader = pypdf.PdfReader(str(path), strict=False)
 
-    # Step 1 — I-797 has no AcroForm; skip to avoid noise
+    # Step 1 — AcroForm
     if form_type == "I-797":
         _log("Step 1 — skipped (I-797 has no AcroForm fields)")
         acroform_fields: dict[str, str | None] = {}
@@ -347,38 +228,26 @@ def preprocess(pdf_path: str, form_type: str = "") -> PreprocessResult:
     raw_text, pages_text = _extract_text(reader)
     form_version = _detect_form_version(reader, pages_text[0] if pages_text else "")
 
-    # Step 4 — detect scanned PDF
-    # pdffonts (poppler) may not be on PATH on Windows; fall back to checking
-    # whether text extraction yielded anything — if not, it must be image-only.
+    # Step 4 — scan detection
     is_scanned = _detect_scanned(str(path))
     if not is_scanned and not raw_text.strip() and not acroform_fields:
-        _log("Step 4 — no text and no AcroForm found; treating as scanned")
+        _log("Step 4 — no text and no AcroForm; treating as scanned")
         is_scanned = True
 
-    # Step 5 — OCR when needed
-    raw_arrays: list[np.ndarray] | None = None
+    # Step 5 — Textract OCR when needed
     ocr_text = ""
     if is_scanned or not acroform_fields:
-        # Prefer EasyOCR (pure-Python, no binary required) over Tesseract
-        from intelligence.easyocr_text import is_available as _easyocr_ok, ocr_pdf as _easyocr
-        if _easyocr_ok():
-            _log("Step 5 — running EasyOCR (neural OCR)")
-            ocr_text = _easyocr(str(path))
-        else:
-            _log("  EasyOCR unavailable — falling back to Tesseract path")
-            ocr_text, raw_arrays = _rasterise_and_ocr(str(path))
+        ocr_text = _run_textract(str(path))
     else:
         _log("Step 5 — OCR skipped (native text + AcroForm fields present)")
 
-    # Step 6 — only rasterise to images if OCR already produced raw arrays
-    # (i.e. scanned PDF path). For digital PDFs with AcroForm fields the LLM
-    # correction path is skipped anyway so images are never needed.
-    if raw_arrays is not None:
-        page_images = _encode_images(str(path), raw_arrays)
-        _log(f"Step 6 — encoded {len(page_images)} page image(s) from OCR arrays")
+    # Step 6 — page images for LLM vision fallback (scanned documents only)
+    if is_scanned:
+        page_images = _encode_images(str(path))
+        _log(f"Step 6 — encoded {len(page_images)} page image(s)")
     else:
         page_images = []
-        _log("Step 6 — skipped (digital PDF, images not needed)")
+        _log("Step 6 — skipped (digital PDF)")
 
     _log("Pipeline complete.")
     return PreprocessResult(

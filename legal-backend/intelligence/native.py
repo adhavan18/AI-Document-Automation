@@ -1089,14 +1089,6 @@ def extract(
     acro = preprocess_result["acroform_fields"]
     raw_text = preprocess_result["ocr_text"] or preprocess_result["raw_text"]
 
-    # Clean common OCR artifacts so the inline regex extractors can match
-    # (EasyOCR inserts /, |, [, doubled capitals before values).
-    try:
-        from intelligence.nuextract import _clean_ocr
-        raw_text = _clean_ocr(raw_text)
-    except Exception:
-        pass
-
     print(
         f"[NATIVE] Starting extraction for form_type={form_type} "
         f"acro_fields={len(acro)} text_chars={len(raw_text)}"
