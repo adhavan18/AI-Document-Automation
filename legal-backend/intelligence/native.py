@@ -425,158 +425,19 @@ def _fr_soc_code(field: str, raw: str | None) -> FieldResult:
 # ---------------------------------------------------------------------------
 
 def _extract_i485(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I485:
-    def _a(schema_field: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, schema_field, extras)
-
-    arn_raw = _a("alienregistrationnumber", ["aliennumber", "anumber"])
-    fname   = _a("familyname", ["lastname"])
-    gname   = _a("givenname", ["firstname"])
-    dob_raw = _a("dateofbirth", ["dob"])
-    cob     = _a("countryofbirth")
-    doe_raw = _a("dateofentry", ["dateoflastentry"])
-    coa     = _a("classofadmission")
-    ssn_raw = _a("ssn", ["socialsecurity"])
-
-    # AcroForm fallbacks → strict inline regex → OCR-tolerant regex
-    if not arn_raw:
-        arn_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not dob_raw:
-        dob_raw = _regex_first(_DOB_INLINE_RE, raw_text) or _regex_first(_DOB_OCR_RE, raw_text)
-    if not doe_raw:
-        doe_raw = _regex_first(_ENTRY_INLINE_RE, raw_text) or _regex_first(_ENTRY_OCR_RE, raw_text)
-    if not ssn_raw:
-        ssn_raw = _regex_first(_SSN_INLINE_RE, raw_text)
-    # Combined legal-name pattern captures family + given in one match
-    if not fname or not gname:
-        m = _LEGAL_NAME_OCR_RE.search(raw_text)
-        if m:
-            if not fname and m.group(1).upper() not in ("NIA", "NA"):
-                fname = m.group(1)
-            if not gname and m.group(2).upper() not in ("NIA", "NA"):
-                gname = m.group(2)
-    if not fname:
-        fname = _regex_first(_FAMILY_NAME_OCR_RE, raw_text)
-    if not gname:
-        gname = _regex_first(_GIVEN_NAME_OCR_RE, raw_text)
-    if not cob:
-        cob = _regex_first(_COB_OCR_RE, raw_text)
-    if not coa:
-        coa = _regex_first(_COA_OCR_RE, raw_text)
-
-    return I485(
-        **receipt,
-        alien_registration_number=_fr_alien("alien_registration_number", arn_raw),
-        family_name=_fr_text("family_name", fname),
-        given_name=_fr_text("given_name", gname),
-        date_of_birth=_fr_date("date_of_birth", dob_raw),
-        country_of_birth=_fr_text("country_of_birth", cob),
-        date_of_entry=_fr_date("date_of_entry", doe_raw),
-        class_of_admission=_fr_text("class_of_admission", coa),
-        ssn=_fr_ssn("ssn", ssn_raw),
-    )
+    return I485(**receipt)
 
 
 def _extract_n400(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> N400:
-    def _a(schema_field: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, schema_field, extras)
-
-    fname   = _a("familyname", ["lastname"])
-    gname   = _a("givenname", ["firstname"])
-    dob_raw = _a("dateofbirth", ["dob"])
-    cob     = _a("countryofbirth")
-    arn_raw = _a("alienregistrationnumber", ["aliennumber", "anumber"])
-    pr_raw  = _a("datebecamepr", ["prdate", "permanentresident"])
-    marital = _a("maritalstatus")
-
-    if not arn_raw:
-        arn_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not dob_raw:
-        dob_raw = _regex_first(_DOB_INLINE_RE, raw_text)
-    if not pr_raw:
-        pr_raw = _regex_first(_PR_DATE_INLINE_RE, raw_text)
-
-    return N400(
-        **receipt,
-        family_name=_fr_text("family_name", fname),
-        given_name=_fr_text("given_name", gname),
-        date_of_birth=_fr_date("date_of_birth", dob_raw),
-        country_of_birth=_fr_text("country_of_birth", cob),
-        alien_registration_number=_fr_alien("alien_registration_number", arn_raw),
-        date_became_pr=_fr_date("date_became_pr", pr_raw),
-        marital_status=_fr_text("marital_status", marital),
-    )
+    return N400(**receipt)
 
 
 def _extract_i129(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I129:
-    def _a(schema_field: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, schema_field, extras)
-
-    pet_name = _a("petitionername", ["legalname", "employername"])
-    ein_raw  = _a("petitionerein", ["ein", "employerein"])
-    ben_name = _a("beneficiaryname")
-    ban_raw  = _a("beneficiaryaliennumber", ["aliennumber", "anumber"])
-    cls_raw  = _a("nonimmigrantclassification", ["classification"])
-    period   = _a("periodofstayrequested", ["periodofstay"])
-    job      = _a("jobtitle", ["position"])
-    wage_raw = _a("wagerateofpay", ["wage", "wageratepay"])
-
-    if not ein_raw:
-        ein_raw = _regex_first(_EIN_INLINE_RE, raw_text)
-    if not ban_raw:
-        ban_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not wage_raw:
-        wage_raw = _regex_first(_WAGE_INLINE_RE, raw_text)
-
-    return I129(
-        **receipt,
-        petitioner_name=_fr_text("petitioner_name", pet_name),
-        petitioner_ein=_fr_ein("petitioner_ein", ein_raw),
-        beneficiary_name=_fr_text("beneficiary_name", ben_name),
-        beneficiary_alien_number=_fr_alien("beneficiary_alien_number", ban_raw),
-        nonimmigrant_classification=_fr_classification(
-            "nonimmigrant_classification", cls_raw, NONIMMIGRANT_CLASSIFICATIONS
-        ),
-        period_of_stay_requested=_fr_text("period_of_stay_requested", period),
-        job_title=_fr_text("job_title", job),
-        wage_rate_of_pay=_fr_wage("wage_rate_of_pay", wage_raw),
-    )
+    return I129(**receipt)
 
 
 def _extract_i140(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I140:
-    def _a(schema_field: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, schema_field, extras)
-
-    pet_name = _a("petitionername", ["legalname", "employername"])
-    ein_raw  = _a("petitionerein", ["ein", "employerein"])
-    ben_name = _a("beneficiaryname")
-    ban_raw  = _a("beneficiaryaliennumber", ["aliennumber", "anumber"])
-    cls_raw  = _a("preferenceclassification", ["classification"])
-    pd_raw   = _a("prioritydate")
-    job      = _a("jobtitle", ["position"])
-    wage_raw = _a("offeredwage", ["wage"])
-
-    if not ein_raw:
-        ein_raw = _regex_first(_EIN_INLINE_RE, raw_text)
-    if not ban_raw:
-        ban_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not pd_raw:
-        pd_raw = _regex_first(_PRIORITY_INLINE_RE, raw_text)
-    if not wage_raw:
-        wage_raw = _regex_first(_WAGE_INLINE_RE, raw_text)
-
-    return I140(
-        **receipt,
-        petitioner_name=_fr_text("petitioner_name", pet_name),
-        petitioner_ein=_fr_ein("petitioner_ein", ein_raw),
-        beneficiary_name=_fr_text("beneficiary_name", ben_name),
-        beneficiary_alien_number=_fr_alien("beneficiary_alien_number", ban_raw),
-        preference_classification=_fr_classification(
-            "preference_classification", cls_raw, PREFERENCE_CLASSIFICATIONS
-        ),
-        priority_date=_fr_date("priority_date", pd_raw),
-        job_title=_fr_text("job_title", job),
-        offered_wage=_fr_wage("offered_wage", wage_raw),
-    )
+    return I140(**receipt)
 
 
 def _extract_i797(raw_text: str, receipt_fields: dict[str, FieldResult]) -> I797:
@@ -600,414 +461,47 @@ def _extract_i797(raw_text: str, receipt_fields: dict[str, FieldResult]) -> I797
 # ---------------------------------------------------------------------------
 
 def _extract_i751(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I751:
-    def _a(f: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, f, extras)
-
-    arn_raw   = _a("alienregistrationnumber", ["aliennumber", "anumber"])
-    fname     = _a("familyname", ["lastname"])
-    gname     = _a("givenname", ["firstname"])
-    dob_raw   = _a("dateofbirth", ["dob"])
-    cob       = _a("countryofbirth")
-    joint_raw = _a("jointpetitionername", ["jointpetitioner", "spousename"])
-    exp_raw   = _a("datecardexpires", ["cardexpires", "cardexpiration"])
-    basis_raw = _a("basisforpetition", ["basis", "groundsforpetition"])
-
-    if not arn_raw:
-        arn_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not dob_raw:
-        dob_raw = _regex_first(_DOB_INLINE_RE, raw_text)
-    if not exp_raw:
-        exp_raw = _regex_first(_CARD_EXPIRES_RE, raw_text)
-
-    return I751(
-        **receipt,
-        alien_registration_number=_fr_alien("alien_registration_number", arn_raw),
-        family_name=_fr_text("family_name", fname),
-        given_name=_fr_text("given_name", gname),
-        date_of_birth=_fr_date("date_of_birth", dob_raw),
-        country_of_birth=_fr_text("country_of_birth", cob),
-        joint_petitioner_name=_fr_text("joint_petitioner_name", joint_raw),
-        date_card_expires=_fr_date_future("date_card_expires", exp_raw),
-        basis_for_petition=_fr_enum("basis_for_petition", basis_raw, I751_BASIS),
-    )
+    return I751(**receipt)
 
 
 def _extract_i130(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I130:
-    def _a(f: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, f, extras)
-
-    pet_fname = _a("petitionerfamilyname", ["petitionerlastname"])
-    pet_gname = _a("petitionergivenname", ["petitionerfirstname"])
-    pet_dob   = _a("petitionerdob", ["petitionerdateofbirth"])
-    pet_arn   = _a("petitioneraliennumber", ["petitioneranumber"])
-    rel       = _a("relationshiptobeneficiary", ["relationship"])
-    ben_fname = _a("beneficiaryfamilyname", ["beneficiarylastname"])
-    ben_gname = _a("beneficiarygivenname", ["beneficiaryfirstname"])
-    ben_dob   = _a("beneficiarydob", ["beneficiarydateofbirth"])
-    ben_cob   = _a("beneficiarycountryofbirth", ["beneficiarycountry"])
-
-    if not pet_arn:
-        pet_arn = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not pet_dob:
-        pet_dob = _regex_first(_DOB_INLINE_RE, raw_text)
-
-    return I130(
-        **receipt,
-        petitioner_family_name=_fr_text("petitioner_family_name", pet_fname),
-        petitioner_given_name=_fr_text("petitioner_given_name", pet_gname),
-        petitioner_dob=_fr_date("petitioner_dob", pet_dob),
-        petitioner_alien_number=_fr_alien("petitioner_alien_number", pet_arn),
-        relationship_to_beneficiary=_fr_enum(
-            "relationship_to_beneficiary", rel, I130_RELATIONSHIPS
-        ),
-        beneficiary_family_name=_fr_text("beneficiary_family_name", ben_fname),
-        beneficiary_given_name=_fr_text("beneficiary_given_name", ben_gname),
-        beneficiary_dob=_fr_date("beneficiary_dob", ben_dob),
-        beneficiary_country_of_birth=_fr_text(
-            "beneficiary_country_of_birth", ben_cob
-        ),
-    )
+    return I130(**receipt)
 
 
 def _extract_i131(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I131:
-    def _a(f: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, f, extras)
-
-    fname    = _a("familyname", ["lastname"])
-    gname    = _a("givenname", ["firstname"])
-    arn_raw  = _a("alienregistrationnumber", ["aliennumber", "anumber"])
-    dob_raw  = _a("dateofbirth", ["dob"])
-    coa      = _a("classofadmission")
-    doa_raw  = _a("dateofadmission", ["admissiondate"])
-    cob      = _a("countryofbirth")
-    doc_type = _a("traveldocumenttype", ["documenttype", "traveltype"])
-    reason   = _a("reasonfortravel", ["purposeoftravel"])
-
-    if not arn_raw:
-        arn_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not dob_raw:
-        dob_raw = _regex_first(_DOB_INLINE_RE, raw_text)
-    if not doa_raw:
-        doa_raw = _regex_first(_ADMISSION_DATE_RE, raw_text)
-
-    return I131(
-        **receipt,
-        family_name=_fr_text("family_name", fname),
-        given_name=_fr_text("given_name", gname),
-        alien_registration_number=_fr_alien("alien_registration_number", arn_raw),
-        date_of_birth=_fr_date("date_of_birth", dob_raw),
-        class_of_admission=_fr_text("class_of_admission", coa),
-        date_of_admission=_fr_date("date_of_admission", doa_raw),
-        country_of_birth=_fr_text("country_of_birth", cob),
-        travel_document_type=_fr_enum(
-            "travel_document_type", doc_type, I131_DOC_TYPES
-        ),
-        reason_for_travel=_fr_text("reason_for_travel", reason),
-    )
+    return I131(**receipt)
 
 
 def _extract_i539(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I539:
-    def _a(f: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, f, extras)
-
-    fname      = _a("familyname", ["lastname"])
-    gname      = _a("givenname", ["firstname"])
-    arn_raw    = _a("alienregistrationnumber", ["aliennumber", "anumber"])
-    dob_raw    = _a("dateofbirth", ["dob"])
-    cob        = _a("countryofbirth")
-    cur_status = _a("currentnonimmigrantstatus", ["currentstatus", "statuscode"])
-    exp_raw    = _a("statusexpires", ["statusexpirationdate", "expires"])
-    req_status = _a("requestedstatus", ["newstatus", "changestatus"])
-
-    if not arn_raw:
-        arn_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not dob_raw:
-        dob_raw = _regex_first(_DOB_INLINE_RE, raw_text)
-    if not exp_raw:
-        exp_raw = _regex_first(_STATUS_EXPIRES_RE, raw_text)
-
-    return I539(
-        **receipt,
-        family_name=_fr_text("family_name", fname),
-        given_name=_fr_text("given_name", gname),
-        alien_registration_number=_fr_alien("alien_registration_number", arn_raw),
-        date_of_birth=_fr_date("date_of_birth", dob_raw),
-        country_of_birth=_fr_text("country_of_birth", cob),
-        current_nonimmigrant_status=_fr_classification(
-            "current_nonimmigrant_status", cur_status, I539_STATUSES
-        ),
-        status_expires=_fr_date_warn_expired("status_expires", exp_raw),
-        requested_status=_fr_classification(
-            "requested_status", req_status, I539_STATUSES
-        ),
-    )
+    return I539(**receipt)
 
 
 def _extract_i765(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I765:
-    def _a(f: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, f, extras)
-
-    fname    = _a("familyname", ["lastname"])
-    gname    = _a("givenname", ["firstname"])
-    arn_raw  = _a("alienregistrationnumber", ["aliennumber", "anumber"])
-    dob_raw  = _a("dateofbirth", ["dob"])
-    cob      = _a("countryofbirth")
-    ssn_raw  = _a("ssn", ["socialsecurity"])
-    elig_raw = _a("eligibilitycategory", ["categorycode", "eligibility"])
-    exp_raw  = _a("dateeligibilityexpires", ["eligibilityexpires", "eligibilityexpiration"])
-
-    if not arn_raw:
-        arn_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not dob_raw:
-        dob_raw = _regex_first(_DOB_INLINE_RE, raw_text)
-    if not ssn_raw:
-        ssn_raw = _regex_first(_SSN_INLINE_RE, raw_text)
-
-    # Eligibility category: normalise to uppercase before checking
-    if elig_raw:
-        elig_norm = elig_raw.strip().upper()
-        elig_ok = elig_norm in I765_CATEGORIES
-        elig_fr = _fr(
-            "eligibility_category",
-            elig_norm,
-            0.95 if elig_ok else 0.4,
-        )
-    else:
-        elig_fr = _fr("eligibility_category", None, 0.0)
-
-    return I765(
-        **receipt,
-        family_name=_fr_text("family_name", fname),
-        given_name=_fr_text("given_name", gname),
-        alien_registration_number=_fr_alien("alien_registration_number", arn_raw),
-        date_of_birth=_fr_date("date_of_birth", dob_raw),
-        country_of_birth=_fr_text("country_of_birth", cob),
-        ssn=_fr_ssn("ssn", ssn_raw),
-        eligibility_category=elig_fr,
-        date_eligibility_expires=_fr_date("date_eligibility_expires", exp_raw),
-    )
+    return I765(**receipt)
 
 
 def _extract_i290b(raw_text: str, receipt_fields: dict[str, FieldResult]) -> I290B:
-    """No AcroForm — regex-only extraction."""
-    lines = raw_text.splitlines()
-    top_block = "\n".join(lines[:40])
-
-    receipt    = _regex_first(_RECEIPT_RE, raw_text)
-    dec_date   = _regex_first(_DECISION_DATE_RE, raw_text)
-    alien      = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    app_m      = _APPLICANT_RE.search(raw_text)
-    applicant  = app_m.group(1).strip() if app_m else None
-
-    # form_type_appealed: look for "Form I-NNN" or "Form N-NNN" near top
-    ft_m = _FORM_NUMBER_RE.search(top_block)
-    form_appealed = ft_m.group(1).strip() if ft_m else None
-
-    # reason_for_appeal: look for labelled line
-    reason_m = re.search(r"(?i)reason[s]?\s+for\s+appeal[:\s]+(.+)", raw_text)
-    reason = reason_m.group(1).strip() if reason_m else None
-
-    # brief_attached: look for yes/no near "brief"
-    brief_m = re.search(r"(?i)brief\s+attached[:\s]*(\byes\b|\bno\b)", raw_text)
-    brief = brief_m.group(1).strip() if brief_m else None
-
-    return I290B(
-        **{k: v for k, v in receipt_fields.items() if k != 'receipt_number'},
-        receipt_number=_fr_receipt("receipt_number", receipt),
-        form_type_appealed=_fr_text("form_type_appealed", form_appealed),
-        applicant_name=_fr_text("applicant_name", applicant),
-        alien_registration_number=_fr_alien("alien_registration_number", alien),
-        date_of_decision=_fr_date("date_of_decision", dec_date),
-        reason_for_appeal=_fr_text("reason_for_appeal", reason),
-        brief_attached=_fr_bool_text("brief_attached", brief),
-    )
+    return I290B(**receipt_fields)
 
 
 def _extract_i129f(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I129F:
-    def _a(f: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, f, extras)
-
-    pet_fname  = _a("petitionerfamilyname", ["petitionerlastname"])
-    pet_gname  = _a("petitionergivenname", ["petitionerfirstname"])
-    pet_dob    = _a("petitionerdob", ["petitionerdateofbirth"])
-    ben_fname  = _a("beneficiaryfamilyname", ["beneficiarylastname"])
-    ben_gname  = _a("beneficiarygivenname", ["beneficiaryfirstname"])
-    ben_dob    = _a("beneficiarydob", ["beneficiarydateofbirth"])
-    ben_cob    = _a("beneficiarycountryofbirth", ["beneficiarycountry"])
-    met_raw    = _a("datemetbeneficiary", ["datemetfiance", "metdate"])
-    prior_raw  = _a("priorpetitions", ["previouspetitions", "priorfilings"])
-
-    if not pet_dob:
-        pet_dob = _regex_first(_DOB_INLINE_RE, raw_text)
-    if not met_raw:
-        met_raw = _regex_first(
-            re.compile(r"(?i)(?:date|when)\s+(?:you\s+)?met[:\s]+(\d{2}/\d{2}/\d{4})"),
-            raw_text,
-        )
-
-    # prior_petitions: checkbox bool; also search text for yes/no
-    if not prior_raw:
-        yn_m = _YES_NO_RE.search(raw_text)
-        prior_raw = yn_m.group(1) if yn_m else None
-
-    return I129F(
-        **receipt,
-        petitioner_family_name=_fr_text("petitioner_family_name", pet_fname),
-        petitioner_given_name=_fr_text("petitioner_given_name", pet_gname),
-        petitioner_dob=_fr_date("petitioner_dob", pet_dob),
-        beneficiary_family_name=_fr_text("beneficiary_family_name", ben_fname),
-        beneficiary_given_name=_fr_text("beneficiary_given_name", ben_gname),
-        beneficiary_dob=_fr_date("beneficiary_dob", ben_dob),
-        beneficiary_country_of_birth=_fr_text(
-            "beneficiary_country_of_birth", ben_cob
-        ),
-        date_met_beneficiary=_fr_date_past("date_met_beneficiary", met_raw),
-        prior_petitions=_fr_bool_text("prior_petitions", prior_raw),
-    )
+    return I129F(**receipt)
 
 
 def _extract_n600(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> N600:
-    def _a(f: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, f, extras)
-
-    fname      = _a("familyname", ["lastname"])
-    gname      = _a("givenname", ["firstname"])
-    dob_raw    = _a("dateofbirth", ["dob"])
-    cob        = _a("countryofbirth")
-    arn_raw    = _a("alienregistrationnumber", ["aliennumber", "anumber"])
-    parent     = _a("uscitizentparentname", ["parentname", "citizenparent"])
-    parent_dt  = _a("parentcitizenshipdate", ["citizenshipdate", "naturalizationdate"])
-    basis_raw  = _a("basisforcitizenship", ["citizenshipbasis", "basis"])
-
-    if not arn_raw:
-        arn_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not dob_raw:
-        dob_raw = _regex_first(_DOB_INLINE_RE, raw_text)
-    if not parent_dt:
-        parent_dt = _regex_first(_PARENT_DATE_RE, raw_text)
-
-    return N600(
-        **receipt,
-        family_name=_fr_text("family_name", fname),
-        given_name=_fr_text("given_name", gname),
-        date_of_birth=_fr_date("date_of_birth", dob_raw),
-        country_of_birth=_fr_text("country_of_birth", cob),
-        alien_registration_number=_fr_alien("alien_registration_number", arn_raw),
-        us_citizen_parent_name=_fr_text("us_citizen_parent_name", parent),
-        parent_citizenship_date=_fr_date("parent_citizenship_date", parent_dt),
-        basis_for_citizenship=_fr_enum("basis_for_citizenship", basis_raw, N600_BASIS),
-    )
+    return N600(**receipt)
 
 
 def _extract_i485_supp_j(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I485SuppJ:
-    def _a(f: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, f, extras)
-
-    arn_raw   = _a("alienregistrationnumber", ["aliennumber", "anumber"])
-    fname     = _a("familyname", ["lastname"])
-    gname     = _a("givenname", ["firstname"])
-    principal = _a("principalapplicantname", ["principalname", "principalapplicant"])
-    employer  = _a("jobofferemployer", ["employername", "offeredemployer"])
-    title     = _a("joboffertitle", ["jobtitle", "offeredtitle"])
-    soc_raw   = _a("joboffersoccode", ["soccode", "occupationcode"])
-    port_raw  = _a("portabilityclaim", ["portability", "jobportability"])
-
-    if not arn_raw:
-        arn_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not soc_raw:
-        soc_raw = _regex_first(_SOC_INLINE_RE, raw_text)
-    if not port_raw:
-        yn_m = _YES_NO_RE.search(raw_text)
-        port_raw = yn_m.group(1) if yn_m else None
-
-    return I485SuppJ(
-        **receipt,
-        alien_registration_number=_fr_alien("alien_registration_number", arn_raw),
-        family_name=_fr_text("family_name", fname),
-        given_name=_fr_text("given_name", gname),
-        principal_applicant_name=_fr_text("principal_applicant_name", principal),
-        job_offer_employer=_fr_text("job_offer_employer", employer),
-        job_offer_title=_fr_text("job_offer_title", title),
-        job_offer_soc_code=_fr_soc_code("job_offer_soc_code", soc_raw),
-        portability_claim=_fr_bool_text("portability_claim", port_raw),
-    )
+    return I485SuppJ(**receipt)
 
 
 def _extract_i824(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I824:
-    def _a(f: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, f, extras)
-
-    arn_raw      = _a("alienregistrationnumber", ["aliennumber", "anumber"])
-    fname        = _a("familyname", ["lastname"])
-    gname        = _a("givenname", ["firstname"])
-    orig_form    = _a("originalformtype", ["originalform", "priorform"])
-    orig_receipt = _a("originalreceiptnumber", ["originalreceipt", "priorreceiptnumber"])
-    orig_date    = _a("originalapprovaldate", ["approvaldate", "priorapprovaldate"])
-    action_raw   = _a("actionrequested", ["action", "requestedaction"])
-
-    if not arn_raw:
-        arn_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not orig_receipt:
-        orig_receipt = _regex_first(_RECEIPT_RE, raw_text)
-    if not orig_date:
-        orig_date = _regex_first(_APPROVAL_DATE_RE, raw_text)
-    if not orig_form:
-        orig_form = _regex_first(_FORM_NUMBER_RE, raw_text)
-
-    # Validate original form type against known USCIS forms
-    if orig_form:
-        orig_form_v = orig_form.strip().upper()
-        orig_form_ok = any(
-            orig_form_v == f.upper() or orig_form_v.replace(" ", "-") == f.upper()
-            for f in KNOWN_FORM_NUMBERS
-        )
-        orig_form_fr = _fr("original_form_type", orig_form, 0.95 if orig_form_ok else 0.5)
-    else:
-        orig_form_fr = _fr("original_form_type", None, 0.0)
-
-    return I824(
-        **receipt,
-        alien_registration_number=_fr_alien("alien_registration_number", arn_raw),
-        family_name=_fr_text("family_name", fname),
-        given_name=_fr_text("given_name", gname),
-        original_form_type=orig_form_fr,
-        original_receipt_number=_fr_receipt("original_receipt_number", orig_receipt),
-        original_approval_date=_fr_date("original_approval_date", orig_date),
-        action_requested=_fr_enum("action_requested", action_raw, I824_ACTIONS),
-    )
+    return I824(**receipt)
 
 
 def _extract_i90(acro: dict[str, str | None], raw_text: str, receipt: dict[str, FieldResult]) -> I90:
-    def _a(f: str, extras: list[str] | None = None) -> str | None:
-        return _fuzzy_get(acro, f, extras)
-
-    arn_raw    = _a("alienregistrationnumber", ["aliennumber", "anumber"])
-    fname      = _a("familyname", ["lastname"])
-    gname      = _a("givenname", ["firstname"])
-    dob_raw    = _a("dateofbirth", ["dob"])
-    cob        = _a("countryofbirth")
-    exp_raw    = _a("cardexpirationdate", ["cardexpires", "expirationdate"])
-    reason_raw = _a("reasonforreplacement", ["replacementreason", "reason"])
-
-    if not arn_raw:
-        arn_raw = _regex_first(_ALIEN_INLINE_RE, raw_text)
-    if not dob_raw:
-        dob_raw = _regex_first(_DOB_INLINE_RE, raw_text)
-    if not exp_raw:
-        exp_raw = _regex_first(_CARD_EXPIRES_RE, raw_text)
-
-    return I90(
-        **receipt,
-        alien_registration_number=_fr_alien("alien_registration_number", arn_raw),
-        family_name=_fr_text("family_name", fname),
-        given_name=_fr_text("given_name", gname),
-        date_of_birth=_fr_date("date_of_birth", dob_raw),
-        country_of_birth=_fr_text("country_of_birth", cob),
-        card_expiration_date=_fr_date("card_expiration_date", exp_raw),
-        reason_for_replacement=_fr_enum(
-            "reason_for_replacement", reason_raw, I90_REASONS
-        ),
-    )
+    return I90(**receipt)
 
 
 # ---------------------------------------------------------------------------

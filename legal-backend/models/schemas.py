@@ -68,172 +68,52 @@ class NoticeReceiptLLMExtract(BaseModel):
 # ---------------------------------------------------------------------------
 
 class I485(ReceiptFieldsMixin):
-    alien_registration_number: FieldResult
-    family_name: FieldResult
-    given_name: FieldResult
-    date_of_birth: FieldResult
-    country_of_birth: FieldResult
-    date_of_entry: FieldResult
-    class_of_admission: FieldResult
-    ssn: FieldResult
-
+    pass
 
 class N400(ReceiptFieldsMixin):
-    family_name: FieldResult
-    given_name: FieldResult
-    date_of_birth: FieldResult
-    country_of_birth: FieldResult
-    alien_registration_number: FieldResult
-    date_became_pr: FieldResult
-    marital_status: FieldResult
-
+    pass
 
 class I129(ReceiptFieldsMixin):
-    petitioner_name: FieldResult
-    petitioner_ein: FieldResult
-    beneficiary_name: FieldResult
-    beneficiary_alien_number: FieldResult
-    nonimmigrant_classification: FieldResult
-    period_of_stay_requested: FieldResult
-    job_title: FieldResult
-    wage_rate_of_pay: FieldResult
-
+    pass
 
 class I140(ReceiptFieldsMixin):
-    petitioner_name: FieldResult
-    petitioner_ein: FieldResult
-    beneficiary_name: FieldResult
-    beneficiary_alien_number: FieldResult
-    preference_classification: FieldResult
-    priority_date: FieldResult
-    job_title: FieldResult
-    offered_wage: FieldResult
-
+    pass
 
 class I797(ReceiptFieldsMixin):
-    notice_type: FieldResult    # USCIS form number — stored, not shown in review panel
-    case_type: FieldResult      # Processing center — stored, not shown in review panel
-
+    pass
 
 class I751(ReceiptFieldsMixin):
-    alien_registration_number: FieldResult
-    family_name: FieldResult
-    given_name: FieldResult
-    date_of_birth: FieldResult
-    country_of_birth: FieldResult
-    joint_petitioner_name: FieldResult
-    date_card_expires: FieldResult
-    basis_for_petition: FieldResult
-
+    pass
 
 class I130(ReceiptFieldsMixin):
-    petitioner_family_name: FieldResult
-    petitioner_given_name: FieldResult
-    petitioner_dob: FieldResult
-    petitioner_alien_number: FieldResult
-    relationship_to_beneficiary: FieldResult
-    beneficiary_family_name: FieldResult
-    beneficiary_given_name: FieldResult
-    beneficiary_dob: FieldResult
-    beneficiary_country_of_birth: FieldResult
-
+    pass
 
 class I131(ReceiptFieldsMixin):
-    family_name: FieldResult
-    given_name: FieldResult
-    alien_registration_number: FieldResult
-    date_of_birth: FieldResult
-    class_of_admission: FieldResult
-    date_of_admission: FieldResult
-    country_of_birth: FieldResult
-    travel_document_type: FieldResult
-    reason_for_travel: FieldResult
-
+    pass
 
 class I539(ReceiptFieldsMixin):
-    family_name: FieldResult
-    given_name: FieldResult
-    alien_registration_number: FieldResult
-    date_of_birth: FieldResult
-    country_of_birth: FieldResult
-    current_nonimmigrant_status: FieldResult
-    status_expires: FieldResult
-    requested_status: FieldResult
-
+    pass
 
 class I765(ReceiptFieldsMixin):
-    family_name: FieldResult
-    given_name: FieldResult
-    alien_registration_number: FieldResult
-    date_of_birth: FieldResult
-    country_of_birth: FieldResult
-    ssn: FieldResult
-    eligibility_category: FieldResult
-    date_eligibility_expires: FieldResult
-
+    pass
 
 class I290B(ReceiptFieldsMixin):
-    receipt_number: FieldResult
-    form_type_appealed: FieldResult
-    applicant_name: FieldResult
-    alien_registration_number: FieldResult
-    date_of_decision: FieldResult
-    reason_for_appeal: FieldResult
-    brief_attached: FieldResult
-
+    pass
 
 class I129F(ReceiptFieldsMixin):
-    petitioner_family_name: FieldResult
-    petitioner_given_name: FieldResult
-    petitioner_dob: FieldResult
-    beneficiary_family_name: FieldResult
-    beneficiary_given_name: FieldResult
-    beneficiary_dob: FieldResult
-    beneficiary_country_of_birth: FieldResult
-    date_met_beneficiary: FieldResult
-    prior_petitions: FieldResult
-
+    pass
 
 class N600(ReceiptFieldsMixin):
-    family_name: FieldResult
-    given_name: FieldResult
-    date_of_birth: FieldResult
-    country_of_birth: FieldResult
-    alien_registration_number: FieldResult
-    us_citizen_parent_name: FieldResult
-    parent_citizenship_date: FieldResult
-    basis_for_citizenship: FieldResult
-
+    pass
 
 class I485SuppJ(ReceiptFieldsMixin):
-    alien_registration_number: FieldResult
-    family_name: FieldResult
-    given_name: FieldResult
-    principal_applicant_name: FieldResult
-    job_offer_employer: FieldResult
-    job_offer_title: FieldResult
-    job_offer_soc_code: FieldResult
-    portability_claim: FieldResult
-
+    pass
 
 class I824(ReceiptFieldsMixin):
-    alien_registration_number: FieldResult
-    family_name: FieldResult
-    given_name: FieldResult
-    original_form_type: FieldResult
-    original_receipt_number: FieldResult
-    original_approval_date: FieldResult
-    action_requested: FieldResult
-
+    pass
 
 class I90(ReceiptFieldsMixin):
-    alien_registration_number: FieldResult
-    family_name: FieldResult
-    given_name: FieldResult
-    date_of_birth: FieldResult
-    country_of_birth: FieldResult
-    card_expiration_date: FieldResult
-    reason_for_replacement: FieldResult
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -242,310 +122,25 @@ class I90(ReceiptFieldsMixin):
 # narrative_flags collects free-text anomaly/flag notes from the LLM.
 # ---------------------------------------------------------------------------
 
-class I485LLM(BaseModel):
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    family_name: Optional[str] = None
-    family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    given_name: Optional[str] = None
-    given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_of_birth: Optional[str] = None
-    date_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    country_of_birth: Optional[str] = None
-    country_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_of_entry: Optional[str] = None
-    date_of_entry_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    class_of_admission: Optional[str] = None
-    class_of_admission_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    ssn: Optional[str] = None
-    ssn_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+class _BaseLLM(BaseModel):
     narrative_flags: List[str] = Field(default_factory=list)
 
-
-class N400LLM(BaseModel):
-    family_name: Optional[str] = None
-    family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    given_name: Optional[str] = None
-    given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_of_birth: Optional[str] = None
-    date_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    country_of_birth: Optional[str] = None
-    country_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_became_pr: Optional[str] = None
-    date_became_pr_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    marital_status: Optional[str] = None
-    marital_status_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I129LLM(BaseModel):
-    petitioner_name: Optional[str] = None
-    petitioner_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    petitioner_ein: Optional[str] = None
-    petitioner_ein_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_name: Optional[str] = None
-    beneficiary_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_alien_number: Optional[str] = None
-    beneficiary_alien_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    nonimmigrant_classification: Optional[str] = None
-    nonimmigrant_classification_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    period_of_stay_requested: Optional[str] = None
-    period_of_stay_requested_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    job_title: Optional[str] = None
-    job_title_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    wage_rate_of_pay: Optional[str] = None
-    wage_rate_of_pay_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I140LLM(BaseModel):
-    petitioner_name: Optional[str] = None
-    petitioner_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    petitioner_ein: Optional[str] = None
-    petitioner_ein_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_name: Optional[str] = None
-    beneficiary_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_alien_number: Optional[str] = None
-    beneficiary_alien_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    preference_classification: Optional[str] = None
-    preference_classification_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    priority_date: Optional[str] = None
-    priority_date_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    job_title: Optional[str] = None
-    job_title_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    offered_wage: Optional[str] = None
-    offered_wage_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I797LLM(BaseModel):
-    notice_type: Optional[str] = None
-    notice_type_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    case_type: Optional[str] = None
-    case_type_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I751LLM(BaseModel):
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    family_name: Optional[str] = None
-    family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    given_name: Optional[str] = None
-    given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_of_birth: Optional[str] = None
-    date_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    country_of_birth: Optional[str] = None
-    country_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    joint_petitioner_name: Optional[str] = None
-    joint_petitioner_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_card_expires: Optional[str] = None
-    date_card_expires_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    basis_for_petition: Optional[str] = None
-    basis_for_petition_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I130LLM(BaseModel):
-    petitioner_family_name: Optional[str] = None
-    petitioner_family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    petitioner_given_name: Optional[str] = None
-    petitioner_given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    petitioner_dob: Optional[str] = None
-    petitioner_dob_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    petitioner_alien_number: Optional[str] = None
-    petitioner_alien_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    relationship_to_beneficiary: Optional[str] = None
-    relationship_to_beneficiary_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_family_name: Optional[str] = None
-    beneficiary_family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_given_name: Optional[str] = None
-    beneficiary_given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_dob: Optional[str] = None
-    beneficiary_dob_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_country_of_birth: Optional[str] = None
-    beneficiary_country_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I131LLM(BaseModel):
-    family_name: Optional[str] = None
-    family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    given_name: Optional[str] = None
-    given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_of_birth: Optional[str] = None
-    date_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    class_of_admission: Optional[str] = None
-    class_of_admission_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_of_admission: Optional[str] = None
-    date_of_admission_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    country_of_birth: Optional[str] = None
-    country_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    travel_document_type: Optional[str] = None
-    travel_document_type_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    reason_for_travel: Optional[str] = None
-    reason_for_travel_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I539LLM(BaseModel):
-    family_name: Optional[str] = None
-    family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    given_name: Optional[str] = None
-    given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_of_birth: Optional[str] = None
-    date_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    country_of_birth: Optional[str] = None
-    country_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    current_nonimmigrant_status: Optional[str] = None
-    current_nonimmigrant_status_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    status_expires: Optional[str] = None
-    status_expires_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    requested_status: Optional[str] = None
-    requested_status_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I765LLM(BaseModel):
-    family_name: Optional[str] = None
-    family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    given_name: Optional[str] = None
-    given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_of_birth: Optional[str] = None
-    date_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    country_of_birth: Optional[str] = None
-    country_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    ssn: Optional[str] = None
-    ssn_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    eligibility_category: Optional[str] = None
-    eligibility_category_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_eligibility_expires: Optional[str] = None
-    date_eligibility_expires_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I290BLLM(BaseModel):
-    receipt_number: Optional[str] = None
-    receipt_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    form_type_appealed: Optional[str] = None
-    form_type_appealed_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    applicant_name: Optional[str] = None
-    applicant_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_of_decision: Optional[str] = None
-    date_of_decision_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    reason_for_appeal: Optional[str] = None
-    reason_for_appeal_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    brief_attached: Optional[str] = None
-    brief_attached_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I129FLLM(BaseModel):
-    petitioner_family_name: Optional[str] = None
-    petitioner_family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    petitioner_given_name: Optional[str] = None
-    petitioner_given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    petitioner_dob: Optional[str] = None
-    petitioner_dob_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_family_name: Optional[str] = None
-    beneficiary_family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_given_name: Optional[str] = None
-    beneficiary_given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_dob: Optional[str] = None
-    beneficiary_dob_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    beneficiary_country_of_birth: Optional[str] = None
-    beneficiary_country_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_met_beneficiary: Optional[str] = None
-    date_met_beneficiary_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    prior_petitions: Optional[str] = None
-    prior_petitions_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class N600LLM(BaseModel):
-    family_name: Optional[str] = None
-    family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    given_name: Optional[str] = None
-    given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_of_birth: Optional[str] = None
-    date_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    country_of_birth: Optional[str] = None
-    country_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    us_citizen_parent_name: Optional[str] = None
-    us_citizen_parent_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    parent_citizenship_date: Optional[str] = None
-    parent_citizenship_date_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    basis_for_citizenship: Optional[str] = None
-    basis_for_citizenship_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I485SuppJLLM(BaseModel):
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    family_name: Optional[str] = None
-    family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    given_name: Optional[str] = None
-    given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    principal_applicant_name: Optional[str] = None
-    principal_applicant_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    job_offer_employer: Optional[str] = None
-    job_offer_employer_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    job_offer_title: Optional[str] = None
-    job_offer_title_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    job_offer_soc_code: Optional[str] = None
-    job_offer_soc_code_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    portability_claim: Optional[str] = None
-    portability_claim_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I824LLM(BaseModel):
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    family_name: Optional[str] = None
-    family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    given_name: Optional[str] = None
-    given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    original_form_type: Optional[str] = None
-    original_form_type_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    original_receipt_number: Optional[str] = None
-    original_receipt_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    original_approval_date: Optional[str] = None
-    original_approval_date_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    action_requested: Optional[str] = None
-    action_requested_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
-
-
-class I90LLM(BaseModel):
-    alien_registration_number: Optional[str] = None
-    alien_registration_number_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    family_name: Optional[str] = None
-    family_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    given_name: Optional[str] = None
-    given_name_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    date_of_birth: Optional[str] = None
-    date_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    country_of_birth: Optional[str] = None
-    country_of_birth_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    card_expiration_date: Optional[str] = None
-    card_expiration_date_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    reason_for_replacement: Optional[str] = None
-    reason_for_replacement_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    narrative_flags: List[str] = Field(default_factory=list)
+class I485LLM(_BaseLLM): pass
+class N400LLM(_BaseLLM): pass
+class I129LLM(_BaseLLM): pass
+class I140LLM(_BaseLLM): pass
+class I797LLM(_BaseLLM): pass
+class I751LLM(_BaseLLM): pass
+class I130LLM(_BaseLLM): pass
+class I131LLM(_BaseLLM): pass
+class I539LLM(_BaseLLM): pass
+class I765LLM(_BaseLLM): pass
+class I290BLLM(_BaseLLM): pass
+class I129FLLM(_BaseLLM): pass
+class N600LLM(_BaseLLM): pass
+class I485SuppJLLM(_BaseLLM): pass
+class I824LLM(_BaseLLM): pass
+class I90LLM(_BaseLLM): pass
 
 
 # ---------------------------------------------------------------------------
