@@ -1061,12 +1061,13 @@ SUPPORTED_FORMS: frozenset[str] = frozenset(_EXTRACTORS)
 def extract(
     preprocess_result: PreprocessResult,
     form_type: str,
+    textract_fields: dict | None = None,
 ) -> AnyFormSchema:
     """
     Extract and validate fields from a PreprocessResult.
 
-    Uses AcroForm data (fuzzy-matched) as primary source, with regex on
-    raw_text / ocr_text as fallback.
+    Uses AcroForm data (fuzzy-matched) as primary source, with Textract
+    structured form fields as secondary source, and regex on raw_text as fallback.
     I-797 and I-290B have no AcroForm and go straight to regex.
 
     Parameters
@@ -1075,6 +1076,8 @@ def extract(
         Dict returned by preprocessor.preprocess().
     form_type:
         One of the 16 supported USCIS form keys.
+    textract_fields:
+        Optional dict of Textract form fields: {field_name: {"value": str, "confidence": float}}
 
     Returns
     -------
@@ -1088,18 +1091,39 @@ def extract(
 
     acro = preprocess_result["acroform_fields"]
     raw_text = preprocess_result["ocr_text"] or preprocess_result["raw_text"]
+    textract_fields = textract_fields or {}
 
     print(
         f"[NATIVE] Starting extraction for form_type={form_type} "
-        f"acro_fields={len(acro)} text_chars={len(raw_text)}"
+        f"acro_fields={len(acro)} textract_fields={len(textract_fields)} text_chars={len(raw_text)}"
     )
 
+    # Merge AcroForm + Textract into a single fuzzy-lookup dict (Textract wins on ties)
+    merged_acro = {**acro}
+    for tf_key, tf_data in textract_fields.items():
+        # Textract keys are more verbose; try to match against AcroForm keys
+        for acro_key in list(merged_acro.keys()):
+            if _fuzzy_match(tf_key, acro_key):
+                if not merged_acro[acro_key] and tf_data.get("value"):
+                    merged_acro[acro_key] = tf_data["value"]
+                break
+        else:
+            # No AcroForm match; add Textract field directly
+            merged_acro[tf_key] = tf_data.get("value")
+
     # Shared "Receipt record" fields — attached to every form schema.
-    receipt = extract_receipt_fields(acro, raw_text, form_type)
+    receipt = extract_receipt_fields(merged_acro, raw_text, form_type)
     for fname, fr in receipt.items():
         _log(f"receipt:{fname}", fr.value, fr.confidence)
 
-    result = _EXTRACTORS[form_type](acro, raw_text, receipt)
+    result = _EXTRACTORS[form_type](merged_acro, raw_text, receipt)
 
     print(f"[NATIVE] Extraction complete for {form_type}")
     return result
+
+
+def _fuzzy_match(textract_key: str, acro_key: str) -> bool:
+    """Check if Textract and AcroForm keys likely refer to the same field."""
+    t_clean = textract_key.lower().replace(" ", "").replace("_", "").replace(":", "")
+    a_clean = acro_key.lower().replace(" ", "").replace("_", "").replace("[", "").replace("]", "")
+    return t_clean in a_clean or a_clean in t_clean
