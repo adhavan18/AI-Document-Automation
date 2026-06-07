@@ -476,12 +476,20 @@ const STATUS = {
 };
 
 const QUEUE = [
-  {id:'0588250d',type:'N-400',label:'Application for Naturalization',applicant:'Elena Rodriguez',status:'ready',priority:'normal',fields:7,pages:14,time:'Jun 2, 2026 · 10:43 PM',primary:true},
-  {id:'0344f1a2',type:'I-130',label:'Petition for Alien Relative',applicant:'Marcus Chen',status:'processing',priority:'high',fields:4,pages:12,time:'Jun 3, 2026 · 11:04 AM',progress:62},
-  {id:'0991ccde',type:'H4-EAD',label:'Employment Authorization (H4)',applicant:'Priya Nair',status:'ready',priority:'high',fields:9,pages:6,time:'Jun 3, 2026 · 09:12 AM',primary:true},
-  {id:'07b3e810',type:'I-765',label:'Application for Employment Auth.',applicant:'David Okafor',status:'completed',priority:'normal',fields:11,pages:8,time:'Jun 1, 2026 · 04:30 PM'},
-  {id:'0c52a7fb',type:'N-400',label:'Application for Naturalization',applicant:'Sofia Mendez',status:'completed',priority:'normal',fields:7,pages:14,time:'Jun 1, 2026 · 02:15 PM'},
-  {id:'0ff19a34',type:'I-485',label:'Adjustment of Status',applicant:'Ahmed Hassan',status:'processing',priority:'normal',fields:2,pages:18,time:'Jun 3, 2026 · 11:20 AM',progress:28},
+  {id:'0588250d',type:'I-797',label:'Notice of Action',applicant:'Elena Rodriguez',status:'ready',priority:'normal',fields:7,pages:14,time:'Jun 2, 2026 · 10:43 PM',primary:true,extracted_fields:[
+    {field_name:'Primary Flag',normalized_value:'True',confidence:0.95,source:'native'},
+    {field_name:'Sent Government Agency',normalized_value:'05/28/2026',confidence:0.94,source:'native'},
+    {field_name:'Receipt For',normalized_value:'Elena Rodriguez',confidence:0.95,source:'native'},
+    {field_name:'Receipt Type',normalized_value:'USCIS Receipt Number',confidence:0.92,source:'native'},
+    {field_name:'Receipt Date',normalized_value:'05/30/2026',confidence:0.95,source:'native'},
+    {field_name:'Receipt Notice Date',normalized_value:'06/01/2026',confidence:0.93,source:'native'},
+    {field_name:'Receipt Number',normalized_value:'ABC1234567890',confidence:0.88,source:'native'},
+  ]},
+  {id:'0344f1a2',type:'I-130',label:'Petition for Alien Relative',applicant:'Marcus Chen',status:'processing',priority:'high',fields:4,pages:12,time:'Jun 3, 2026 · 11:04 AM',progress:62,extracted_fields:[]},
+  {id:'0991ccde',type:'I-485',label:'Application for Adjustment',applicant:'Priya Nair',status:'ready',priority:'high',fields:9,pages:6,time:'Jun 3, 2026 · 09:12 AM',primary:true,extracted_fields:[
+    {field_name:'Primary Flag',normalized_value:'True',confidence:0.95,source:'native'},
+    {field_name:'Receipt Number',normalized_value:'XYZ9876543210',confidence:0.90,source:'native'},
+  ]},
 ];
 
 const FIELDS = [
@@ -495,7 +503,7 @@ const FIELDS = [
   {key:'Receipt Number',value:'MSC2190123456',conf:88,src:'native',type:'number'},
   {key:'Receipt Status',value:'Pending',conf:90,src:'llm',type:'select',
     options:['Pending','Approved','Denied','RFE','Withdrawn','Shipped']},
-  {key:'Expiration Notice',value:'Yes',conf:74,src:'llm',type:'select',options:['Yes','No']},
+  {key:'Expiration Alert',value:'No',conf:74,src:'llm',type:'select',options:['Yes','No']},
   {key:'Receipt Notes',value:'',conf:0,src:'llm',type:'textarea'},
 ];
 
@@ -628,9 +636,46 @@ function renderSummary(){
   ).join('');
 }
 
+const FIELD_DEFAULTS = {
+  'Primary Flag': {value:'True',conf:0,src:'native'},
+  'Sent Government Agency': {value:'',conf:0,src:'native'},
+  'Receipt For': {value:'',conf:0,src:'native'},
+  'Receipt Type': {value:'',conf:0,src:'native'},
+  'Receipt Date': {value:'',conf:0,src:'native'},
+  'Receipt Notice Date': {value:'',conf:0,src:'native'},
+  'Receipt Number': {value:'',conf:0,src:'native'},
+  'Receipt Status': {value:'',conf:0,src:'native'},
+  'Expiration Alert': {value:'No',conf:0,src:'native'},
+  'Receipt Notes': {value:'',conf:0,src:'native'},
+};
+
+function mergeWithDefaults(extracted){
+  const merged = {};
+  FIELDS.forEach(f=>{
+    const key = f.key;
+    if(extracted[key]){
+      merged[key] = {...f, ...extracted[key]};
+    } else {
+      const def = FIELD_DEFAULTS[key];
+      merged[key] = {...f, value:def.value, conf:def.conf, src:def.src};
+    }
+  });
+  return Object.values(merged);
+}
+
 function renderFields(){
   renderSummary();
-  document.getElementById('flist').innerHTML = FIELDS.map(f=>{
+  const d = QUEUE.find(x=>x.id===activeId);
+  if(!d) return;
+
+  const extracted = d.extracted_fields ? d.extracted_fields.reduce((m,f)=>{
+    m[f.field_name] = f;
+    return m;
+  }, {}) : {};
+
+  const fields = mergeWithDefaults(extracted);
+
+  document.getElementById('flist').innerHTML = fields.map(f=>{
     const isNotes = f.type==='textarea';
     const low = !isNotes && f.conf<80;
     const tone = confTone(f.conf);
