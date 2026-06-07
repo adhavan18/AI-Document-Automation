@@ -6,9 +6,9 @@
 <title>GIP Reviewer — Notice Processing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<link rel="icon" type="image/png" href="https://gip-us.com/wp-content/uploads/2023/12/gipuheader.png" />
 <style>
   :root{
+    /* GIP palette — shared with Dashboard */
     --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
     --bg:#f3f5fa; --card:#ffffff;
     --ink:#1a1f2e; --ink-soft:#5b6376; --ink-faint:#9aa1b2;
@@ -18,6 +18,7 @@
     --orange:#e14a28; --orange-soft:#fbe8e2;
     --blue:#2f6fb0;  --blue-soft:#e6eff8;
     --violet:#6b4ce0;--violet-soft:#ece7fb;
+    /* dark sidebar */
     --side-bg:#0e1326; --side-bg-2:#111733;
     --side-text:#aab2c6; --side-text-hi:#ffffff;
     --side-line:#222a45;
@@ -37,34 +38,36 @@
   button{font-family:var(--font);cursor:pointer;}
   .shell{display:flex;height:100vh;}
 
+  /* ═══ SIDEBAR (shared) ═══ */
   .sidebar{width:252px;flex-shrink:0;background:linear-gradient(180deg,var(--side-bg),var(--side-bg-2));
     display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);}
   .sidebar.collapsed{width:74px;}
+
   .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
-  .brand-mini{width:36px;height:36px;border-radius:10px;flex-shrink:0;display:none;
-    background:#fff;color:var(--primary);font-weight:800;font-size:17px;
-    align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(32,68,150,.35);}
-  .brand-txt{overflow:hidden;white-space:nowrap;}
-  .brand-logo{display:inline-flex;align-items:center;background:#fff;border-radius:9px;
-    padding:7px 11px;box-shadow:0 2px 12px rgba(0,0,0,.28);}
-  .brand-logo img{height:26px;width:auto;display:block;}
-  .brand-sub{font-size:9.5px;font-weight:600;color:var(--ink-faint);letter-spacing:.14em;
-    text-transform:uppercase;margin-top:8px;}
+  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
+    background:transparent;border:none;padding:0;cursor:pointer;
+    color:var(--side-text);display:none;align-items:center;justify-content:center;
+    transition:background .15s, color .15s;}
+  .brand-icon:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .brand-logo{display:none;}
+  .sidebar.collapsed .brand-icon{display:flex;margin:0 auto;}
   .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
     background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;
     transition:background .15s;}
   .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
   .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
-  .sidebar.collapsed .brand-txt,.sidebar.collapsed .collapse-btn{display:none;}
-  .sidebar.collapsed .brand-mini{display:flex;}
+  .sidebar.collapsed .collapse-btn{display:none;}
+
   .nav{flex:1;overflow-y:auto;padding:6px 12px;}
   .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
     text-transform:uppercase;padding:14px 10px 7px;}
-  .sidebar.collapsed .nav-label{text-align:center;font-size:8px;padding:14px 0 7px;}
+  .sidebar.collapsed .nav-label{display:none;}
   .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
     border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:13.5px;
     font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;
     text-decoration:none;}
+  a.nav-item,a.nav-item:hover,a.nav-item:focus{text-decoration:none;}
   .nav-item:hover{background:rgba(255,255,255,.05);color:var(--side-text-hi);}
   .nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600;}
   .nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;
@@ -77,11 +80,13 @@
   .sidebar.collapsed .nav-item:hover::after{content:attr(data-label);position:absolute;left:calc(100% + 10px);
     top:50%;transform:translateY(-50%);background:#1c2340;color:#fff;font-size:12px;font-weight:500;
     padding:6px 10px;border-radius:7px;white-space:nowrap;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+
   .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
   .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
     border:none;background:transparent;color:var(--side-text);font-size:13px;font-weight:500;
     margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;}
   .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+  a.foot-item{text-decoration:none;}
   .foot-item .badge{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:700;
     min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
   .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
@@ -97,6 +102,7 @@
   .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
   .sidebar.collapsed .user-txt{display:none;}
 
+  /* ═══ MAIN (shared topbar + page) ═══ */
   .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 30px;
     background:var(--card);border-bottom:1px solid var(--line);}
@@ -110,17 +116,29 @@
   .top-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
   .btn-primary{padding:9px 16px;border-radius:9px;border:none;background:var(--primary);color:#fff;
     font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 2px 10px rgba(32,68,150,.22);}
-  .btn-primary:disabled{opacity:.6;cursor:not-allowed;}
   .icon-btn-top{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;
     display:flex;align-items:center;justify-content:center;color:var(--ink-soft);position:relative;}
   .icon-btn-top .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;
     background:var(--orange);border:1.5px solid #fff;}
 
+  /* page area — full-bleed three-column workspace */
   .workspace{flex:1;display:flex;min-height:0;background:var(--bg);}
 
+  /* ── LEFT: queue ── */
   .queue{width:320px;flex-shrink:0;border-right:1px solid var(--line);
-    background:var(--card);display:flex;flex-direction:column;}
+    background:var(--card);display:flex;flex-direction:column;
+    transition:width .22s ease;overflow:hidden;}
+  .queue.collapsed{width:54px;}
+  .queue.collapsed .q-head{padding:14px 8px;border-bottom:1px solid var(--line-soft);}
+  .queue.collapsed .q-head-row{justify-content:center;}
+  .queue.collapsed .q-head-row > div:first-child{display:none;}
+  .queue.collapsed .search,.queue.collapsed .q-list,.queue.collapsed .q-foot{display:none;}
   .q-head{padding:18px 18px 14px;border-bottom:1px solid var(--line-soft);}
+  .q-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  .q-toggle{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    transition:all .15s;}
+  .q-toggle:hover{background:var(--primary-soft);color:var(--primary);border-color:var(--primary-soft);}
   .q-title{font-size:14px;font-weight:700;letter-spacing:-.005em;}
   .q-sub{font-size:11px;color:var(--ink-faint);margin-top:3px;
     text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
@@ -140,8 +158,10 @@
     gap:7px;font-size:10.5px;color:var(--ink-faint);font-weight:500;}
   .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
 
+  /* queue card */
   .card{position:relative;width:100%;text-align:left;padding:13px 14px 13px 16px;border-radius:12px;
-    border:1px solid var(--line);background:#fff;margin-bottom:8px;overflow:hidden;transition:all .18s;}
+    border:1px solid var(--line);background:#fff;margin-bottom:8px;overflow:hidden;
+    transition:all .18s;}
   .card:hover{border-color:#d4d9e6;}
   .card.active{border-color:var(--primary);background:#fff;box-shadow:0 2px 14px rgba(32,68,150,.10);}
   .rail{position:absolute;left:0;top:0;bottom:0;width:3px;opacity:.55;}
@@ -151,8 +171,8 @@
     background-size:200% 100%;animation:shimmer 1.8s linear infinite;}
   .card-top{display:flex;justify-content:space-between;align-items:flex-start;}
   .ctype{font-size:14px;font-weight:700;letter-spacing:-.005em;}
-  .hi{font-size:9px;font-weight:700;color:var(--orange);background:var(--orange-soft);
-    padding:1px 6px;border-radius:5px;letter-spacing:.04em;}
+  .hi{font-size:9px;font-weight:700;color:var(--orange);
+    background:var(--orange-soft);padding:1px 6px;border-radius:5px;letter-spacing:.04em;}
   .cid{font-size:10px;color:var(--ink-faint);font-weight:500;}
   .capp{font-size:12.5px;font-weight:600;margin-top:5px;}
   .clabel{font-size:11.5px;color:var(--ink-faint);margin-top:1px;}
@@ -161,6 +181,7 @@
   .cbar{margin-top:9px;height:3px;border-radius:999px;background:var(--line-soft);overflow:hidden;}
   .cbar > i{display:block;height:100%;background:var(--amber);border-radius:999px;transition:width .6s;}
 
+  /* pill (shared shape with dashboard) */
   .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 7px;border-radius:999px;
     font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
   .pill.processing{background:var(--amber-soft);color:var(--amber);}
@@ -168,6 +189,7 @@
   .pill.tag-primary{background:var(--primary);color:#fff;}
   .pill.completed{background:var(--green-soft);color:var(--green);}
 
+  /* ── CENTER: viewer ── */
   .viewer{flex:1;min-width:0;display:flex;flex-direction:column;background:#1a1f2e;}
   .v-bar{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;
     background:var(--card);border-bottom:1px solid var(--line);}
@@ -178,39 +200,71 @@
   .pg-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;
     display:flex;align-items:center;justify-content:center;color:var(--ink-soft);transition:all .15s;}
   .pg-btn:hover{background:var(--bg);color:var(--ink);}
+  .pg-btn:disabled{opacity:.35;cursor:not-allowed;background:#fff;color:var(--ink-soft);}
   .pg-num{font-size:12px;color:var(--ink-soft);min-width:56px;text-align:center;font-weight:600;
     font-variant-numeric:tabular-nums;}
   .canvas{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:32px;
     background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.04) 1px,transparent 0);
     background-size:22px 22px;}
+
+  /* doc preview */
+  .doc{background:#fff;width:520px;max-width:100%;border-radius:6px;padding:34px 38px;
+    box-shadow:0 8px 40px rgba(0,0,0,.32);font-family:Georgia,serif;color:#111;font-size:11px;line-height:1.5;}
+  .doc-head{display:flex;justify-content:space-between;align-items:flex-start;}
+  .seal{width:40px;height:40px;border-radius:50%;border:1.5px solid #333;display:flex;
+    align-items:center;justify-content:center;font-size:7px;color:#555;}
+  .doc-title{font-size:16px;font-weight:700;}
+  .doc-rule{border-top:2px solid #111;border-bottom:2px solid #111;margin:16px 0;
+    display:grid;grid-template-columns:60px 1fr 1fr 1fr;}
+  .doc-rule > div{padding:8px 6px;font-size:8px;font-weight:700;min-height:50px;border-right:1px solid #ccc;}
+  .doc-rule > div:last-child{border-right:none;}
+  .sec{background:#e9e9e9;padding:5px 8px;font-weight:700;font-size:11px;}
+  .ckbox{display:inline-block;width:11px;height:11px;border:1px solid #333;text-align:center;
+    line-height:10px;margin-right:4px;font-size:9px;}
+  .nm-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:5px;}
+  .nm-grid .f-l{font-size:7px;color:#666;}
+  .nm-grid .f-v{border:1px solid #999;padding:5px 6px;font-size:10px;}
+
+  /* processing state */
   .proc{margin-top:80px;text-align:center;color:#aab2c6;}
   .proc h3{font-size:18px;margin:18px 0 6px;color:#fff;font-weight:700;letter-spacing:-.005em;}
   .proc p{font-size:13px;opacity:.75;margin:0;}
   .proc-bar{width:220px;height:5px;border-radius:999px;background:rgba(255,255,255,.1);
     margin:18px auto 0;overflow:hidden;}
   .proc-bar > i{display:block;height:100%;background:var(--amber);border-radius:999px;}
-  .empty-viewer{margin-top:80px;text-align:center;color:#aab2c6;}
-  .empty-viewer h3{font-size:18px;margin:18px 0 6px;color:#fff;font-weight:600;}
 
+  /* ── RIGHT: fields ── */
   .fields{width:380px;flex-shrink:0;border-left:1px solid var(--line);background:var(--card);
     display:flex;flex-direction:column;}
   .f-head{padding:18px 20px 14px;border-bottom:1px solid var(--line-soft);}
   .f-head-row{display:flex;justify-content:space-between;align-items:center;}
   .f-title{font-size:15px;font-weight:700;letter-spacing:-.005em;}
+  .icon-btn-sm{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-faint);transition:all .15s;}
+  .icon-btn-sm:hover{background:var(--bg);color:var(--ink);}
   .conf-card{margin-top:12px;padding:11px 13px;border-radius:11px;background:var(--bg);
     border:1px solid var(--line);display:flex;align-items:center;gap:11px;}
   .conf-card .lbl{font-size:11px;color:var(--ink-soft);font-weight:600;}
   .conf-track{flex:1;height:5px;border-radius:999px;background:var(--line-soft);overflow:hidden;}
   .conf-track > i{display:block;height:100%;border-radius:999px;}
   .summary{margin-top:10px;font-size:11.5px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-  .summary .stat{display:inline-flex;align-items:center;gap:5px;font-weight:600;padding:3px 9px;border-radius:6px;}
+  .summary .stat{display:inline-flex;align-items:center;gap:5px;font-weight:600;padding:3px 9px;
+    border-radius:6px;}
   .summary .stat b{font-weight:700;font-variant-numeric:tabular-nums;}
   .f-list{flex:1;overflow-y:auto;padding:16px 18px;}
+  .workspace.q-collapsed .fields{width:auto;flex:1;}
+  .workspace.q-collapsed .f-list{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;align-content:start;}
+  .workspace.q-collapsed .f-list .field{margin-bottom:0;}
+  .workspace.q-hidden .queue{display:none;}
+  .workspace.q-hidden .fields{width:auto;flex:1;}
+  .workspace.q-hidden .f-list{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;align-content:start;}
+  .workspace.q-hidden .f-list .field{margin-bottom:0;}
   .f-actions{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:10px;}
   .btn-confirm{flex:1;padding:12px;border-radius:10px;border:none;background:var(--primary);color:#fff;
     font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;
     box-shadow:0 2px 10px rgba(32,68,150,.22);}
 
+  /* field row */
   .field{padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:#fff;margin-bottom:10px;
     transition:box-shadow .15s;}
   .field:hover{box-shadow:0 2px 12px rgba(28,26,23,.05);}
@@ -227,48 +281,61 @@
   .confbar .track > i{display:block;height:100%;border-radius:999px;transition:width .5s;}
   .confbar .pct{font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;}
   .field-input{position:relative;}
-  .field-input input,
-  .field-input select{width:100%;padding:9px 34px 9px 12px;border-radius:9px;border:1px solid var(--line);
-    background:var(--bg);font-family:var(--font);font-size:13.5px;color:var(--ink);outline:none;transition:all .15s;
-    box-sizing:border-box;appearance:none;-webkit-appearance:none;}
-  .field-input input:focus,
-  .field-input select:focus{border-color:var(--primary);background:#fff;}
+  .field-input input{width:100%;padding:9px 34px 9px 12px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13.5px;color:var(--ink);outline:none;transition:all .15s;}
+  .field-input input:focus{border-color:var(--primary);background:#fff;}
   .field-input svg{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--ink-faint);
     pointer-events:none;}
+  .field-input input[type=date]{font-family:var(--font);}
+  .field-input input[type=date]::-webkit-calendar-picker-indicator{position:absolute;right:0;top:0;
+    width:36px;height:100%;margin:0;padding:0;opacity:0;cursor:pointer;}
+  .field-input select{width:100%;padding:9px 34px 9px 12px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13.5px;font-weight:500;color:var(--ink);outline:none;
+    transition:all .15s;appearance:none;-webkit-appearance:none;-moz-appearance:none;cursor:pointer;
+    line-height:1.3;background-image:none;}
+  .field-input select::-ms-expand{display:none;}
+  .field-input select:hover{border-color:#c7cdda;}
+  .field-input select:focus{border-color:var(--primary);background:#fff;}
+  .field-input select option{font-weight:500;color:var(--ink);background:#fff;}
+  .field-input textarea{width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13.5px;color:var(--ink);outline:none;
+    resize:vertical;min-height:64px;line-height:1.4;transition:all .15s;}
+  .field-input textarea:focus{border-color:var(--primary);background:#fff;}
   .field-warn{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--orange);font-weight:500;}
-
-  /* error banner */
-  .err-banner{margin:8px 18px 0;padding:8px 12px;border-radius:8px;background:var(--orange-soft);
-    border:1px solid rgba(225,74,40,.25);font-size:11.5px;color:var(--orange);display:none;}
-  .err-banner.show{display:block;}
 </style>
 </head>
 <body>
 <div class="shell">
 
+  <!-- ═══ SIDEBAR ═══ -->
   <aside class="sidebar" id="sidebar">
     <div class="side-head">
-      <div class="brand-mini">G</div>
-      <div class="brand-txt">
-        <div class="brand-logo"><img src="https://gip-us.com/wp-content/uploads/2023/12/gipuheader.png" alt="GIP" /></div>
-        <div class="brand-sub"></div>
-      </div>
+      <img class="brand-logo" src="assets/logo_white.png" alt="GIP" />
+      <button class="brand-icon" id="brandIcon" title="Expand menu" aria-label="Expand menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
       <button class="collapse-btn" id="collapseBtn" title="Collapse">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
       </button>
     </div>
+
     <nav class="nav" id="nav"></nav>
+
     <div class="side-foot">
-      <button class="foot-item" data-label="Status">
+      <a class="foot-item" href="gip-settings.html" data-label="Settings" title="Settings">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        <span class="lbl">Settings</span>
+      </a>
+      <button class="foot-item" data-label="Status" title="Status">
         <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg></span>
         <span class="lbl">Status</span>
       </button>
-      <button class="foot-item" data-label="Notifications">
+      <button class="foot-item" data-label="Notifications" title="Notifications">
         <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
         <span class="lbl">Notifications</span>
-        <span class="badge" id="notifBadge">0</span>
+        <span class="badge">0</span>
       </button>
-      <div class="user">
+      <div class="user" data-label="Austin" title="Austin · admin">
         <div class="avatar">A</div>
         <div class="user-txt">
           <div class="user-name">Austin</div>
@@ -278,96 +345,97 @@
     </div>
   </aside>
 
+  <!-- ═══ MAIN ═══ -->
   <main class="main">
     <div class="topbar">
       <div>
-        <h1>Notice Processing</h1>
-        <div class="date" id="pageDate"></div>
+        <h1 id="pageTitle">Notice Processing</h1>
+        <div class="date">Review Queue</div>
       </div>
       <div class="top-actions">
         <div class="top-search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input id="searchInput" placeholder="Search cases, notices…" />
+          <input placeholder="Search cases, notices…" />
         </div>
-        <button class="icon-btn-top"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="dot"></span></button>
-        <!-- Persistent hidden file input — never re-created, lives outside the button -->
-        <input type="file" id="fileInput" accept="application/pdf,.pdf" style="display:none" />
-        <button class="btn-primary" id="uploadBtn" type="button">
-          <svg id="uploadIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <span id="uploadLabel">Upload</span>
-        </button>
       </div>
     </div>
 
-    <div class="workspace">
+    <!-- three-column workspace -->
+    <div class="workspace" id="workspace">
 
-      <aside class="queue">
+      <!-- ── LEFT: Review Queue ── -->
+      <aside class="queue" id="queue">
         <div class="q-head">
-          <div class="q-title">Review Queue</div>
-          <div class="q-sub">USCIS Forms</div>
+          <div class="q-head-row">
+            <div>
+              <div class="q-title">Review Queue</div>
+              <div class="q-sub">USCIS Forms</div>
+            </div>
+            <button class="q-toggle" id="qToggle" title="Collapse panel">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+            </button>
+          </div>
+
           <div class="search">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input id="qSearch" placeholder="Search applicant or form…" />
+            <input placeholder="Search applicant or form…" />
           </div>
-          <div class="tabs" id="tabs"></div>
+
         </div>
-        <div class="err-banner" id="errBanner"></div>
+
         <div class="q-list" id="qlist"></div>
+
         <div class="q-foot">
           <span class="live-dot"></span>
-          Live · auto-refresh in <span id="refresh">30</span>s
+          Live · auto-refresh in <span id="refresh">28</span>s
         </div>
       </aside>
 
+      <!-- ── CENTER: Viewer ── -->
       <section class="viewer">
         <div class="v-bar">
           <div class="v-bar-l">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#204496" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             <div>
-              <div class="v-title" id="vTitle">Select a case</div>
-              <div class="v-sub" id="vSub">Upload a document or pick from queue</div>
+              <div class="v-title" id="vTitle"></div>
+              <div class="v-sub" id="vSub"></div>
             </div>
-            <div id="vPill"></div>
           </div>
-          <div class="pgnav">
-            <button class="pg-btn" id="prevPg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-            <span class="pg-num" id="pgNum">— / —</span>
-            <button class="pg-btn" id="nextPg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
-          </div>
-        </div>
-        <div class="canvas" id="canvas">
-          <div class="empty-viewer">
-            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#b8791a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 18px;display:block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <h3>Upload a document to begin</h3>
-            <p style="font-size:13px;opacity:.7;">PDF files supported · fields extracted automatically</p>
+          <div class="pgnav" id="pgnav" title="Navigate between notices">
+            <button class="pg-btn" id="prevPg" title="Previous notice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <span class="pg-num" id="pgNum">1 / 1</span>
+            <button class="pg-btn" id="nextPg" title="Next notice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
           </div>
         </div>
+        <div class="canvas" id="canvas"></div>
       </section>
 
+      <!-- ── RIGHT: Extracted Fields ── -->
       <aside class="fields">
         <div class="f-head">
           <div class="f-head-row">
             <div class="f-title">Extracted Fields</div>
+            <a class="icon-btn-sm" href="gip-notice-list.html" title="Close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></a>
           </div>
-          <div class="conf-card" id="confCard">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9aa1b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <div class="conf-card">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f8a52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
             <div style="flex:1;">
               <div class="lbl">Overall Extraction Confidence</div>
               <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
-                <div class="conf-track"><i id="confBar" style="width:0%;background:#9aa1b2;"></i></div>
-                <span id="confPct" style="font-size:12px;font-weight:700;color:#9aa1b2;font-variant-numeric:tabular-nums;">0%</span>
+                <div class="conf-track"><i style="width:92%;background:#1f8a52;"></i></div>
+                <span style="font-size:12px;font-weight:700;color:#1f8a52;font-variant-numeric:tabular-nums;">92%</span>
               </div>
             </div>
           </div>
           <div class="summary" id="summary"></div>
         </div>
-        <div class="f-list" id="flist">
-          <div style="padding:20px 0;font-size:12.5px;color:var(--ink-faint);text-align:center;">Select a case to view fields</div>
-        </div>
+
+        <div class="f-list" id="flist"></div>
+
         <div class="f-actions">
-          <button class="btn-confirm" id="confirmBtn" disabled>
+          <button class="btn-confirm" id="confirmBtn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            Save Fields
+            Confirm All Fields
           </button>
         </div>
       </aside>
@@ -377,14 +445,7 @@
 </div>
 
 <script>
-/* ════════════════════════════════════════════════
-   GIP Notice Processing — Live Backend Integration
-   API: /legal/* proxied by Vite → FastAPI :8001
-   ════════════════════════════════════════════════ */
-
-const API = '/legal';
-
-/* ─── nav ─── */
+/* ─── shared nav model (matches dashboard) ─── */
 const ICONS = {
   dashboard:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>',
   notice:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>',
@@ -392,261 +453,85 @@ const ICONS = {
   filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
 };
 const NAV = [
-  {id:'dashboard',  label:'Dashboard',                href:'gip-dashboard.html', icon:ICONS.dashboard},
-  {id:'notice',     label:'Notice Processing',        href:'gip-notice.html',    icon:ICONS.notice},
-  {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html',icon:ICONS.compliance},
-  {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html',icon:ICONS.filing},
+  {id:'dashboard',  label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard},
+  {id:'notice',     label:'Notice Processing',        href:'gip-notice-list.html',icon:ICONS.notice},
+  {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance},
+  {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing},
 ];
 const ACTIVE_NAV = 'notice';
+
 function renderNav(){
   document.getElementById('nav').innerHTML =
-    '<div class="nav-label lbl">Workspace</div>' +
-    NAV.map(n=>`<a class="nav-item ${n.id===ACTIVE_NAV?'active':''}" href="${n.href}" data-label="${n.label}">
+    '<div class="nav-label lbl">Agentic Platform</div>' +
+    NAV.map(n=>`<a class="nav-item ${n.id===ACTIVE_NAV?'active':''}" href="${n.href}" data-label="${n.label}" title="${n.label}">
       <span class="ico">${n.icon}</span><span class="lbl">${n.label}</span>
     </a>`).join('');
 }
 
-/* ─── State ─── */
+/* ─── notice review page state ─── */
 const STATUS = {
   processing:{label:'Processing', color:'var(--amber)'},
   ready:{label:'Ready for Review', color:'var(--primary)'},
   completed:{label:'Completed', color:'var(--green)'},
 };
-let QUEUE = [];
-let ACTIVE_FIELDS = [];
-let activeId = null;
-let filter = 'all';
-let searchQ = '';
-let refreshCountdown = 30;
-let pollTimer = null;
 
-/* ─── SVG snippets ─── */
-const ICO = {
+const QUEUE = [
+  {id:'0588250d',type:'N-400',label:'Application for Naturalization',applicant:'Elena Rodriguez',status:'ready',priority:'normal',fields:7,pages:14,time:'Jun 2, 2026 · 10:43 PM',primary:true},
+  {id:'0344f1a2',type:'I-130',label:'Petition for Alien Relative',applicant:'Marcus Chen',status:'processing',priority:'high',fields:4,pages:12,time:'Jun 3, 2026 · 11:04 AM',progress:62},
+  {id:'0991ccde',type:'H4-EAD',label:'Employment Authorization (H4)',applicant:'Priya Nair',status:'ready',priority:'high',fields:9,pages:6,time:'Jun 3, 2026 · 09:12 AM',primary:true},
+  {id:'07b3e810',type:'I-765',label:'Application for Employment Auth.',applicant:'David Okafor',status:'completed',priority:'normal',fields:11,pages:8,time:'Jun 1, 2026 · 04:30 PM'},
+  {id:'0c52a7fb',type:'N-400',label:'Application for Naturalization',applicant:'Sofia Mendez',status:'completed',priority:'normal',fields:7,pages:14,time:'Jun 1, 2026 · 02:15 PM'},
+  {id:'0ff19a34',type:'I-485',label:'Adjustment of Status',applicant:'Ahmed Hassan',status:'processing',priority:'normal',fields:2,pages:18,time:'Jun 3, 2026 · 11:20 AM',progress:28},
+];
+
+const FIELDS = [
+  {key:'Primary Flag',value:'True',conf:96,src:'native',type:'select',options:['True','False']},
+  {key:'Sent Government Agency',value:'2026-05-28',conf:94,src:'native',type:'date'},
+  {key:'Receipt For',value:'Elena Rodriguez',conf:95,src:'native',type:'text'},
+  {key:'Receipt Type',value:'USCIS Receipt Number',conf:92,src:'native',type:'select',
+    options:['USCIS Receipt Number','J Visa Application Number','NVC Matter Number','PERM Receipt','Others']},
+  {key:'Receipt Date',value:'2026-05-30',conf:95,src:'native',type:'date'},
+  {key:'Receipt Notice Date',value:'2026-06-01',conf:93,src:'native',type:'date'},
+  {key:'Receipt Number',value:'MSC2190123456',conf:88,src:'native',type:'number'},
+  {key:'Receipt Status',value:'Pending',conf:90,src:'llm',type:'select',
+    options:['Pending','Approved','Denied','RFE','Withdrawn','Shipped']},
+  {key:'Expiration Notice',value:'Yes',conf:74,src:'llm',type:'select',options:['Yes','No']},
+  {key:'Receipt Notes',value:'',conf:0,src:'llm',type:'textarea'},
+];
+
+let activeId = '0588250d';
+let filter = 'all';
+let page = 1;
+
+const ICON = {
   spin:'<svg class="spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
   ready:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
   check:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
   pencil:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
   calendar:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
-  chevron:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
   spark:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L19 10l-5.1 1.2L12 17l-1.9-5.8L5 10l5.1-1.2z"/></svg>',
-  upload:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+  chevron:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
 };
 
-/* ─── API helpers ─── */
-async function apiFetch(path){
-  const r = await fetch(API + path);
-  if(!r.ok){ const e = await r.json().catch(()=>({})); throw new Error(e.detail||r.statusText); }
-  return r.json();
-}
-
-/* ─── Map API response to display format ─── */
-function apiStatusToDisplay(s){
-  if(s==='processing') return 'processing';
-  if(s==='approved'||s==='rejected'||s==='failed') return 'completed';
-  return 'ready'; // pending | in_review
-}
-
-function mapCase(c){
-  return {
-    id: c.case_id,
-    type: c.form_type||'Unknown',
-    label: c.form_type + ' — USCIS Application',
-    applicant: 'Case #' + c.case_id.slice(0,8).toUpperCase(),
-    status: apiStatusToDisplay(c.status),
-    raw_status: c.status,
-    priority: c.priority||'normal',
-    fields: c.field_count||0,
-    pages: c.page_count||0,
-    time: c.uploaded_at
-      ? new Date(c.uploaded_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'})
-      : '',
-    primary: (c.priority==='high'),
-    progress: (c.status==='processing') ? null : null,
-    low_count: c.low_confidence_count||0,
-  };
-}
-
-const FIELD_LABELS = {
-  alien_registration_number:'Alien Registration No.',family_name:'Family Name',
-  given_name:'Given Name',date_of_birth:'Date of Birth',country_of_birth:'Country of Birth',
-  date_of_entry:'Date of Entry',class_of_admission:'Class of Admission',ssn:'SSN',
-  primary_flag:'Primary Flag',sent_government_agency:'Sent Gov. Agency',
-  receipt_for:'Receipt For',receipt_type:'Receipt Type',receipt_date:'Receipt Date',
-  receipt_notice_date:'Receipt Notice Date',receipt_number:'Receipt Number',
-  receipt_status:'Receipt Status',expiration_alert:'Expiration Alert',receipt_notes:'Receipt Notes',
-  date_became_pr:'Date Became PR',marital_status:'Marital Status',
-  notice_type:'Gov Form',applicant_name:'Applicant Name',case_type:'Matter Pending at',
-  notice_date:'Notice Date',validity_start:'Valid From',validity_end:'Valid To',
-  action_taken:'Action Taken',
-};
-function fieldLabel(k){ return FIELD_LABELS[k]||k.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase()); }
-
-const FIELD_META = {
-  primary_flag:            { type:'select', options:['True','False'], default:'True' },
-  expiration_alert:        { type:'select', options:['Yes','No'], default:'No' },
-  receipt_type:            { type:'select', options:['USCIS Receipt Number','J Visa Application Number','NVC Matter Number','PERM Receipt','Others'] },
-  receipt_status:          { type:'select', options:['Pending','Approved','Denied','RFE','Withdrawn','Shipped'] },
-  sent_government_agency:  { type:'date' },
-  receipt_date:            { type:'date' },
-  receipt_notice_date:     { type:'date' },
-};
-
-const DISPLAY_FIELDS = [
-  'primary_flag','sent_government_agency','receipt_for','receipt_type',
-  'receipt_date','receipt_notice_date','receipt_number','receipt_status',
-  'expiration_alert','receipt_notes'
-];
-
-function toDateInput(val){
-  if(!val) return '';
-  const m = String(val).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if(m) return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
-  return val;
-}
-
-function mapField(f){
-  const val = f.normalized_value||f.raw_value||'';
-  const meta = FIELD_META[f.field_name] || {};
-  const effectiveVal = (!val && meta.default) ? meta.default : val;
-  return {
-    key: fieldLabel(f.field_name),
-    fieldName: f.field_name,
-    value: effectiveVal,
-    conf: Math.round((f.confidence||0)*100),
-    src: f.source||'native',
-    inputType: meta.type || 'text',
-    options: meta.options || null,
-  };
-}
-
-/* ─── Load queue from API ─── */
-async function loadQueue(){
-  try {
-    const data = await apiFetch('/queue');
-    QUEUE = (data.cases||[]).map(mapCase);
-    setError(null);
-    if(!activeId && QUEUE.length) {
-      activeId = QUEUE[0].id;
-      loadFields(activeId);
-    }
-    renderTabs(); renderList();
-    document.getElementById('notifBadge').textContent = QUEUE.filter(c=>c.status==='ready').length||'';
-  } catch(e){
-    setError('Could not load queue: ' + e.message);
-  }
-}
-
-/* ─── Load extracted fields for a case ─── */
-async function loadFields(caseId){
-  if(!caseId) return;
-  try {
-    const data = await apiFetch('/queue/' + caseId);
-    const raw = data.extracted_fields||[];
-    ACTIVE_FIELDS = raw.map(mapField);
-    renderFields();
-    renderViewer();
-  } catch(e){
-    console.error('[GIP] loadFields failed for', caseId, e);
-    ACTIVE_FIELDS = [];
-    renderFields();
-    setError('Could not load fields: ' + e.message);
-  }
-}
-
-/* ─── Poll a processing case ─── */
-function pollCase(caseId){
-  if(pollTimer) clearInterval(pollTimer);
-  pollTimer = setInterval(async()=>{
-    try {
-      const s = await apiFetch('/cases/'+caseId+'/status');
-      if(s.status!=='processing'){
-        clearInterval(pollTimer); pollTimer=null;
-        await loadQueue();
-        if(activeId===caseId) await loadFields(caseId);
-      }
-    } catch(e){}
-  }, 5000);
-}
-
-/* ─── Upload — input is persistent, we only toggle the button's label ─── */
-async function doUpload(file){
-  const btn   = document.getElementById('uploadBtn');
-  const label = document.getElementById('uploadLabel');
-  const icon  = document.getElementById('uploadIcon');
-  btn.disabled = true;
-  label.textContent = 'Processing…';
-  if(icon) icon.outerHTML = ICO.spin.replace('width="11"','width="15"').replace('height="11"','height="15"');
-  setError(null);
-  try {
-    const fd = new FormData();
-    fd.append('file', file);
-    const r = await fetch(API + '/upload', { method:'POST', body:fd });
-    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.detail||('HTTP '+r.status)); }
-    const d = await r.json();
-    await loadQueue();
-    activeId = d.case_id;
-    renderList(); renderViewer(); renderFields();
-    if(d.status === 'processing') pollCase(d.case_id);
-    else await loadFields(d.case_id);
-  } catch(e){
-    setError('Upload failed: ' + e.message);
-  } finally {
-    btn.disabled = false;
-    // Restore the original button content
-    btn.innerHTML =
-      '<svg id="uploadIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
-      '<span id="uploadLabel">Upload</span>';
-  }
-}
-
-/* ─── Error banner ─── */
-function setError(msg){
-  const el = document.getElementById('errBanner');
-  if(msg){ el.textContent=msg; el.classList.add('show'); }
-  else { el.classList.remove('show'); el.textContent=''; }
-}
-
-/* ─── Pill HTML ─── */
-function confTone(c){ return c>=90?'var(--green)':c>=80?'var(--amber)':'var(--orange)'; }
 function pillHTML(status, progress){
-  const s = STATUS[status]||STATUS.ready;
-  const ic = status==='processing'?ICO.spin:status==='ready'?ICO.ready:ICO.check;
-  const pct = (status==='processing'&&progress!=null)?`<span style="opacity:.7;">${progress}%</span>`:'';
+  const s = STATUS[status];
+  const ic = status==='processing'?ICON.spin:status==='ready'?ICON.ready:ICON.check;
+  const pct = (status==='processing' && progress!=null) ? `<span style="opacity:.7;">${progress}%</span>` : '';
   return `<span class="pill ${status}">${ic}${s.label}${pct}</span>`;
 }
 
-/* ─── Tabs ─── */
-function renderTabs(){
-  const q = searchQ.toLowerCase();
-  const visible = q ? QUEUE.filter(d=>(d.type+d.id+d.applicant).toLowerCase().includes(q)) : QUEUE;
-  const counts = {
-    all:visible.length,
-    review:visible.filter(d=>d.status==='ready').length,
-    processing:visible.filter(d=>d.status==='processing').length,
-    completed:visible.filter(d=>d.status==='completed').length,
-  };
-  const tabs=[['all','All'],['review','Ready'],['processing','Processing'],['completed','Completed']];
-  document.getElementById('tabs').innerHTML = tabs.map(([k,l])=>
-    `<button class="tab ${filter===k?'active':''}" data-tab="${k}">${l}<span class="cnt">${counts[k]}</span></button>`
-  ).join('');
-  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{filter=b.dataset.tab;renderTabs();renderList();});
-}
+function confTone(c){ return c>=90?'var(--green)':c>=80?'var(--amber)':'var(--orange)'; }
 
-/* ─── Queue list ─── */
 function renderList(){
-  const q = searchQ.toLowerCase();
-  let list = q ? QUEUE.filter(d=>(d.type+d.id+d.applicant).toLowerCase().includes(q)) : QUEUE;
-  if(filter==='review')     list=list.filter(d=>d.status==='ready');
-  if(filter==='processing') list=list.filter(d=>d.status==='processing');
-  if(filter==='completed')  list=list.filter(d=>d.status==='completed');
-
-  if(!list.length){
-    document.getElementById('qlist').innerHTML = `<div style="text-align:center;color:var(--ink-faint);font-size:12.5px;padding:30px 10px;">${QUEUE.length?'No matches.':'No cases yet. Upload a document to begin.'}</div>`;
-    return;
-  }
+  const list = QUEUE.filter(d=>{
+    if(filter==='all')return true;
+    if(filter==='review')return d.status==='ready';
+    if(filter==='processing')return d.status==='processing';
+    if(filter==='completed')return d.status==='completed';
+  });
   document.getElementById('qlist').innerHTML = list.map(d=>{
-    const s=STATUS[d.status]||STATUS.ready;
-    const meta = d.fields>0 ? `${d.fields} fields${d.low_count?` · ${d.low_count} low`:''}` : (d.status==='processing'?'Extracting…':'0 fields');
+    const s = STATUS[d.status];
+    const meta = d.status==='processing' ? `${d.fields} / ${d.pages}p` : `${d.fields} fields`;
     return `<button class="card ${d.id===activeId?'active':''}" data-id="${d.id}">
       <span class="rail" style="background:${s.color};"></span>
       ${d.status==='processing'?'<span class="shim"></span>':''}
@@ -655,231 +540,184 @@ function renderList(){
           <span class="ctype">${d.type}</span>
           ${d.priority==='high'?'<span class="hi">HIGH</span>':''}
         </div>
-        <span class="cid">#${d.id.slice(0,8)}</span>
+        <span class="cid">#${d.id}</span>
       </div>
       <div class="capp">${d.applicant}</div>
       <div class="clabel">${d.label}</div>
       <div class="crow">${pillHTML(d.status,d.progress)}<span class="cmeta">${meta}</span></div>
+      ${d.status==='processing'?`<div class="cbar"><i style="width:${d.progress}%;"></i></div>`:''}
     </button>`;
   }).join('');
-  document.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{
-    activeId=b.dataset.id; page=1;
-    renderList();
-    loadFields(activeId);
-    const d=QUEUE.find(x=>x.id===activeId);
-    if(d&&d.status==='processing') pollCase(activeId);
-  });
+  document.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{activeId=b.dataset.id;page=1;renderViewer();renderFields();renderList();});
 }
 
-/* ─── Viewer ─── */
-let page = 1;
 function renderViewer(){
-  const d = QUEUE.find(x=>x.id===activeId);
-  if(!d){ return; }
-  document.getElementById('vTitle').textContent = `${d.type} — ${d.id.slice(0,8)}…`;
+  const d = QUEUE.find(x=>x.id===activeId) || QUEUE[0];
+  document.getElementById('vTitle').textContent = `${d.type} — ${d.id}…`;
   document.getElementById('vSub').textContent = `${d.applicant} · ${d.time}`;
-  document.getElementById('vPill').innerHTML = pillHTML(d.status, d.progress) +
-    (d.primary?`<span class="pill tag-primary" style="margin-left:8px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Primary</span>`:'');
-  document.getElementById('pgNum').textContent = d.pages?`${page} / ${d.pages}`:'— / —';
+  const idx = QUEUE.findIndex(x=>x.id===d.id);
+  const total = QUEUE.length;
+  document.getElementById('pgNum').textContent = `${idx+1} / ${total}`;
+  document.getElementById('pgnav').style.display = total <= 1 ? 'none' : 'flex';
+  document.getElementById('prevPg').disabled = idx <= 0;
+  document.getElementById('nextPg').disabled = idx >= total-1;
 
   const canvas = document.getElementById('canvas');
-  // Always show the uploaded PDF immediately — it exists from the moment of
-  // upload. While the pipeline runs, overlay a small "extracting" badge.
-  {
-    const processingBadge = d.status==='processing'
-      ? `<div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:5;
-           display:flex;align-items:center;gap:8px;background:#1a1f2e;color:#fbf0db;
-           padding:8px 16px;border-radius:999px;font-size:12.5px;font-weight:600;
-           box-shadow:0 4px 16px rgba(0,0,0,.4);">
-           <svg class="spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b8791a" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-           Extracting fields with NuExtract — updates automatically</div>`
-      : '';
-    canvas.innerHTML = `<div style="position:relative;width:100%;height:100%;display:flex;">
-      ${processingBadge}
-      <iframe src="${API}/queue/${d.id}/pdf"
-        style="width:100%;height:100%;min-height:500px;border:none;border-radius:6px;
-        box-shadow:0 8px 40px rgba(0,0,0,.32);"></iframe>
+  if(d.status==='processing'){
+    canvas.innerHTML = `<div class="proc">
+      <svg class="spin" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#b8791a" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      <h3>Extracting fields…</h3>
+      <p>${d.fields} of ~${d.pages} pages parsed · ${d.progress}%</p>
+      <div class="proc-bar"><i style="width:${d.progress}%;"></i></div>
     </div>`;
+  } else {
+    canvas.innerHTML = docPreview();
   }
-  document.getElementById('prevPg').disabled = (page<=1);
-  document.getElementById('nextPg').disabled = (!d.pages||page>=d.pages);
 }
 
-/* ─── Fields panel ─── */
-function renderFields(){
-  const fields = ACTIVE_FIELDS;
-  // Stats based only on the 10 displayed receipt fields
-  const displayedForStats = fields.filter(f=>DISPLAY_FIELDS.includes(f.fieldName));
-  const fieldCount = displayedForStats.length;
-  const needReview = displayedForStats.filter(f=>f.conf>0&&f.conf<80).length;
-  const nativeC = displayedForStats.filter(f=>f.src==='native').length;
-  const llmC = displayedForStats.filter(f=>f.src==='llm').length;
-  const overallConf = fieldCount
-    ? Math.round(displayedForStats.reduce((s,f)=>s+f.conf,0)/fieldCount)
-    : 0;
-  const tone = confTone(overallConf);
+function docPreview(){
+  return `<div class="doc">
+    <div class="doc-head">
+      <div class="seal">USCIS</div>
+      <div style="text-align:center;flex:1;">
+        <div class="doc-title">Application for Naturalization</div>
+        <div style="font-size:10px;margin-top:3px;">Department of Homeland Security</div>
+        <div style="font-size:9px;color:#444;">U.S. Citizenship and Immigration Services</div>
+      </div>
+      <div style="text-align:right;font-size:9px;">
+        <div style="font-weight:700;">USCIS</div><div>Form N-400</div><div style="color:#666;">OMB No. 1615-0052</div>
+      </div>
+    </div>
+    <div class="doc-rule">
+      <div>For USCIS Use Only</div><div>Date Stamp</div><div>Receipt</div><div>Action Block</div>
+    </div>
+    <div class="sec">Part 1. Information About Your Eligibility</div>
+    <div style="margin-top:10px;font-size:10px;">
+      <div style="margin-bottom:7px;"><b>A.</b> <span class="ckbox">✓</span>General Provision.</div>
+      <div style="margin-bottom:6px;color:#333;"><span class="ckbox"></span>B. Spouse of U.S. Citizen</div>
+      <div style="margin-bottom:6px;color:#333;"><span class="ckbox"></span>C. VAWA</div>
+      <div style="margin-bottom:6px;color:#333;"><span class="ckbox"></span>D. Qualified Employment Outside the U.S.</div>
+    </div>
+    <div class="sec" style="margin-top:14px;">Part 2. Information About You</div>
+    <div style="margin-top:8px;font-size:9px;">Your Current Legal Name</div>
+    <div class="nm-grid">
+      <div><div class="f-l">Family Name</div><div class="f-v">Rodriguez</div></div>
+      <div><div class="f-l">Given Name</div><div class="f-v">Elena</div></div>
+      <div><div class="f-l">Middle Name</div><div class="f-v">Maria</div></div>
+    </div>
+    <div style="margin-top:26px;display:flex;justify-content:space-between;font-size:8px;color:#666;">
+      <span>Form N-400 · Edition 01/20/25</span><span>Page 1 of 14</span>
+    </div>
+  </div>`;
+}
 
-  document.getElementById('confBar').style.width = overallConf+'%';
-  document.getElementById('confBar').style.background = tone;
-  document.getElementById('confPct').textContent = overallConf+'%';
-  document.getElementById('confPct').style.color = tone;
-
+function renderSummary(){
+  const scored = FIELDS.filter(f=>f.type!=='textarea');
+  const fields = scored.length;
+  const needReview = scored.filter(f=>f.conf<80).length;
+  const native = scored.filter(f=>f.src==='native' && f.conf>=80).length;
+  const llm = scored.filter(f=>f.src==='llm' && f.conf>=80).length;
   const stats = [
-    {n:fieldCount,l:'Fields',    color:'var(--ink-soft)',   bg:'var(--line-soft)'},
-    {n:needReview,l:'Need Review',color:'var(--orange)',    bg:'var(--orange-soft)'},
-    {n:nativeC,   l:'Native',    color:'var(--blue)',       bg:'var(--blue-soft)'},
-    {n:llmC,      l:'LLM',       color:'var(--violet)',     bg:'var(--violet-soft)'},
+    {n:fields, l:'Fields', color:'var(--ink-soft)', bg:'var(--line-soft)'},
+    {n:needReview, l:'Need Review', color:'var(--orange)', bg:'var(--orange-soft)'},
+    {n:native, l:'Native', color:'var(--blue)', bg:'var(--blue-soft)'},
+    {n:llm, l:'LLM', color:'var(--violet)', bg:'var(--violet-soft)'},
   ];
   document.getElementById('summary').innerHTML = stats.map(s=>
     `<span class="stat" style="color:${s.color};background:${s.bg};"><b>${s.n}</b> ${s.l}</span>`
   ).join('');
+}
 
-  const d = QUEUE.find(x=>x.id===activeId);
-  if(!activeId || (d && d.status==='processing') || (d && (d.type==='unknown'||d.type==='Unknown'))){
-    let html;
-    if(d && d.status==='processing'){
-      html = `<div style="padding:30px 16px;text-align:center;">
-        <svg class="spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linecap="round" style="margin-bottom:11px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-        <div style="font-size:13px;font-weight:700;color:var(--ink-soft);">Extracting fields…</div>
-        <div style="font-size:11.5px;color:var(--ink-faint);margin-top:5px;line-height:1.5;">NuExtract is reading the document.<br/>This panel updates automatically.</div>
-      </div>`;
-    } else if(d && (d.type==='unknown'||d.type==='Unknown')){
-      html = `<div style="padding:30px 16px;text-align:center;">
-        <div style="width:44px;height:44px;border-radius:12px;background:var(--amber-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        </div>
-        <div style="font-size:13.5px;font-weight:700;color:var(--ink);">Couldn't auto-classify</div>
-        <div style="font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.55;">This document didn't match a known USCIS form with enough confidence. It's been flagged for manual review.</div>
-      </div>`;
-    } else {
-      html = `<div style="padding:20px 0;font-size:12.5px;color:var(--ink-faint);text-align:center;">Select a case to view fields.</div>`;
-    }
-    document.getElementById('flist').innerHTML = html;
-    document.getElementById('confirmBtn').disabled = true;
-    return;
-  }
-  document.getElementById('confirmBtn').disabled = false;
-
-  // Render the 10 display fields in spec order for all forms.
-  // Synthesize any missing receipt fields with defaults so the panel is always complete.
-  const byName = {};
-  fields.forEach(f => { byName[f.fieldName] = f; });
-
-  const displayed = DISPLAY_FIELDS.map(name => {
-    if(byName[name]) return byName[name];
-    const meta = FIELD_META[name] || {};
-    return { key:fieldLabel(name), fieldName:name, value:meta.default||'', conf:0, src:'native', inputType:meta.type||'text', options:meta.options||null };
-  });
-
-  const renderField = (f) => {
-    const low = f.conf<80;
+function renderFields(){
+  renderSummary();
+  document.getElementById('flist').innerHTML = FIELDS.map(f=>{
+    const isNotes = f.type==='textarea';
+    const low = !isNotes && f.conf<80;
     const tone = confTone(f.conf);
-    let inputHTML;
-    if(f.inputType === 'select'){
-      inputHTML = `<select data-field="${f.fieldName}">
-        ${f.options.map(o=>`<option ${o===f.value?'selected':''}>${o}</option>`).join('')}
-      </select>${ICO.chevron}`;
-    } else if(f.inputType === 'date'){
-      inputHTML = `<input type="date" data-field="${f.fieldName}" value="${toDateInput(f.value)}" />${ICO.calendar}`;
-    } else {
-      inputHTML = `<input value="${escHtml(f.value)}" data-field="${f.fieldName}" />${ICO.pencil}`;
-    }
     return `<div class="field ${low?'low':''}">
       <div class="field-top">
         <span class="field-key">${f.key}</span>
         <div class="field-meta">
-          <span class="src ${f.src}">${f.src==='llm'?'LLM':'Native'}</span>
-          <span class="confbar">
-            <span class="track"><i style="width:${f.conf}%;background:${tone};"></i></span>
-            <span class="pct" style="color:${tone};">${f.conf}%</span>
-          </span>
+          ${isNotes ? '' : `
+            <span class="src ${f.src}">${f.src==='native'?'Native':'LLM'}</span>
+            <span class="pct" style="color:${tone};font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;">${f.conf}%</span>`}
         </div>
       </div>
-      <div class="field-input">${inputHTML}</div>
-      ${low?`<div class="field-warn">${ICO.spark}Low confidence — verify against original notice</div>`:''}
+      <div class="field-input">
+        ${f.type==='date'
+          ? `<input type="date" value="${f.value??''}" placeholder="mm/dd/yyyy" />${ICON.calendar}`
+        : f.type==='select'
+          ? `<select>${(f.options||[]).filter(o=>o!=null).map(o=>`<option ${o===f.value?'selected':''}>${o}</option>`).join('')}</select>${ICON.chevron}`
+        : f.type==='textarea'
+          ? `<textarea rows="3" placeholder="Add notes…">${f.value??''}</textarea>`
+        : f.type==='number'
+          ? `<input type="text" inputmode="numeric" value="${f.value??''}" />${ICON.pencil}`
+          : `<input value="${f.value??''}" />${ICON.pencil}`}
+      </div>
+      ${low?`<div class="field-warn">${ICON.spark}Manual Review— verify original notice</div>`:''}
     </div>`;
-  };
-
-  document.getElementById('flist').innerHTML = displayed.map(renderField).join('');
+  }).join('');
 }
-function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-/* ─── Search ─── */
-document.getElementById('qSearch').oninput = e => {
-  searchQ = e.target.value; renderTabs(); renderList();
-};
-document.getElementById('searchInput').oninput = e => {
-  const qEl = document.getElementById('qSearch');
-  qEl.value = e.target.value;
-  qEl.dispatchEvent(new Event('input'));
-};
+function renderAll(){ renderNav(); renderList(); renderViewer(); renderFields(); }
 
-/* ─── Page nav ─── */
-document.getElementById('prevPg').onclick = () => {
-  if(page>1){page--;renderViewer();}
+document.getElementById('prevPg').onclick=()=>{
+  const i = QUEUE.findIndex(x=>x.id===activeId);
+  if(i>0){ activeId = QUEUE[i-1].id; page=1; renderViewer(); renderList(); renderFields(); }
 };
-document.getElementById('nextPg').onclick = () => {
-  const d=QUEUE.find(x=>x.id===activeId);
-  if(d&&d.pages&&page<d.pages){page++;renderViewer();}
+document.getElementById('nextPg').onclick=()=>{
+  const i = QUEUE.findIndex(x=>x.id===activeId);
+  if(i<QUEUE.length-1){ activeId = QUEUE[i+1].id; page=1; renderViewer(); renderList(); renderFields(); }
 };
 
-/* ─── Sidebar collapse ─── */
-document.getElementById('collapseBtn').onclick = () => {
+document.getElementById('confirmBtn').onclick=()=>{
+  const i = QUEUE.findIndex(x=>x.id===activeId);
+  if(i<0) return;
+  QUEUE.splice(i,1);
+  if(QUEUE.length===0){
+    window.location.href = 'gip-notice-list.html';
+    return;
+  }
+  activeId = QUEUE[Math.min(i, QUEUE.length-1)].id;
+  page = 1;
+  renderList(); renderViewer(); renderFields();
+};
+
+document.getElementById('collapseBtn').onclick = ()=>{
   document.getElementById('sidebar').classList.toggle('collapsed');
 };
-
-/* ─── Upload wiring — button opens the persistent file input ─── */
-document.getElementById('uploadBtn').addEventListener('click', () => {
-  document.getElementById('fileInput').click();
-});
-document.getElementById('fileInput').addEventListener('change', e => {
-  const f = e.target.files[0];
-  if (f) { doUpload(f); e.target.value = ''; }
-});
-
-/* ─── Confirm / Save fields ─── */
-document.getElementById('confirmBtn').onclick = async () => {
-  if(!activeId||!ACTIVE_FIELDS.length) return;
-  const btn = document.getElementById('confirmBtn');
-  btn.textContent = 'Saving…'; btn.disabled = true;
-  try {
-    const byField = {};
-    document.querySelectorAll('#flist [data-field]').forEach(el => {
-      byField[el.dataset.field] = el.value;
-    });
-    const fields = ACTIVE_FIELDS.map(f => ({
-      field_name: f.fieldName,
-      confirmed_value: byField[f.fieldName] ?? f.value ?? ''
-    }));
-    await fetch(API+'/queue/'+activeId+'/confirm', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({fields})
-    });
-    await loadQueue();
-    await loadFields(activeId);
-  } catch(e){ setError('Save failed: '+e.message); }
-  finally { btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Save Fields'; btn.disabled=false; }
+document.getElementById('brandIcon').onclick = ()=>{
+  document.getElementById('sidebar').classList.remove('collapsed');
 };
 
-/* ─── Auto-refresh ─── */
-document.getElementById('pageDate').textContent =
-  new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+document.getElementById('qToggle').onclick = ()=>{
+  const collapsed = document.getElementById('queue').classList.toggle('collapsed');
+  document.getElementById('workspace').classList.toggle('q-collapsed', collapsed);
+  document.getElementById('qToggle').title = collapsed ? 'Expand panel' : 'Collapse panel';
+};
 
-setInterval(()=>{
-  refreshCountdown--;
-  document.getElementById('refresh').textContent = refreshCountdown;
-  if(refreshCountdown<=0){ refreshCountdown=30; loadQueue(); }
-}, 1000);
+/* apply list-page selection: hide queue for single, filter for selected subset */
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const count = parseInt(params.get('count') || '', 10);
+  const fns = params.get('fns');
+  if(fns){
+    const wanted = new Set(fns.split('|').filter(Boolean));
+    for(let i=QUEUE.length-1;i>=0;i--){
+      if(!wanted.has(QUEUE[i].applicant)) QUEUE.splice(i,1);
+    }
+    if(QUEUE.length && !QUEUE.find(d=>d.id===activeId)) activeId = QUEUE[0].id;
+  }
+  if(count === 1){
+    document.getElementById('workspace').classList.add('q-hidden');
+  }
+})();
 
-/* ─── Init ─── */
-window.addEventListener('error', ev => {
-  console.error('[GIP] Page error:', ev.message, ev.filename, ev.lineno);
-  setError('Page error: ' + ev.message);
-});
-console.log('[GIP] Notice page JS loaded — build v3 (persistent upload input)');
-renderNav();
-loadQueue();
-console.log('[GIP] Init complete — queue loading from /legal/queue');
+
+let r = 28;
+setInterval(()=>{ r = r<=1?30:r-1; document.getElementById('refresh').textContent=r; }, 1000);
+
+renderAll();
 </script>
 </body>
 </html>
