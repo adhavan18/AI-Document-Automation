@@ -302,6 +302,7 @@
     resize:vertical;min-height:64px;line-height:1.4;transition:all .15s;}
   .field-input textarea:focus{border-color:var(--primary);background:#fff;}
   .field-warn{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--orange);font-weight:500;}
+  .field-warn.default{color:var(--blue);}
 </style>
 </head>
 <body>
@@ -477,18 +478,21 @@ const STATUS = {
 
 const QUEUE = [
   {id:'0588250d',type:'I-797',label:'Notice of Action',applicant:'Elena Rodriguez',status:'ready',priority:'normal',fields:7,pages:14,time:'Jun 2, 2026 · 10:43 PM',primary:true,extracted_fields:[
-    {field_name:'Primary Flag',normalized_value:'True',confidence:0.95,source:'native'},
-    {field_name:'Sent Government Agency',normalized_value:'05/28/2026',confidence:0.94,source:'native'},
-    {field_name:'Receipt For',normalized_value:'Elena Rodriguez',confidence:0.95,source:'native'},
-    {field_name:'Receipt Type',normalized_value:'USCIS Receipt Number',confidence:0.92,source:'native'},
-    {field_name:'Receipt Date',normalized_value:'05/30/2026',confidence:0.95,source:'native'},
-    {field_name:'Receipt Notice Date',normalized_value:'06/01/2026',confidence:0.93,source:'native'},
-    {field_name:'Receipt Number',normalized_value:'ABC1234567890',confidence:0.88,source:'native'},
+    {field_name:'Primary Flag',normalized_value:'True',confidence:0.95,source:'native',is_default:false},
+    {field_name:'Sent Government Agency',normalized_value:'05/28/2026',confidence:0.94,source:'native',is_default:false},
+    {field_name:'Receipt For',normalized_value:'Elena Rodriguez',confidence:0.95,source:'native',is_default:false},
+    {field_name:'Receipt Type',normalized_value:'USCIS Receipt Number',confidence:0.92,source:'native',is_default:false},
+    {field_name:'Receipt Date',normalized_value:'05/30/2026',confidence:0.95,source:'native',is_default:false},
+    {field_name:'Receipt Notice Date',normalized_value:'06/01/2026',confidence:0.93,source:'native',is_default:false},
+    {field_name:'Receipt Number',normalized_value:'ABC1234567890',confidence:0.88,source:'native',is_default:false},
+    {field_name:'Receipt Status',normalized_value:'',confidence:0.0,source:'native',is_default:true},
+    {field_name:'Expiration Alert',normalized_value:'No',confidence:0.0,source:'native',is_default:true},
+    {field_name:'Receipt Notes',normalized_value:'',confidence:0.0,source:'native',is_default:true},
   ]},
   {id:'0344f1a2',type:'I-130',label:'Petition for Alien Relative',applicant:'Marcus Chen',status:'processing',priority:'high',fields:4,pages:12,time:'Jun 3, 2026 · 11:04 AM',progress:62,extracted_fields:[]},
   {id:'0991ccde',type:'I-485',label:'Application for Adjustment',applicant:'Priya Nair',status:'ready',priority:'high',fields:9,pages:6,time:'Jun 3, 2026 · 09:12 AM',primary:true,extracted_fields:[
-    {field_name:'Primary Flag',normalized_value:'True',confidence:0.95,source:'native'},
-    {field_name:'Receipt Number',normalized_value:'XYZ9876543210',confidence:0.90,source:'native'},
+    {field_name:'Primary Flag',normalized_value:'True',confidence:0.95,source:'native',is_default:false},
+    {field_name:'Receipt Number',normalized_value:'XYZ9876543210',confidence:0.90,source:'native',is_default:false},
   ]},
 ];
 
@@ -640,9 +644,16 @@ function renderFields(){
   renderSummary();
   document.getElementById('flist').innerHTML = FIELDS.map(f=>{
     const isNotes = f.type==='textarea';
-    const low = !isNotes && f.conf<80;
+    const isDefault = f.is_default;
+    const low = !isNotes && !isDefault && f.conf<80;
     const tone = confTone(f.conf);
-    return `<div class="field ${low?'low':''}">
+    let warning = '';
+    if(isDefault){
+      warning = `<div class="field-warn default">${ICON.spark}Default value — verify against original</div>`;
+    } else if(low){
+      warning = `<div class="field-warn">${ICON.spark}Manual Review— verify original notice</div>`;
+    }
+    return `<div class="field ${low||isDefault?'low':''}">
       <div class="field-top">
         <span class="field-key">${f.key}</span>
         <div class="field-meta">
@@ -662,7 +673,7 @@ function renderFields(){
           ? `<input type="text" inputmode="numeric" value="${f.value??''}" />${ICON.pencil}`
           : `<input value="${f.value??''}" />${ICON.pencil}`}
       </div>
-      ${low?`<div class="field-warn">${ICON.spark}Manual Review— verify original notice</div>`:''}
+      ${warning}
     </div>`;
   }).join('');
 }

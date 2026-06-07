@@ -83,6 +83,7 @@ class ExtractedFieldOut(BaseModel):
     confidence: float
     source: str
     page_number: int | None
+    is_default: bool = False
 
 
 class AuditEventOut(BaseModel):
@@ -291,6 +292,7 @@ def get_case_detail(
             confidence=round(f.confidence, 4),
             source=f.source,
             page_number=f.page_number,
+            is_default=False,
         )
         for f in get_extracted_fields(db, case.id)
     }
@@ -308,6 +310,7 @@ def get_case_detail(
                     confidence=default_conf,
                     source='native',
                     page_number=None,
+                    is_default=True,
                 )
             )
 
