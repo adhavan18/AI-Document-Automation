@@ -340,6 +340,15 @@ def run(
     """
     Run the 4-stage extraction pipeline on a USCIS PDF.
     """
+    try:
+        import pipeline_state as _ps
+    except Exception:
+        _ps = None  # type: ignore[assignment]
+
+    def _report(stage: int) -> None:
+        if _ps:
+            _ps.set_active(preset_case_id, stage)
+
     stage_log: list[str] = []
     escalation_flags: list[str] = []
 
@@ -350,6 +359,7 @@ def run(
     # ====================================================================
     # Stage 1 — Identity Resolver
     # ====================================================================
+    _report(1)
     _stage('Stage 1: running identity resolver')
     pre: PreprocessResult = preprocessor.preprocess(pdf_path)
     identity = resolve_identity(pre)
@@ -362,6 +372,7 @@ def run(
     # ====================================================================
     # Stage 2 — Document Classifier
     # ====================================================================
+    _report(2)
     _stage('Stage 2: running document classifier')
     cls_result: ClassifierResult = classify(
         pre, form_type_override=form_type_override
@@ -410,6 +421,7 @@ def run(
     # ====================================================================
     # Stage 3 — Skills Extractor (manifest-driven native extraction)
     # ====================================================================
+    _report(3)
     _stage(f'Stage 3: loading skills manifest for {form_id!r}')
     skills = _load_skills(form_id)
     _stage(f'Stage 3: manifest has {len(skills)} declared fields')
@@ -444,6 +456,7 @@ def run(
     # ====================================================================
     from intelligence.llm_fallback import run_llm_fallback, run_receipt_llm_fallback
 
+    _report(4)
     if low_fields_pre:
         _stage(
             f'Stage 4: running Claude LLM correction for '

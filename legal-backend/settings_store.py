@@ -21,7 +21,13 @@ _LOCK = threading.Lock()
 
 # Defaults — match the historical hardcoded thresholds.
 _DEFAULTS: dict = {
-    "confidence_threshold": 0.7,   # 0–1; fields below this need human review
+    "confidence_threshold": 0.8,   # 0–1; fields below this need human review
+    "watch_enabled": False,
+    "watch_folder": "",
+    "poll_interval_seconds": 60,
+    "file_types": ["pdf"],
+    "recurse": False,
+    "move_after_ingestion": True,
 }
 
 
@@ -53,6 +59,19 @@ def get_threshold() -> float:
     return max(0.5, min(1.0, f))
 
 
+def get_watch_config() -> dict:
+    """Return only the watch-related settings keys (read live by the watcher thread)."""
+    s = _read()
+    return {
+        "watch_enabled": bool(s.get("watch_enabled", False)),
+        "watch_folder": str(s.get("watch_folder", "")),
+        "poll_interval_seconds": int(s.get("poll_interval_seconds", 60)),
+        "file_types": s.get("file_types", ["pdf"]),
+        "recurse": bool(s.get("recurse", False)),
+        "move_after_ingestion": bool(s.get("move_after_ingestion", True)),
+    }
+
+
 def update_settings(patch: dict) -> dict:
     """Merge *patch* into the stored settings and persist. Returns the new dict."""
     with _LOCK:
@@ -66,5 +85,24 @@ def update_settings(patch: dict) -> dict:
                 current["confidence_threshold"] = max(0.5, min(1.0, t))
             except (TypeError, ValueError):
                 pass
+        if "watch_enabled" in patch:
+            current["watch_enabled"] = bool(patch["watch_enabled"])
+        if "watch_folder" in patch:
+            current["watch_folder"] = str(patch["watch_folder"] or "")
+        if "poll_interval_seconds" in patch:
+            try:
+                current["poll_interval_seconds"] = max(5, int(patch["poll_interval_seconds"]))
+            except (TypeError, ValueError):
+                pass
+        if "file_types" in patch:
+            ft = patch["file_types"]
+            if isinstance(ft, list):
+                current["file_types"] = [str(x).lower().lstrip(".") for x in ft if x]
+            elif isinstance(ft, str):
+                current["file_types"] = [ft.lower().lstrip(".")]
+        if "recurse" in patch:
+            current["recurse"] = bool(patch["recurse"])
+        if "move_after_ingestion" in patch:
+            current["move_after_ingestion"] = bool(patch["move_after_ingestion"])
         _SETTINGS_PATH.write_text(json.dumps(current, indent=2), encoding="utf-8")
         return current

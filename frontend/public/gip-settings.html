@@ -636,6 +636,11 @@
                 </div>
                 <div class="thr-ticks"><span>50%</span><span>72%</span><span>87%</span><span>92%</span><span>100%</span></div>
               </div>
+              <input type="number" id="thrInput" min="50" max="100" step="1" value="92"
+                style="width:66px;padding:8px 10px;border-radius:9px;border:1px solid var(--line);
+                background:var(--bg);font-family:var(--font);font-size:14px;font-weight:700;
+                color:var(--primary);text-align:center;outline:none;flex-shrink:0;"
+                title="Type a value (50–100)" />
             </div>
             <div class="thr-help">
               Notices extracted at or above <b><span id="thrEcho">92</span>%</b> confidence will skip
@@ -666,8 +671,7 @@
                   Browse
                 </button>
               </div>
-              <input id="folderPicker" type="file" webkitdirectory directory multiple style="display:none;" />
-              <span class="hint">Local paths, mounted shares, or cloud URIs (s3://, gs://, azure://) all supported.</span>
+              <span class="hint">Click Browse to grant folder access. The browser will watch it at the configured interval.</span>
             </div>
 
             <div class="listen-bar" id="listenBar">
@@ -982,11 +986,25 @@ function syncThr(){
   const v = thrSlider.value;
   thrVal.textContent = v;
   thrEcho.textContent = v;
+  const inp = document.getElementById('thrInput');
+  if(inp && inp !== document.activeElement) inp.value = v;
 }
 thrSlider.addEventListener('input', syncThr);
 syncThr();
 
-/* Load the saved threshold from the backend on page open. */
+document.getElementById('thrInput').addEventListener('input', function(){
+  let v = parseInt(this.value, 10);
+  if(isNaN(v)) return;
+  v = Math.max(50, Math.min(100, v));
+  thrSlider.value = v;
+  thrVal.textContent = v;
+  thrEcho.textContent = v;
+});
+
+const POLL_MAP = { 'Real-time (filesystem watcher)': 0, 'Every 30 seconds': 30, 'Every 1 minute': 60, 'Every 5 minutes': 300 };
+const POLL_MAP_REV = Object.fromEntries(Object.entries(POLL_MAP).map(([k,v])=>[v,k]));
+
+/* Load the saved settings from the backend on page open. */
 async function loadSettings(){
   try{
     const s = await fetch(`${API}/settings`).then(r=>r.json());
@@ -994,6 +1012,22 @@ async function loadSettings(){
       ?? Math.round((s.confidence_threshold ?? 0.7) * 100);
     thrSlider.value = pct;
     syncThr();
+
+    if(s.watch_folder){ docPath.value = s.watch_folder; }
+    if(s.poll_interval_seconds != null){
+      const label = POLL_MAP_REV[s.poll_interval_seconds];
+      if(label){
+        const opt = [...document.getElementById('pathPoll').options].find(o=>o.text===label);
+        if(opt) opt.selected = true;
+      }
+    }
+    const recurseEl = document.querySelector('[data-toggle="recurse"]');
+    const moveEl    = document.querySelector('[data-toggle="moveAfter"]');
+    if(recurseEl) recurseEl.classList.toggle('on', !!s.recurse);
+    if(moveEl)    moveEl.classList.toggle('on', !!s.move_after_ingestion);
+    syncPath();
+    // On page load the dir handle is never active (browser security — must re-grant)
+    _updateListenBar(false);
   }catch(e){ console.error('[GIP] settings load failed', e); }
 }
 loadSettings();
@@ -1015,18 +1049,100 @@ function syncPath(){
       `<b>Not listening</b> — set a folder path above to start watching for new notices.`;
   }
 }
-docPath.addEventListener('input', syncPath);
-document.getElementById('browseBtn').onclick = ()=>{
-  document.getElementById('folderPicker').click();
-};
-document.getElementById('folderPicker').onchange = (e)=>{
-  const f = e.target.files && e.target.files[0];
-  if(!f) return;
-  /* browsers expose only a relative folder name for security; show that */
-  const rel = f.webkitRelativePath || f.name;
-  const folder = rel.split('/')[0] || rel;
-  docPath.value = folder;
-  syncPath();
+docPath.addEventListener('input', ()=>{ syncPath(); _updateListenBar(!!_dirHandle); });
+/* ─── Folder watcher (File System Access API) ─── */
+let _dirHandle   = null;   // FileSystemDirectoryHandle granted by user
+let _watchTimer  = null;   // setInterval id
+let _seenFiles   = new Set(); // filenames already uploaded this session
+
+function _pollIntervalMs(){
+  const label = document.getElementById('pathPoll').value;
+  const secs  = POLL_MAP[label];
+  // "Real-time" → 5s; 0 treated as 5s floor
+  return Math.max(5, secs || 5) * 1000;
+}
+
+function _acceptedExtensions(){
+  const v = document.getElementById('pathTypes').value;
+  if(v.includes('PNG'))  return ['.pdf','.png','.jpg','.jpeg','.tiff'];
+  if(v.includes('All'))  return ['.pdf','.png','.jpg','.jpeg','.tiff','.docx'];
+  return ['.pdf'];
+}
+
+async function _scanAndUpload(){
+  if(!_dirHandle) return;
+  const exts = _acceptedExtensions();
+  const toUpload = [];
+  for await (const [name, entry] of _dirHandle.entries()){
+    if(entry.kind !== 'file') continue;
+    const lower = name.toLowerCase();
+    if(!exts.some(e => lower.endsWith(e))) continue;
+    if(_seenFiles.has(name)) continue;
+    toUpload.push({ name, entry });
+  }
+  if(!toUpload.length) return;
+
+  const btn = document.getElementById('browseBtn');
+  const origLabel = btn.innerHTML;
+  btn.disabled = true;
+  let done = 0;
+  for(const { name, entry } of toUpload){
+    try{
+      const file = await entry.getFile();
+      const fd = new FormData();
+      fd.append('file', file, name);
+      const r = await fetch(`${API}/upload`, { method:'POST', body:fd });
+      if(r.ok) _seenFiles.add(name);
+    }catch(err){ console.error('[GIP] upload failed', name, err); }
+    done++;
+    btn.innerHTML = `Uploading ${done}/${toUpload.length}…`;
+  }
+  btn.disabled = false;
+  btn.innerHTML = origLabel;
+  if(done) flash(`Queued ${done} file${done!==1?'s':''}`);
+}
+
+function _startWatcher(){
+  _stopWatcher();
+  _scanAndUpload(); // immediate first scan
+  _watchTimer = setInterval(_scanAndUpload, _pollIntervalMs());
+  _updateListenBar(true);
+}
+
+function _stopWatcher(){
+  if(_watchTimer){ clearInterval(_watchTimer); _watchTimer = null; }
+}
+
+function _updateListenBar(active){
+  const bar = document.getElementById('listenBar');
+  const folder = _dirHandle ? _dirHandle.name : docPath.value.trim();
+  if(active && folder){
+    bar.classList.remove('idle');
+    bar.querySelector('.txt').innerHTML =
+      `<b>Watching</b> <code>${folder}</code> — scanning every ${document.getElementById('pathPoll').value.replace('Every ','').replace(' (filesystem watcher)','real-time')}.`;
+  } else {
+    bar.classList.add('idle');
+    bar.querySelector('.txt').innerHTML = folder
+      ? `<b>Not watching</b> — click Browse to resume watching <code>${folder}</code>.`
+      : `<b>Not watching</b> — click Browse to select a folder.`;
+  }
+}
+
+document.getElementById('browseBtn').onclick = async ()=>{
+  if(!window.showDirectoryPicker){
+    alert('Your browser does not support the File System Access API.\nPlease use Chrome or Edge.');
+    return;
+  }
+  try{
+    _dirHandle  = await window.showDirectoryPicker({ mode:'read' });
+    _seenFiles  = new Set(); // fresh session for this folder
+    docPath.value = _dirHandle.name;
+    // persist folder name + watch_enabled to backend
+    await saveSettings();
+    _startWatcher();
+  }catch(e){
+    if(e.name !== 'AbortError') console.error('[GIP] folder picker error', e);
+  }
 };
 
 /* ─── chip lists (OCR providers + skill locations) ─── */
@@ -1098,10 +1214,32 @@ function flash(msg){
 
 async function saveSettings(){
   const pct = parseInt(thrSlider.value, 10);
+  const watchFolder = docPath.value.trim();
+  const pollLabel = document.getElementById('pathPoll').value;
+  const pollSeconds = POLL_MAP[pollLabel] ?? 60;
+  const recurseEl = document.querySelector('[data-toggle="recurse"]');
+  const moveEl    = document.querySelector('[data-toggle="moveAfter"]');
+  const recurse   = recurseEl ? recurseEl.classList.contains('on') : false;
+  const moveAfter = moveEl    ? moveEl.classList.contains('on')    : true;
+  const watchEnabled = !!watchFolder;
+
+  const fileTypesVal = document.getElementById('pathTypes').value;
+  let fileTypes = ['pdf'];
+  if(fileTypesVal.includes('PNG')) fileTypes = ['pdf','png','jpg','tiff'];
+  else if(fileTypesVal.includes('All')) fileTypes = ['pdf','png','jpg','tiff','docx'];
+
   try{
     const r = await fetch(`${API}/settings`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ confidence_threshold_pct: pct })
+      body: JSON.stringify({
+        confidence_threshold_pct: pct,
+        watch_enabled: watchEnabled,
+        watch_folder: watchFolder,
+        poll_interval_seconds: pollSeconds,
+        file_types: fileTypes,
+        recurse: recurse,
+        move_after_ingestion: moveAfter,
+      })
     });
     if(!r.ok) throw new Error('HTTP ' + r.status);
     flash('Saved');
@@ -1110,16 +1248,27 @@ async function saveSettings(){
     flash('Save failed');
   }
 }
-document.getElementById('saveBtn').onclick = saveSettings;
+document.getElementById('saveBtn').onclick = async ()=>{
+  await saveSettings();
+  // If watcher is running, restart it with the (possibly updated) interval
+  if(_dirHandle && _watchTimer) _startWatcher();
+};
 
 document.getElementById('resetBtn').onclick = async ()=>{
-  thrSlider.value = 70; syncThr();   // default threshold = 70%
+  thrSlider.value = 70; syncThr();
   const t = document.getElementById('llmTemp'); if(t) t.value = 0.2;
   const k = document.getElementById('llmTokens'); if(k) k.value = 4096;
+  _stopWatcher(); _dirHandle = null; _seenFiles = new Set();
+  docPath.value = ''; syncPath(); _updateListenBar(false);
+  const recurseEl = document.querySelector('[data-toggle="recurse"]');
+  const moveEl    = document.querySelector('[data-toggle="moveAfter"]');
+  if(recurseEl) recurseEl.classList.remove('on');
+  if(moveEl)    moveEl.classList.add('on');
   try{
     await fetch(`${API}/settings`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ confidence_threshold_pct: 70 })
+      body: JSON.stringify({ confidence_threshold_pct: 70, watch_enabled: false,
+        watch_folder: '', poll_interval_seconds: 60, recurse: false, move_after_ingestion: true })
     });
     flash('Reset');
   }catch(e){ flash('Reset (local)'); }

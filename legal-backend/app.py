@@ -9,6 +9,8 @@ GET  /                    — full review queue UI
 
 from __future__ import annotations
 
+import queue
+import threading
 import uuid
 from pathlib import Path
 
@@ -17,6 +19,13 @@ load_dotenv(Path(__file__).parent / ".env")
 
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
+
+# ---------------------------------------------------------------------------
+# Serial pipeline queue — one file processed at a time.
+# Items are (case_id_str, pdf_path_str, form_type_override, api_key).
+# ---------------------------------------------------------------------------
+_PIPELINE_QUEUE: queue.Queue = queue.Queue()
+_PIPELINE_LOCK = threading.Lock()   # held while a pipeline is running
 
 # Uploads directory — persisted across requests
 UPLOADS_DIR = Path(__file__).parent / "uploads"
@@ -56,10 +65,68 @@ def _warm_models() -> None:
     print(f"[WARMUP] models ready ({time.time() - t0:.0f}s)", flush=True)
 
 
+def _folder_watcher() -> None:
+    """Poll the configured watch folder and ingest new PDFs."""
+    import time
+    import shutil
+    import settings_store
+
+    seen: set = set()
+    sizes: dict = {}
+
+    while True:
+        try:
+            cfg = settings_store.get_watch_config()
+            if cfg["watch_enabled"] and cfg["watch_folder"]:
+                folder = Path(cfg["watch_folder"])
+                if folder.is_dir():
+                    pattern = "**/*" if cfg["recurse"] else "*"
+                    file_types = set(cfg["file_types"])
+                    for f in folder.glob(pattern):
+                        try:
+                            if not f.is_file():
+                                continue
+                            if "processed" in f.parts:
+                                continue
+                            if f.suffix.lower().lstrip(".") not in file_types:
+                                continue
+                            rp = f.resolve()
+                            if rp in seen:
+                                continue
+                            sz = f.stat().st_size
+                            if sizes.get(rp) != sz:
+                                sizes[rp] = sz
+                                continue
+                            dest = UPLOADS_DIR / f"{uuid.uuid4()}.pdf"
+                            shutil.copy2(str(f), str(dest))
+                            _ingest_pdf(dest, f.name)
+                            seen.add(rp)
+                            if cfg["move_after_ingestion"]:
+                                processed_dir = folder / "processed"
+                                processed_dir.mkdir(exist_ok=True)
+                                target = processed_dir / f.name
+                                if target.exists():
+                                    target = processed_dir / f"{uuid.uuid4()}_{f.name}"
+                                try:
+                                    f.rename(target)
+                                except Exception as mv_err:
+                                    print(f"[WATCHER] Could not move {f.name}: {mv_err}", flush=True)
+                        except Exception as file_err:
+                            print(f"[WATCHER] Error processing {f}: {file_err}", flush=True)
+        except Exception as loop_err:
+            print(f"[WATCHER] Loop error: {loop_err}", flush=True)
+        try:
+            interval = max(5, settings_store.get_watch_config().get("poll_interval_seconds", 60))
+        except Exception:
+            interval = 60
+        time.sleep(interval)
+
+
 @app.on_event("startup")
 def _on_startup() -> None:
-    import threading
     threading.Thread(target=_warm_models, daemon=True).start()
+    threading.Thread(target=_folder_watcher, daemon=True).start()
+    threading.Thread(target=_pipeline_worker, daemon=True).start()
 
 
 # ---------------------------------------------------------------------------
@@ -145,8 +212,8 @@ def _pipeline_background(
     api_key: str | None,
 ) -> None:
     """
-    Run the extraction pipeline in a background thread.
-    _persist in router.py updates the pre-created case row (UPDATE, not INSERT).
+    Run the extraction pipeline synchronously (called from the serial worker).
+    After completion, auto-approves the case if all fields meet the threshold.
     """
     from intelligence.router import run as run_pipeline
 
@@ -158,6 +225,7 @@ def _pipeline_background(
             preset_case_id=case_id_str,
         )
         print(f'[UPLOAD] Pipeline complete for {case_id_str[:8]}')
+        _maybe_auto_approve(case_id_str)
     except Exception as exc:
         print(f'[UPLOAD] Pipeline failed for {case_id_str}: {exc}')
         try:
@@ -173,31 +241,68 @@ def _pipeline_background(
             pass
 
 
-@app.post("/upload", status_code=200)
-async def upload(
-    file: UploadFile = File(...),
-    background_tasks=None,
-) -> JSONResponse:
+def _maybe_auto_approve(case_id_str: str) -> None:
+    """Set status=approved if every extracted field meets the confidence threshold."""
+    try:
+        from settings_store import get_threshold
+        from database.connection import SessionLocal
+        from database.models import ExtractedField
+        from sqlalchemy import select
+        threshold = get_threshold()
+        _db = SessionLocal()
+        try:
+            cid = uuid.UUID(case_id_str)
+            fields = _db.execute(
+                select(ExtractedField).where(ExtractedField.case_id == cid)
+            ).scalars().all()
+            if fields and all(f.confidence >= threshold for f in fields):
+                from database import crud
+                crud.update_case_status(_db, cid, 'approved')
+                _db.commit()
+                print(f'[UPLOAD] Auto-approved {case_id_str[:8]} (all fields ≥ {threshold:.0%})')
+        finally:
+            _db.close()
+    except Exception as exc:
+        print(f'[UPLOAD] Auto-approve check failed for {case_id_str}: {exc}')
+
+
+def _pipeline_worker() -> None:
+    """Serial worker — drains _PIPELINE_QUEUE one job at a time."""
+    import pipeline_state
+    while True:
+        job = _PIPELINE_QUEUE.get()
+        pipeline_state.set_active(job[0], 0)
+        try:
+            with _PIPELINE_LOCK:
+                _pipeline_background(*job)
+        except Exception as exc:
+            print(f'[WORKER] Unhandled error: {exc}')
+        finally:
+            pipeline_state.set_active(None, 0)
+            _PIPELINE_QUEUE.task_done()
+
+
+@app.get("/pipeline/status")
+async def pipeline_status() -> JSONResponse:
+    """Return which case is actively being processed, its current stage, and queue depth."""
+    import pipeline_state
+    s = pipeline_state.get_status()
+    return JSONResponse(content={
+        "active_case_id": s["active_case_id"],
+        "active_stage": s["active_stage"],
+        "queued": _PIPELINE_QUEUE.qsize(),
+    })
+
+
+def _ingest_pdf(pdf_path: Path, original_name: str) -> str:
     """
-    Accept a PDF upload, immediately create a 'processing' case in the DB,
-    fire the extraction pipeline as a background task, and return the case_id
-    right away — no more network timeouts on large or scanned PDFs.
+    Create a processing case for an on-disk PDF and enqueue it for serial processing.
+    Returns the case_id string. Used by /upload and the folder watcher.
     """
     import os
-    from fastapi import BackgroundTasks  # import here to keep top-level clean
+    case_id = uuid.uuid4()
+    form_type_override = _detect_form_type(original_name, str(pdf_path))
 
-    if not file.filename or not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Uploaded file must be a PDF.")
-
-    case_id  = uuid.uuid4()
-    pdf_path = UPLOADS_DIR / f"{case_id}.pdf"
-    contents = await file.read()
-    pdf_path.write_bytes(contents)
-
-    # Detect form type from filename / PDF content (fast — no OCR)
-    form_type_override = _detect_form_type(file.filename, str(pdf_path))
-
-    # Create a placeholder case immediately so the queue shows it straight away
     try:
         from database.connection import SessionLocal
         from database import crud
@@ -222,20 +327,37 @@ async def upload(
     except Exception as _e:
         print(f'[UPLOAD] Could not pre-create case: {_e}', flush=True)
 
-    # Schedule the heavy pipeline work in the background
-    import threading
-    _t = threading.Thread(
-        target=_pipeline_background,
-        args=(str(case_id), str(pdf_path), form_type_override,
-              os.environ.get("ANTHROPIC_API_KEY")),
-        daemon=True,
-    )
-    _t.start()
+    _PIPELINE_QUEUE.put((str(case_id), str(pdf_path), form_type_override,
+                          os.environ.get("ANTHROPIC_API_KEY")))
+    print(f'[UPLOAD] Queued case {str(case_id)[:8]} (queue depth: {_PIPELINE_QUEUE.qsize()})', flush=True)
+
+    return str(case_id)
+
+
+@app.post("/upload", status_code=200)
+async def upload(
+    file: UploadFile = File(...),
+    background_tasks=None,
+) -> JSONResponse:
+    """
+    Accept a PDF upload, immediately create a 'processing' case in the DB,
+    fire the extraction pipeline as a background task, and return the case_id
+    right away — no more network timeouts on large or scanned PDFs.
+    """
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Uploaded file must be a PDF.")
+
+    tmp_id = uuid.uuid4()
+    pdf_path = UPLOADS_DIR / f"{tmp_id}.pdf"
+    contents = await file.read()
+    pdf_path.write_bytes(contents)
+
+    case_id_result = _ingest_pdf(pdf_path, file.filename)
 
     # Return immediately — frontend polls /cases/{id}/status
     return JSONResponse(content={
-        "case_id": str(case_id),
-        "form_type": form_type_override or "processing",
+        "case_id": case_id_result,
+        "form_type": "processing",
         "status": "processing",
         "priority": "normal",
         "escalation_flags": [],
@@ -277,6 +399,10 @@ async def update_settings_endpoint(request: Request) -> JSONResponse:
         patch["confidence_threshold"] = body["confidence_threshold"]
     elif "confidence_threshold_pct" in body:
         patch["confidence_threshold"] = body["confidence_threshold_pct"]
+    for key in ("watch_enabled", "watch_folder", "poll_interval_seconds",
+                "file_types", "recurse", "move_after_ingestion"):
+        if key in body:
+            patch[key] = body[key]
     updated = update_settings(patch)
     updated = dict(updated)
     updated["confidence_threshold_pct"] = round(updated.get("confidence_threshold", 0.7) * 100)

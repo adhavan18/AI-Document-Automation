@@ -292,7 +292,9 @@
   .pa-widget{position:fixed;right:24px;bottom:24px;z-index:60;width:340px;background:#fff;
     border:1px solid var(--line);border-radius:14px;
     box-shadow:0 14px 40px rgba(16,22,40,.16),0 4px 10px rgba(16,22,40,.06);
-    overflow:hidden;animation:pa-pop .25s ease;font-family:var(--font);}
+    overflow:hidden;animation:pa-pop .25s ease;font-family:var(--font);
+    max-height:calc(100vh - 48px);display:flex;flex-direction:column;}
+  .pa-widget .pa-head{flex-shrink:0;}
   .pa-head{display:flex;align-items:center;gap:10px;padding:12px 14px;
     background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;}
   .pa-avatar{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.18);
@@ -307,7 +309,7 @@
     color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;}
   .pa-min:hover{background:rgba(255,255,255,.22);}
   .pa-controls{display:flex;align-items:center;gap:5px;}
-  .pa-body{padding:14px;}
+  .pa-body{padding:14px;overflow-y:auto;flex:1;min-height:0;}
 
   /* idle: Listening… with typing dots */
   .pa-idle{display:flex;align-items:center;gap:10px;padding:6px 2px;}
@@ -556,8 +558,11 @@ function renderNav(){
 
 /* ─── grid data — populated live from the backend (/legal/queue) ─── */
 const API = '/legal';
-let AUTO_QUE = [];     // Processed Notices  (approved / rejected / completed)
-let REVIEW_QUE = [];   // Review Que         (processing / pending / in_review)
+let AUTO_QUE = [];       // Processed Notices  (approved / rejected / completed)
+let REVIEW_QUE = [];     // Review Que         (pending / in_review — low-conf fields)
+let PROCESSING_QUE = []; // Background only    (currently extracting — not shown in tabs)
+let PIPELINE_ACTIVE_ID = null;  // case_id the worker is currently running
+let PIPELINE_ACTIVE_STAGE = 0; // 1-4; 0 = idle
 
 /* Map a backend case record → the row shape this grid renders. */
 function mapCase(c){
@@ -598,12 +603,21 @@ function mapStatus(s){
 /* Fetch all cases and split into the two tabs. */
 async function loadQueue(){
   try{
-    const r = await fetch(`${API}/queue?status=all&limit=500`);
-    if(!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
+    const [queueResp, pipelineResp] = await Promise.all([
+      fetch(`${API}/queue?status=all&limit=500`),
+      fetch(`${API}/pipeline/status`).catch(()=>null),
+    ]);
+    if(!queueResp.ok) throw new Error('HTTP ' + queueResp.status);
+    const data = await queueResp.json();
+    if(pipelineResp && pipelineResp.ok){
+      const ps = await pipelineResp.json();
+      PIPELINE_ACTIVE_ID    = ps.active_case_id || null;
+      PIPELINE_ACTIVE_STAGE = ps.active_stage   || 0;
+    }
     const rows = (data.cases || []).map(mapCase);
-    REVIEW_QUE = rows.filter(x => x.status === 'processing' || x.status === 'ready');
-    AUTO_QUE   = rows.filter(x => x.status === 'completed'  || x.status === 'failed');
+    PROCESSING_QUE = rows.filter(x => x.status === 'processing');
+    REVIEW_QUE     = rows.filter(x => x.status === 'ready');
+    AUTO_QUE       = rows.filter(x => x.status === 'completed' || x.status === 'failed');
     renderGrids();
     renderAgent();
   }catch(e){
@@ -881,6 +895,22 @@ document.getElementById('pageSize').onchange = (e)=>{
 /* Poll the backend every 5s so processing → ready transitions appear live. */
 setInterval(loadQueue, 5000);
 
+/* Poll pipeline/status every 2s independently so progress updates are fast
+   and we trigger an immediate loadQueue when a file finishes (stage goes 0). */
+let _prevActiveId = null;
+setInterval(async ()=>{
+  try{
+    const ps = await fetch(`${API}/pipeline/status`).then(r=>r.json());
+    const wasActive = _prevActiveId;
+    PIPELINE_ACTIVE_ID    = ps.active_case_id || null;
+    PIPELINE_ACTIVE_STAGE = ps.active_stage   || 0;
+    _prevActiveId = PIPELINE_ACTIVE_ID;
+    // A file just finished — pull the queue immediately so it appears
+    if(wasActive && !PIPELINE_ACTIVE_ID) loadQueue();
+    else renderAgent();
+  }catch(e){}
+}, 2000);
+
 /* ─── Processing Agent widget ─── */
 /* widget view-state: 'min' | 'med' | 'max' — defaults to medium */
 let paState = 'med';
@@ -894,10 +924,9 @@ function renderAgent(){
   if(paState==='min') widget.classList.add('min');
   else if(paState==='med') widget.classList.add('med');
 
-  // Processing cases live in REVIEW_QUE (status 'processing')
-  const allRows = REVIEW_QUE.concat(AUTO_QUE);
-  const active = allRows.find(r=>r.status==='processing');
-  const pipeline = allRows.filter(r=>r.status==='processing' || r.status==='queued');
+  const active = PROCESSING_QUE.find(r => r.case_id === PIPELINE_ACTIVE_ID)
+             || (PROCESSING_QUE.length ? PROCESSING_QUE[0] : null);
+  const pipeline = PROCESSING_QUE;
   statusTxt.textContent = active ? 'Processing' : 'Listening';
 
   if(paState==='min') return; /* body hidden */
@@ -935,49 +964,34 @@ function renderAgent(){
     return;
   }
 
-  const pct = Math.round(active.progress || 0);
-  const C = 2 * Math.PI * 17;
-  const offset = C * (1 - pct/100);
-  const activeBlock = `
-    <div class="pa-active">
-      <div class="proc-ring">
-        <svg viewBox="0 0 40 40">
-          <circle class="ring-bg" cx="20" cy="20" r="17" fill="none" stroke-width="3"/>
-          <circle class="ring-fg" cx="20" cy="20" r="17" fill="none" stroke-width="3"
-            stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"/>
-          <circle class="ring-spinner" cx="20" cy="20" r="17" fill="none" stroke-width="3"
-            stroke-dasharray="${(C*0.18).toFixed(2)} ${C.toFixed(2)}" opacity=".55"/>
-        </svg>
-        <div class="proc-pct">${pct}%</div>
-      </div>
-      <div class="pa-file">
-        <div class="pa-file-name" title="${active.file}">${active.file}</div>
-        <div class="pa-file-meta">
-          <span class="form-tag">${active.form}</span>
-          <span>${active.fn}</span>
-        </div>
-      </div>
+  /* stage → percentage (25% per stage completed) */
+  const stagePct = PIPELINE_ACTIVE_STAGE > 0 ? PIPELINE_ACTIVE_STAGE * 25 : 0;
+  const pctLabel = stagePct > 0 ? `${stagePct}%` : 'Processing';
+
+  const activeRow = pipeline.find(x => x.case_id === PIPELINE_ACTIVE_ID) || pipeline[0];
+
+  function qRow(r){
+    const isActive = r.case_id === PIPELINE_ACTIVE_ID
+                  || (PIPELINE_ACTIVE_ID === null && r === pipeline[0]);
+    const stateLabel = isActive ? pctLabel : 'Queued';
+    const stateColor = isActive ? 'var(--amber)' : 'var(--ink-faint)';
+    return `<div class="pa-q-item ${isActive ? 'processing' : 'queued'}">
+      <span class="q-file" title="${r.file}" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;">${r.file}</span>
+      <span class="q-state" style="flex-shrink:0;margin-left:8px;color:${stateColor};font-weight:700;">${stateLabel}</span>
     </div>`;
+  }
 
   if(paState==='med'){
-    body.innerHTML = activeBlock;
+    body.innerHTML = qRow(activeRow);
     return;
   }
 
-  /* max — show full pipeline */
+  /* max — full list, scrollable */
+  const label = `<div class="pa-queue-label" style="margin-bottom:6px;">Pipeline · ${pipeline.length} file${pipeline.length===1?'':'s'}</div>`;
   const list = pipeline.length
-    ? pipeline.map(r=>`
-        <div class="pa-q-item ${r.status}">
-          <span class="q-form">${r.form}</span>
-          <span class="q-file" title="${r.file}">${r.file}</span>
-          <span class="q-state">${r.status==='processing' ? Math.round(r.progress||0)+'%' : 'Queued'}</span>
-        </div>`).join('')
+    ? pipeline.map(qRow).join('')
     : `<div class="pa-sub" style="margin:0;">No files in pipeline.</div>`;
-  body.innerHTML = `${activeBlock}
-    <div class="pa-queue-list">
-      <div class="pa-queue-label">Pipeline · ${pipeline.length} file${pipeline.length===1?'':'s'}</div>
-      ${list}
-    </div>`;
+  body.innerHTML = `<div class="pa-queue-list" style="margin-top:0;padding-top:0;border-top:none;">${label}${list}</div>`;
 }
 
 const PA_ICONS = {
