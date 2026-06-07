@@ -70,7 +70,7 @@ from intelligence.receipt_fields import RECEIPT_FIELD_NAMES
 # Constants
 # ---------------------------------------------------------------------------
 
-MODEL = "claude-sonnet-4-20250514"
+MODEL = "claude-sonnet-4-6"
 CONFIDENCE_THRESHOLD = 0.7
 ESCALATION_THRESHOLD = 0.5
 

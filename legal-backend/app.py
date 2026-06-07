@@ -51,24 +51,7 @@ def _warm_models() -> None:
     t0 = time.time()
     print("[WARMUP] pre-loading extraction models…", flush=True)
 
-    # EasyOCR — instantiate the reader singleton (downloads detection +
-    # recognition models on first run, then caches them).
-    try:
-        from intelligence import easyocr_text
-        if easyocr_text.is_available():
-            easyocr_text._get_reader()
-            print("[WARMUP] EasyOCR reader ready", flush=True)
-    except Exception as exc:
-        print(f"[WARMUP] EasyOCR warm skipped: {exc}", flush=True)
-
-    # NuExtract — load the transformer weights + tokenizer singleton.
-    try:
-        from intelligence import nuextract
-        if nuextract.is_available():
-            nuextract._load()
-            print("[WARMUP] NuExtract model ready", flush=True)
-    except Exception as exc:
-        print(f"[WARMUP] NuExtract warm skipped: {exc}", flush=True)
+    # AWS Textract — no model to pre-warm (API-based)
 
     print(f"[WARMUP] models ready ({time.time() - t0:.0f}s)", flush=True)
 
