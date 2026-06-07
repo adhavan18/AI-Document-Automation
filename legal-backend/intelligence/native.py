@@ -583,31 +583,15 @@ def _extract_i797(raw_text: str, receipt_fields: dict[str, FieldResult]) -> I797
     lines = raw_text.splitlines()
     top_block = "\n".join(lines[:30])
 
-    receipt     = _regex_first(_RECEIPT_RE, raw_text)
-    notice_date = _regex_first(_NOTICE_DATE_RE, raw_text)
-    v_start     = _regex_first(_VALID_FROM_RE, raw_text)
-    v_end       = _regex_first(_VALID_TO_RE, raw_text)
-    action      = _regex_first(_ACTION_RE, raw_text)
-    case_type   = _regex_first(_CASE_TYPE_RE, top_block)
-    alien       = _regex_first(_ALIEN_INLINE_RE, raw_text)
+    case_type = _regex_first(_CASE_TYPE_RE, top_block)
 
     nt_m = _NOTICE_TYPE_RE.search(raw_text)
     notice_type = nt_m.group(1).strip() if nt_m else None
 
-    app_m = _APPLICANT_RE.search(raw_text)
-    applicant = app_m.group(1).strip() if app_m else None
-
     return I797(
-        **{k: v for k, v in receipt_fields.items() if k != 'receipt_number'},
-        receipt_number=_fr_receipt("receipt_number", receipt),
+        **receipt_fields,
         notice_type=_fr_text("notice_type", notice_type),
-        applicant_name=_fr_text("applicant_name", applicant),
-        alien_registration_number=_fr_alien("alien_registration_number", alien),
         case_type=_fr_text("case_type", case_type),
-        notice_date=_fr_date("notice_date", notice_date),
-        validity_start=_fr_date("validity_start", v_start),
-        validity_end=_fr_date("validity_end", v_end),
-        action_taken=_fr_action("action_taken", action),
     )
 
 
