@@ -44,8 +44,8 @@ app.use('/api/validate', upload.single('file'), validateRouter);
 if (!process.env.ANTHROPIC_API_KEY) {
   console.warn('⚠️  WARNING: ANTHROPIC_API_KEY is not set. Claude calls will fail.');
 }
-if (!process.env.GOOGLE_GEMINI_API_KEY) {
-  console.warn('⚠️  WARNING: GOOGLE_GEMINI_API_KEY is not set. Gemini fallback will fail.');
+if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+  console.warn('⚠️  WARNING: AWS credentials are not set. Textract calls will fail.');
 }
 
 app.listen(port, () => {

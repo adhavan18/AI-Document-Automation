@@ -16,9 +16,17 @@ if (!existsSync(envPath) && existsSync(envExamplePath)) {
 
 dotenv.config({ path: envPath });
 
-const key = process.env.ANTHROPIC_API_KEY;
-if (!key || key === 'your_anthropic_api_key_here') {
+const anthropicKey = process.env.ANTHROPIC_API_KEY;
+if (!anthropicKey || anthropicKey === 'your_anthropic_api_key_here') {
   console.warn(
     '[startup] ANTHROPIC_API_KEY is missing or placeholder — Claude routes will fail until it is set in backend/.env.'
+  );
+}
+
+const awsKeyId = process.env.AWS_ACCESS_KEY_ID;
+const awsSecret = process.env.AWS_SECRET_ACCESS_KEY;
+if (!awsKeyId || awsKeyId === 'your_aws_access_key_id_here' || !awsSecret || awsSecret === 'your_aws_secret_access_key_here') {
+  console.warn(
+    '[startup] AWS credentials are missing or placeholder — Textract routes will fail until AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are set in backend/.env.'
   );
 }

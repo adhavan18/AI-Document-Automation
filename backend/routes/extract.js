@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { extractTextWithTextract } from '../lib/textract.js';
 import { callWithFallback } from '../lib/ai-with-fallback.js';
 
 const router = Router();
@@ -9,12 +10,9 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const fileBuffer = req.file.buffer;
-    const mimeType = req.file.mimetype;
-    const base64Data = fileBuffer.toString('base64');
-
-    const isImage = mimeType.startsWith('image/');
-    const isPdf = mimeType === 'application/pdf';
+    const { mimetype, buffer } = req.file;
+    const isImage = mimetype.startsWith('image/');
+    const isPdf = mimetype === 'application/pdf';
 
     if (!isImage && !isPdf) {
       return res
@@ -22,34 +20,23 @@ router.post('/', async (req, res) => {
         .json({ error: 'Unsupported file type. Upload a PDF or image.' });
     }
 
-    const contentBlock = isPdf
-      ? {
-          type: 'document',
-          source: {
-            type: 'base64',
-            media_type: 'application/pdf',
-            data: base64Data,
-          },
-        }
-      : {
-          type: 'image',
-          source: {
-            type: 'base64',
-            media_type: mimeType,
-            data: base64Data,
-          },
-        };
+    const start = Date.now();
 
-    const prompt = `You are an AI extraction engine for immigration documents. You have been given a USCIS I-797 Notice of Action.
+    const rawText = await extractTextWithTextract(buffer);
 
-Extract exactly these 5 fields from the document:
+    const prompt = `You are an AI extraction engine for immigration documents. Below is the text extracted from a USCIS I-797 Notice of Action.
+
+EXTRACTED TEXT:
+${rawText}
+
+Extract exactly these 5 fields from the text above:
 1. receipt_number — the USCIS receipt number (format: 3 letters + 10 digits, e.g. WAC2190123456)
 2. beneficiary_name — the full name of the beneficiary/applicant
 3. notice_date — the date printed on the notice (format it as "Month DD, YYYY")
 4. receipt_date — the date the petition was received (format it as "Month DD, YYYY")
 5. service_center — the USCIS service center name (e.g. "California Service Center")
 
-For each field, also provide a confidence score from 0 to 100 representing how clearly the field was visible and extracted.
+For each field, also provide a confidence score from 0 to 100 representing how clearly the field was found in the text.
 
 Respond ONLY with a valid JSON object. No explanation, no markdown, no code fences. Exactly this structure:
 
@@ -67,35 +54,20 @@ Respond ONLY with a valid JSON object. No explanation, no markdown, no code fenc
 
 If a field cannot be found, set value to "Not found" and confidence to 0.`;
 
-    const start = Date.now();
-
-    const { text: rawText, provider } = await callWithFallback(
-      {
-        model: 'claude-opus-4-5',
-        max_tokens: 1024,
-        messages: [
-          {
-            role: 'user',
-            content: [contentBlock, { type: 'text', text: prompt }],
-          },
-        ],
-      },
-      () => {
-        const part = isImage
-          ? { inlineData: { mimeType, data: base64Data } }
-          : { inlineData: { mimeType: 'application/pdf', data: base64Data } };
-        return [part, prompt];
-      }
-    );
+    const { text: rawResponse, provider } = await callWithFallback({
+      model: 'claude-opus-4-5',
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }],
+    });
 
     const elapsed = Date.now() - start;
     console.log(`[extract] responded via ${provider}`);
 
     let parsed;
     try {
-      parsed = JSON.parse(rawText);
+      parsed = JSON.parse(rawResponse);
     } catch {
-      const cleaned = rawText.replace(/```json|```/g, '').trim();
+      const cleaned = rawResponse.replace(/```json|```/g, '').trim();
       parsed = JSON.parse(cleaned);
     }
 
