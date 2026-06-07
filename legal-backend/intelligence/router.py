@@ -405,8 +405,19 @@ def run(
     skills = _load_skills(form_id)
     _stage(f'Stage 3: manifest has {len(skills)} declared fields')
 
-    _stage('Stage 3: running native extraction')
-    native_schema: AnyFormSchema = native.extract(pre, form_id)
+    _stage('Stage 3: extracting form fields (AcroForm + Textract)')
+    textract_fields = {}
+    try:
+        from intelligence.textract_ocr import is_available as textract_ok, extract_form_fields
+        if textract_ok():
+            _stage('Stage 3: Textract available — extracting structured fields')
+            _, textract_fields = extract_form_fields(pdf_path)
+            _stage(f'Stage 3: Textract extracted {len(textract_fields)} form fields')
+    except Exception as _te:
+        _stage(f'Stage 3: Textract extraction failed (non-blocking) — {_te}')
+
+    _stage('Stage 3: running native extraction (AcroForm + Textract merge)')
+    native_schema: AnyFormSchema = native.extract(pre, form_id, textract_fields)
     low_fields_pre = _fields_below(native_schema, _LOW_CONFIDENCE_GATE)
     _stage(
         f'Stage 3 done: {len(_all_fields(native_schema))} fields extracted, '
