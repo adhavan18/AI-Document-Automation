@@ -128,7 +128,7 @@ export default function ConsoleApp({ session, onLogout }) {
           {/* Brand */}
           <div className="px-5 py-5 border-b border-slate-200/80">
             <img
-              src="https://gip-us.com/wp-content/uploads/2023/12/gipuheader.png"
+              src="/assets/logo_white.png"
               alt="GIP"
               className="h-16 w-auto object-contain"
             />

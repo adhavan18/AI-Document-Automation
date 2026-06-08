@@ -117,8 +117,12 @@ export function NoticeReviewQueue({ initialNoticeId }) {
   const [uploading, setUploading] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState(null);
-  const [edits, setEdits] = useState({}); // field_name -> value
+  const [edits, setEdits] = useState({});
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [pending, setPending] = useState([]); // [{file, progress, status}]
+  const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
+  const dropRef = useRef(null);
 
   const loadQueue = useCallback(async () => {
     try {
@@ -208,6 +212,53 @@ export function NoticeReviewQueue({ initialNoticeId }) {
     }
   }
 
+  // ── drawer helpers ─────────────────────────────────────────────────────────
+  function addFiles(fileList) {
+    const newFiles = Array.from(fileList)
+      .filter((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))
+      .map((f) => ({ file: f, progress: 0, status: 'pending' }));
+    setPending((prev) => [...prev, ...newFiles]);
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    setDragOver(false);
+    addFiles(e.dataTransfer.files);
+  }
+
+  async function startUploadAll() {
+    const items = pending.filter((p) => p.status === 'pending');
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const idx = pending.indexOf(item);
+      setPending((prev) => prev.map((p, j) => j === idx ? { ...p, status: 'uploading' } : p));
+      try {
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          const fd = new FormData();
+          fd.append('file', item.file);
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const pct = Math.round((e.loaded / e.total) * 100);
+              setPending((prev) => prev.map((p, j) => j === idx ? { ...p, progress: pct } : p));
+            }
+          };
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText));
+            else reject(new Error(`Upload failed: ${xhr.status}`));
+          };
+          xhr.onerror = () => reject(new Error('Network error'));
+          xhr.open('POST', '/legal/upload');
+          xhr.send(fd);
+        });
+        setPending((prev) => prev.map((p, j) => j === idx ? { ...p, progress: 100, status: 'done' } : p));
+      } catch {
+        setPending((prev) => prev.map((p, j) => j === idx ? { ...p, status: 'error' } : p));
+      }
+    }
+    await loadQueue();
+  }
+
   // ── derived ────────────────────────────────────────────────────────────────
   const q = searchQ.toLowerCase();
   const filtered = cases.filter((c) => {
@@ -264,28 +315,21 @@ export function NoticeReviewQueue({ initialNoticeId }) {
             }}>Review Queue · USCIS Forms</div>
           </div>
 
-          {/* Upload Button */}
+          {/* Upload Button → opens drawer */}
           <button
-            onClick={() => !uploading && fileInputRef.current?.click()}
-            disabled={uploading}
+            onClick={() => setDrawerOpen(true)}
             style={{
               width: '100%', padding: '10px', borderRadius: '10px', border: 'none',
               background: colors.primary, color: '#fff', fontSize: '13px', fontWeight: '600',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              cursor: uploading ? 'wait' : 'pointer', boxShadow: '0 2px 10px rgba(32,68,150,.25)',
-              opacity: uploading ? 0.85 : 1,
+              cursor: 'pointer', boxShadow: '0 2px 10px rgba(32,68,150,.25)',
             }}
           >
-            {uploading ? (
-              <svg className="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
-            ) : (
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-            )}
-            {uploading ? 'Processing…' : 'Upload Document'}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            Upload Documents
           </button>
-          <input ref={fileInputRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={handleUpload} />
 
           {error && (
             <div style={{
@@ -555,6 +599,151 @@ export function NoticeReviewQueue({ initialNoticeId }) {
           </button>
         </div>
       </aside>
+
+      {/* ── Upload Drawer ──────────────────────────────────────────────── */}
+      {drawerOpen && (
+        <div
+          onClick={() => setDrawerOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(28,26,23,.45)',
+            zIndex: 400, display: 'flex', justifyContent: 'flex-end',
+          }}
+        >
+          <aside
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '420px', height: '100%', background: '#fff',
+              display: 'flex', flexDirection: 'column', boxShadow: '-4px 0 32px rgba(0,0,0,.18)',
+            }}
+          >
+            {/* Drawer header */}
+            <div style={{
+              padding: '20px 22px 16px', borderBottom: `1px solid ${colors.line}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <div>
+                <div style={{ fontSize: '17px', fontWeight: '700', color: colors.ink }}>Upload Documents</div>
+                <div style={{ fontSize: '11px', color: colors.inkFaint, marginTop: '2px' }}>PDF files only · AI extraction will begin automatically</div>
+              </div>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: colors.inkFaint }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+
+            {/* Drop zone */}
+            <div style={{ padding: '18px 22px' }}>
+              <div
+                ref={dropRef}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  border: `2px dashed ${dragOver ? colors.primary : colors.line}`,
+                  borderRadius: '14px', padding: '36px 20px', textAlign: 'center',
+                  background: dragOver ? '#edf1fb' : colors.paper, cursor: 'pointer',
+                  transition: 'all .15s',
+                }}
+              >
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={colors.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 12px' }}>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: colors.ink }}>Drop PDFs here or click to browse</div>
+                <div style={{ fontSize: '11.5px', color: colors.inkFaint, marginTop: '4px' }}>Multiple files supported</div>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf"
+                multiple
+                style={{ display: 'none' }}
+                onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }}
+              />
+            </div>
+
+            {/* File list */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px' }}>
+              {pending.map((item, i) => (
+                <div key={i} style={{
+                  padding: '12px 14px', borderRadius: '10px', border: `1px solid ${colors.line}`,
+                  marginBottom: '8px', background: '#fff',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={colors.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+                      </svg>
+                      <span style={{ fontSize: '12.5px', fontWeight: '500', color: colors.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.file.name}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                      {item.status === 'done' && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={colors.green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                      )}
+                      {item.status === 'error' && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={colors.orange} strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                      )}
+                      {item.status !== 'done' && (
+                        <button
+                          onClick={() => setPending((prev) => prev.filter((_, j) => j !== i))}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: colors.inkFaint }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {/* Progress bar */}
+                  {(item.status === 'uploading' || item.status === 'done') && (
+                    <div style={{ marginTop: '8px', height: '4px', borderRadius: '999px', background: colors.lineSoft, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', borderRadius: '999px', background: item.status === 'done' ? colors.green : colors.primary, width: `${item.progress}%`, transition: 'width .2s' }} />
+                    </div>
+                  )}
+                  {item.status === 'error' && (
+                    <div style={{ marginTop: '5px', fontSize: '10.5px', color: colors.orange }}>Upload failed — try again</div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Drawer footer */}
+            <div style={{
+              padding: '16px 22px', borderTop: `1px solid ${colors.line}`,
+              display: 'flex', justifyContent: 'flex-end', gap: '10px',
+            }}>
+              <button
+                onClick={() => { setDrawerOpen(false); setPending([]); }}
+                style={{
+                  padding: '10px 20px', borderRadius: '9px', border: `1px solid ${colors.line}`,
+                  background: '#fff', color: colors.inkSoft, fontSize: '13px', fontWeight: '600', cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={startUploadAll}
+                disabled={pending.filter((p) => p.status === 'pending').length === 0}
+                style={{
+                  padding: '10px 24px', borderRadius: '9px', border: 'none',
+                  background: colors.primary, color: '#fff', fontSize: '13px', fontWeight: '600',
+                  cursor: pending.filter((p) => p.status === 'pending').length === 0 ? 'not-allowed' : 'pointer',
+                  opacity: pending.filter((p) => p.status === 'pending').length === 0 ? 0.5 : 1,
+                  display: 'flex', alignItems: 'center', gap: '7px',
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Upload {pending.filter((p) => p.status === 'pending').length > 0 ? `(${pending.filter((p) => p.status === 'pending').length})` : ''}
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
