@@ -303,6 +303,14 @@
     resize:vertical;min-height:64px;line-height:1.4;transition:all .15s;}
   .field-input textarea:focus{border-color:var(--primary);background:#fff;}
   .field-warn{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--orange);font-weight:500;}
+  .field-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;}
+  .field-foot .field-warn{margin-top:0;}
+  .btn-field-confirm{margin-left:auto;padding:6px 12px;border-radius:8px;border:none;
+    background:var(--primary);color:#fff;font-family:var(--font);font-size:11.5px;font-weight:600;
+    display:inline-flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;transition:opacity .15s;}
+  .btn-field-confirm:disabled{opacity:.6;cursor:default;}
+  .field-verified{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:11px;
+    color:var(--green);font-weight:600;}
 </style>
 </head>
 <body>
@@ -746,7 +754,7 @@ function renderFields(){
       `<div style="padding:24px;color:var(--ink-faint);font-size:13px;text-align:center;">${msg}</div>`;
     return;
   }
-  document.getElementById('flist').innerHTML = FIELDS.map(f=>{
+  document.getElementById('flist').innerHTML = FIELDS.map((f,i)=>{
     const isNotes = f.type==='textarea';
     const isDefault = f.is_default;
     const lowConf = !isNotes && !isDefault && f.conf<CONF_THRESHOLD;
@@ -755,7 +763,7 @@ function renderFields(){
     if(isDefault) className = 'default';
     else if(lowConf) className = 'low';
     const disabled = isCompleted ? 'disabled' : '';
-    return `<div class="field ${className}">
+    return `<div class="field ${className}" data-field-row="${i}">
       <div class="field-top">
         <span class="field-key">${f.key}</span>
         <div class="field-meta">
@@ -766,18 +774,93 @@ function renderFields(){
       </div>
       <div class="field-input">
         ${f.type==='date'
-          ? `<input type="date" value="${f.value??''}" placeholder="mm/dd/yyyy" ${disabled} />${ICON.calendar}`
+          ? `<input type="date" data-fi="${i}" value="${f.value??''}" placeholder="mm/dd/yyyy" ${disabled} />${ICON.calendar}`
         : f.type==='select'
-          ? `<select ${disabled}>${(f.options||[]).filter(o=>o!=null).map(o=>`<option ${o===f.value?'selected':''}>${o}</option>`).join('')}</select>${ICON.chevron}`
+          ? `<select data-fi="${i}" ${disabled}>${(f.options||[]).filter(o=>o!=null).map(o=>`<option ${o===f.value?'selected':''}>${o}</option>`).join('')}</select>${ICON.chevron}`
         : f.type==='textarea'
-          ? `<textarea rows="3" placeholder="Add notes…" ${disabled}>${f.value??''}</textarea>`
+          ? `<textarea data-fi="${i}" rows="3" placeholder="Add notes…" ${disabled}>${f.value??''}</textarea>`
         : f.type==='number'
-          ? `<input type="text" inputmode="numeric" value="${f.value??''}" ${disabled} />${ICON.pencil}`
-          : `<input value="${f.value??''}" ${disabled} />${ICON.pencil}`}
+          ? `<input type="text" data-fi="${i}" inputmode="numeric" value="${f.value??''}" ${disabled} />${ICON.pencil}`
+          : `<input data-fi="${i}" value="${f.value??''}" ${disabled} />${ICON.pencil}`}
       </div>
-      ${lowConf?`<div class="field-warn">${ICON.spark}Manual Review— verify against original</div>`:''}
+      ${fieldFootHTML(f,i,lowConf,isCompleted)}
     </div>`;
   }).join('');
+
+  wireFieldInputs();
+}
+
+/* Footer of a field row: Manual-Review warning + (when edited) a per-field
+   Confirm button, or a "Verified" badge once it's been confirmed. */
+function fieldFootHTML(f,i,lowConf,isCompleted){
+  if(f.verified){
+    return `<div class="field-verified">${ICON.check}Verified</div>`;
+  }
+  if(!lowConf) return '';
+  const warn = `<span class="field-warn">${ICON.spark}Manual Review — verify against original</span>`;
+  const btn = (!isCompleted && f.edited)
+    ? `<button class="btn-field-confirm" data-confirm-field="${i}">${ICON.check}Confirm field</button>`
+    : '';
+  return `<div class="field-foot">${warn}${btn}</div>`;
+}
+
+/* Attach input + per-field-confirm handlers after each render. */
+function wireFieldInputs(){
+  document.querySelectorAll('#flist [data-fi]').forEach(el=>{
+    const i = +el.dataset.fi;
+    const handler = ()=>{
+      const f = FIELDS[i];
+      if(!f) return;
+      f.value = el.value;
+      if(!f.edited){ f.edited = true; refreshFieldFoot(i); }
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+  document.querySelectorAll('#flist [data-confirm-field]').forEach(btn=>{
+    btn.onclick = ()=>confirmSingleField(+btn.dataset.confirmField, btn);
+  });
+}
+
+/* Re-render just one field's footer (cheaper + avoids losing input focus). */
+function refreshFieldFoot(i){
+  const row = document.querySelector(`#flist [data-field-row="${i}"]`);
+  if(!row) return;
+  const f = FIELDS[i];
+  const isNotes = f.type==='textarea';
+  const lowConf = !isNotes && !f.is_default && f.conf<CONF_THRESHOLD;
+  const d = QUEUE.find(x=>x.id===activeId);
+  const isCompleted = d && (d.status==='completed' || d.status==='failed');
+  const existing = row.querySelector('.field-foot, .field-verified');
+  const html = fieldFootHTML(f,i,lowConf,isCompleted);
+  if(existing){ existing.outerHTML = html; }
+  else if(html){ row.insertAdjacentHTML('beforeend', html); }
+  // re-wire the (possibly new) confirm button
+  const newBtn = row.querySelector('[data-confirm-field]');
+  if(newBtn){ newBtn.onclick = ()=>confirmSingleField(i, newBtn); }
+}
+
+/* Per-field confirm: save this one field, mark it verified (100%), keep the
+   reviewer on the case. The file only moves to processed on "Confirm All". */
+async function confirmSingleField(i, btn){
+  const f = FIELDS[i];
+  if(!f || !activeId) return;
+  const input = document.querySelector(`#flist [data-fi="${i}"]`);
+  if(input) f.value = input.value;
+  btn.disabled = true; btn.innerHTML = `${ICON.spin}Confirming…`;
+  try{
+    const r = await fetch(`${API}/queue/${encodeURIComponent(activeId)}/field`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({field_name:f.name, value:f.value})
+    });
+    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.detail||('HTTP '+r.status)); }
+    f.conf = 100; f.verified = true; f.edited = false;
+    renderFields();   // refresh summary counts + clear the Manual Review flag
+  }catch(e){
+    console.error('[GIP] field confirm failed', e);
+    alert('Field save failed: ' + e.message);
+    btn.disabled = false; btn.innerHTML = `${ICON.check}Confirm field`;
+  }
 }
 
 function renderAll(){ renderNav(); renderList(); renderViewer(); renderFields(); }
@@ -796,25 +879,26 @@ document.getElementById('confirmBtn').onclick = async ()=>{
   if(!activeId) return;
   const btn = document.getElementById('confirmBtn');
   const orig = btn.innerHTML;
-  btn.disabled = true; btn.textContent = 'Saving…';
-  // gather edited values from the rendered inputs (in FIELDS order)
-  const inputs = document.querySelectorAll('#flist .field-input input, #flist .field-input select, #flist .field-input textarea');
-  const fields = FIELDS.map((f,i)=>({
-    field_name: f.name,
-    confirmed_value: (inputs[i] && inputs[i].value != null) ? inputs[i].value : (f.value||'')
-  }));
+  // Stay on the case, show "Confirming…", and save to the DB before advancing.
+  btn.disabled = true; btn.innerHTML = `${ICON.spin}Confirming…`;
+  // pull the latest value straight from each rendered input (FIELDS order)
+  const fields = FIELDS.map((f,i)=>{
+    const el = document.querySelector(`#flist [data-fi="${i}"]`);
+    return { field_name: f.name, confirmed_value: el && el.value != null ? el.value : (f.value||'') };
+  });
   try{
     const r = await fetch(`${API}/queue/${encodeURIComponent(activeId)}/confirm`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({fields})
     });
     if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.detail||('HTTP '+r.status)); }
+    // Saved. Now advance. Refresh the queue in the background so the jump is instant.
     const doneId = activeId;
     await loadQueue();
-    // advance to the next remaining review case, else go back to the list
-    const remaining = QUEUE.filter(x=>x.id!==doneId && x.status!=='completed');
-    if(remaining.length){ selectCase(remaining[0].id); }
-    else { window.location.href = 'gip-notice-list.html'; }
+    const remaining = QUEUE.filter(x=>x.id!==doneId && x.status!=='completed' && x.status!=='approved');
+    if(remaining.length){ await selectCase(remaining[0].id); }
+    else { window.location.href = 'gip-notice-list.html'; return; }
+    btn.disabled = false; btn.innerHTML = orig;
   }catch(e){
     console.error('[GIP] confirm failed', e);
     alert('Save failed: ' + e.message);

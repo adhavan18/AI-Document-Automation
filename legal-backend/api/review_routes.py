@@ -129,6 +129,17 @@ class ConfirmBody(BaseModel):
     fields: list[ConfirmFieldIn]
 
 
+class FieldVerifyBody(BaseModel):
+    field_name: str
+    value: str | None
+
+
+class FieldVerifyResponse(BaseModel):
+    field_name: str
+    value: str | None
+    confidence: float
+
+
 class RejectBody(BaseModel):
     reason: str
 
@@ -437,6 +448,17 @@ def confirm_case(
         })
 
     save_confirmed_fields(db, case.id, _system_cw_id(db), fields_payload)
+
+    # "Confirm All Fields" = the whole case is now human-verified.
+    # Write each confirmed value back into the extracted field and set
+    # confidence to 1.0 so no field stays flagged as "needs manual review".
+    confirmed_map = {f["field_name"]: f["confirmed_value"] for f in fields_payload}
+    ef_rows = get_extracted_fields(db, case.id)
+    for ef in ef_rows:
+        if ef.field_name in confirmed_map:
+            ef.normalized_value = confirmed_map[ef.field_name]
+        ef.confidence = 1.0
+
     update_case_status(db, case.id, "approved")
     log_audit_event(
         db,
@@ -465,6 +487,59 @@ def confirm_case(
         status="approved",
         fields_confirmed=len(fields_payload),
         fields_corrected=corrected_count,
+    )
+
+
+# ---------------------------------------------------------------------------
+# POST /queue/{case_id}/field — verify a single field (per-field confirm)
+# ---------------------------------------------------------------------------
+
+@router.post("/{case_id}/field", response_model=FieldVerifyResponse)
+def verify_field(
+    case_id: str,
+    body: FieldVerifyBody,
+    db: Annotated[Session, Depends(get_db)],
+) -> FieldVerifyResponse:
+    """
+    Save an edited value for a single field and mark it human-verified
+    (confidence -> 1.0). Does NOT change case status or move the file —
+    the case only finalizes when the reviewer clicks "Confirm All Fields".
+    """
+    case = _require_case(db, case_id)
+
+    if case.status not in ("pending", "in_review"):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Case is {case.status!r} and cannot be edited",
+        )
+
+    row = db.execute(
+        select(ExtractedField).where(
+            ExtractedField.case_id == case.id,
+            ExtractedField.field_name == body.field_name,
+        )
+    ).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Field {body.field_name!r} not found on this case",
+        )
+
+    row.normalized_value = body.value
+    row.confidence = 1.0
+    log_audit_event(
+        db,
+        event_type="field_verified",
+        actor=_SYSTEM_ACTOR,
+        case_id=case.id,
+        payload={"field_name": body.field_name},
+    )
+    db.commit()
+
+    return FieldVerifyResponse(
+        field_name=body.field_name,
+        value=body.value,
+        confidence=1.0,
     )
 
 
