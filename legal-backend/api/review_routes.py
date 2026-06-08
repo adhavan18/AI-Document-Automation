@@ -496,10 +496,11 @@ def stream_pdf(
 ):
     case = _require_case(db, case_id)
 
-    # Try S3 first (post-processing files)
+    import s3_store
+
+    # Try S3 — works for both incoming/ (review queue) and processed/ (completed) keys
     if case.s3_key:
         try:
-            import s3_store
             body = s3_store.stream_object(case.s3_key)
             filename = case.s3_key.split("/")[-1]
             return StreamingResponse(
@@ -508,18 +509,35 @@ def stream_pdf(
                 headers={"Content-Disposition": f'inline; filename="{filename}"'},
             )
         except Exception as s3_err:
-            print(f"[S3] stream_pdf fallback for {case_id[:8]}: {s3_err}", flush=True)
+            print(f"[S3] stream_pdf failed for {case_id[:8]}: {s3_err}", flush=True)
 
-    # Fall back to local disk (file still being processed or S3 unavailable)
-    path = Path(case.pdf_path)
-    if not path.is_file():
-        raise HTTPException(
-            status_code=404,
-            detail="PDF not available (not yet processed or S3 unreachable)",
-        )
-    return FileResponse(
-        path=str(path),
-        media_type="application/pdf",
-        filename=path.name,
-        headers={"Content-Disposition": f'inline; filename="{path.name}"'},
+    # Fall back: try incoming/ key derived from pdf_path filename (upload before pipeline sets s3_key)
+    if case.pdf_path:
+        fname = Path(case.pdf_path).name
+        incoming_key = f"incoming/{fname}"
+        try:
+            if s3_store.key_exists(incoming_key):
+                body = s3_store.stream_object(incoming_key)
+                return StreamingResponse(
+                    body.iter_chunks(65536),
+                    media_type="application/pdf",
+                    headers={"Content-Disposition": f'inline; filename="{fname}"'},
+                )
+        except Exception as s3_err:
+            print(f"[S3] incoming fallback failed for {case_id[:8]}: {s3_err}", flush=True)
+
+    # Last resort: local disk (only works when backend runs on the upload machine)
+    if case.pdf_path:
+        path = Path(case.pdf_path)
+        if path.is_file():
+            return FileResponse(
+                path=str(path),
+                media_type="application/pdf",
+                filename=path.name,
+                headers={"Content-Disposition": f'inline; filename="{path.name}"'},
+            )
+
+    raise HTTPException(
+        status_code=404,
+        detail="PDF not available (not yet processed or S3 unreachable)",
     )
