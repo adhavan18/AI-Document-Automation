@@ -226,7 +226,14 @@ def _pipeline_background(
         )
         print(f'[UPLOAD] Pipeline complete for {case_id_str[:8]}')
         _maybe_auto_approve(case_id_str)
-        _finalize_to_s3(case_id_str, pdf_path_str)
+        # Clean up local temp file — S3 file stays in incoming/ until reviewer confirms
+        try:
+            local = Path(pdf_path_str)
+            if local.exists():
+                local.unlink()
+                print(f'[UPLOAD] Deleted local temp {local.name}', flush=True)
+        except Exception as e:
+            print(f'[UPLOAD] Could not delete local temp: {e}', flush=True)
     except Exception as exc:
         print(f'[UPLOAD] Pipeline failed for {case_id_str}: {exc}')
         try:

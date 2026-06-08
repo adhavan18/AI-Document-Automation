@@ -447,6 +447,19 @@ def confirm_case(
     )
     db.commit()
 
+    # Move file from incoming/ → processed/ now that reviewer has confirmed
+    if case.s3_key and case.s3_key.startswith("incoming/"):
+        try:
+            import s3_store
+            from database.crud import update_case_s3_key, update_case_status as _set_status
+            processed_key = s3_store.move_to_processed(case.s3_key)
+            update_case_s3_key(db, case.id, processed_key)
+            _set_status(db, case.id, "completed")
+            db.commit()
+            print(f"[S3] confirm: {case.s3_key} → {processed_key}", flush=True)
+        except Exception as s3_err:
+            print(f"[S3] confirm move failed for {case_id[:8]}: {s3_err}", flush=True)
+
     return ConfirmResponse(
         case_id=str(case.id),
         status="approved",
