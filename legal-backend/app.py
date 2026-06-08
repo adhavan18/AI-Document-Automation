@@ -127,6 +127,7 @@ def _on_startup() -> None:
     threading.Thread(target=_warm_models, daemon=True).start()
     threading.Thread(target=_folder_watcher, daemon=True).start()
     threading.Thread(target=_pipeline_worker, daemon=True).start()
+    threading.Thread(target=_enforce_threshold_all, daemon=True).start()
 
 
 # ---------------------------------------------------------------------------
@@ -250,12 +251,13 @@ def _pipeline_background(
 
 
 def _maybe_auto_approve(case_id_str: str) -> None:
-    """Set status=approved if every extracted field meets the confidence threshold."""
+    """Approve if ALL fields meet threshold, demote to pending if any field falls below."""
     try:
         from settings_store import get_threshold
         from database.connection import SessionLocal
         from database.models import ExtractedField
         from sqlalchemy import select
+        from database import crud
         threshold = get_threshold()
         _db = SessionLocal()
         try:
@@ -263,15 +265,59 @@ def _maybe_auto_approve(case_id_str: str) -> None:
             fields = _db.execute(
                 select(ExtractedField).where(ExtractedField.case_id == cid)
             ).scalars().all()
-            if fields and all(f.confidence >= threshold for f in fields):
-                from database import crud
+            if not fields:
+                return
+            case = crud.get_case(_db, cid)
+            if case is None:
+                return
+            meets = all(f.confidence >= threshold for f in fields)
+            if meets and case.status == 'pending':
                 crud.update_case_status(_db, cid, 'approved')
                 _db.commit()
-                print(f'[UPLOAD] Auto-approved {case_id_str[:8]} (all fields ≥ {threshold:.0%})')
+                print(f'[THRESHOLD] Auto-approved {case_id_str[:8]} (all ≥ {threshold:.0%})', flush=True)
+            elif not meets and case.status == 'approved':
+                crud.update_case_status(_db, cid, 'pending')
+                _db.commit()
+                print(f'[THRESHOLD] Demoted {case_id_str[:8]} → pending (field below {threshold:.0%})', flush=True)
         finally:
             _db.close()
     except Exception as exc:
-        print(f'[UPLOAD] Auto-approve check failed for {case_id_str}: {exc}')
+        print(f'[THRESHOLD] Check failed for {case_id_str}: {exc}', flush=True)
+
+
+def _enforce_threshold_all() -> None:
+    """On startup: scan every non-completed case and enforce the current threshold."""
+    try:
+        from settings_store import get_threshold
+        from database.connection import SessionLocal
+        from database.models import Case, ExtractedField
+        from database import crud
+        from sqlalchemy import select
+        threshold = get_threshold()
+        _db = SessionLocal()
+        try:
+            cases = _db.execute(
+                select(Case).where(Case.status.in_(['pending', 'approved', 'in_review']))
+            ).scalars().all()
+            for case in cases:
+                fields = _db.execute(
+                    select(ExtractedField).where(ExtractedField.case_id == case.id)
+                ).scalars().all()
+                if not fields:
+                    continue
+                meets = all(f.confidence >= threshold for f in fields)
+                if meets and case.status == 'pending':
+                    crud.update_case_status(_db, case.id, 'approved')
+                    _db.commit()
+                    print(f'[THRESHOLD] Startup approved {str(case.id)[:8]}', flush=True)
+                elif not meets and case.status == 'approved':
+                    crud.update_case_status(_db, case.id, 'pending')
+                    _db.commit()
+                    print(f'[THRESHOLD] Startup demoted {str(case.id)[:8]} → pending', flush=True)
+        finally:
+            _db.close()
+    except Exception as exc:
+        print(f'[THRESHOLD] Startup enforce failed: {exc}', flush=True)
 
 
 def _pipeline_worker() -> None:
@@ -461,38 +507,7 @@ async def update_settings_endpoint(request: Request) -> JSONResponse:
 
     # Re-evaluate all active cases against the new threshold
     if "confidence_threshold" in patch:
-        try:
-            from database.connection import SessionLocal
-            from database.models import Case, ExtractedField
-            from sqlalchemy import select
-            from settings_store import get_threshold
-            threshold = get_threshold()
-            _db = SessionLocal()
-            try:
-                # Promote pending → approved if they now meet the threshold
-                pending = _db.execute(
-                    select(Case).where(Case.status == 'pending')
-                ).scalars().all()
-                for case in pending:
-                    _maybe_auto_approve(str(case.id))
-
-                # Demote approved → pending if they no longer meet the raised threshold
-                approved = _db.execute(
-                    select(Case).where(Case.status == 'approved')
-                ).scalars().all()
-                from database import crud
-                for case in approved:
-                    fields = _db.execute(
-                        select(ExtractedField).where(ExtractedField.case_id == case.id)
-                    ).scalars().all()
-                    if fields and not all(f.confidence >= threshold for f in fields):
-                        crud.update_case_status(_db, case.id, 'pending')
-                        _db.commit()
-                        print(f'[SETTINGS] Demoted {str(case.id)[:8]} → pending (below new threshold {threshold:.0%})', flush=True)
-            finally:
-                _db.close()
-        except Exception as exc:
-            print(f'[SETTINGS] Re-evaluate cases failed: {exc}', flush=True)
+        threading.Thread(target=_enforce_threshold_all, daemon=True).start()
 
     return JSONResponse(content=updated)
 
