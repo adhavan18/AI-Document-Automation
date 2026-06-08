@@ -286,6 +286,95 @@
   .pg:disabled{opacity:.4;cursor:not-allowed;}
   .pg.dots{border:none;background:transparent;cursor:default;color:var(--ink-faint);padding:0 2px;}
 
+  /* ═══ Upload button (topbar) ═══ */
+  .btn-upload{padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    color:var(--primary);font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;
+    transition:all .15s;}
+  .btn-upload:hover{background:var(--primary-soft);border-color:var(--primary-soft);}
+  .btn-upload svg{flex-shrink:0;}
+
+  /* ═══ Right Drawer (Upload) ═══ */
+  @keyframes drawer-in{from{transform:translateX(100%);}to{transform:translateX(0);}}
+  @keyframes overlay-in{from{opacity:0;}to{opacity:1;}}
+  .drawer-overlay{position:fixed;inset:0;background:rgba(14,19,38,.42);z-index:80;
+    opacity:0;pointer-events:none;transition:opacity .22s ease;}
+  .drawer-overlay.open{opacity:1;pointer-events:auto;}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:96vw;background:#fff;z-index:90;
+    box-shadow:-14px 0 40px rgba(16,22,40,.16);display:flex;flex-direction:column;
+    transform:translateX(100%);transition:transform .26s cubic-bezier(.22,.61,.36,1);}
+  .drawer.open{transform:translateX(0);}
+  .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;
+    border-bottom:1px solid var(--line-soft);}
+  .drawer-head-l{display:flex;align-items:center;gap:11px;}
+  .drawer-ico{width:36px;height:36px;border-radius:10px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .drawer-title{font-size:15px;font-weight:700;letter-spacing:-.005em;line-height:1.2;}
+  .drawer-sub{font-size:11.5px;color:var(--ink-faint);margin-top:2px;font-weight:500;}
+  .drawer-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);transition:all .15s;}
+  .drawer-close:hover{background:var(--bg);color:var(--ink);}
+  .drawer-body{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:18px;}
+  .field-label{font-size:11px;font-weight:700;color:var(--ink-faint);letter-spacing:.08em;
+    text-transform:uppercase;margin-bottom:7px;display:block;}
+  .folder-select{appearance:none;-webkit-appearance:none;width:100%;padding:11px 36px 11px 14px;
+    border-radius:9px;border:1px solid var(--line);background:#fff;font-family:var(--font);font-size:13px;
+    font-weight:600;color:var(--ink);cursor:pointer;outline:none;transition:border-color .15s;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235b6376' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center;}
+  .folder-select:focus{border-color:var(--primary);}
+  .drop-zone{border:2px dashed var(--line);border-radius:14px;background:var(--bg);
+    padding:36px 22px;text-align:center;cursor:pointer;transition:all .18s;
+    display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .drop-zone:hover{border-color:var(--primary);background:var(--primary-soft);}
+  .drop-zone.dragging{border-color:var(--primary);background:var(--primary-soft);
+    transform:scale(1.01);box-shadow:0 0 0 4px rgba(32,68,150,.08);}
+  .drop-ico{width:52px;height:52px;border-radius:14px;background:#fff;color:var(--primary);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(32,68,150,.12);}
+  .drop-zone.dragging .drop-ico{color:#fff;background:var(--primary);}
+  .drop-title{font-size:14px;font-weight:700;color:var(--ink);}
+  .drop-title b{color:var(--primary);}
+  .drop-sub{font-size:11.5px;color:var(--ink-faint);font-weight:500;}
+  .drop-zone input[type="file"]{display:none;}
+  .upload-list{display:flex;flex-direction:column;gap:9px;}
+  .upload-list-head{display:flex;align-items:center;justify-content:space-between;}
+  .upload-list-title{font-size:12px;font-weight:700;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:.06em;}
+  .upload-clear{font-size:11.5px;font-weight:600;color:var(--ink-faint);background:none;border:none;
+    cursor:pointer;padding:2px 4px;transition:color .15s;}
+  .upload-clear:hover{color:var(--orange);}
+  .upload-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line-soft);
+    border-radius:10px;background:#fff;transition:border-color .15s;}
+  .upload-item.uploading{border-color:var(--primary-soft);}
+  .upload-item.done{border-color:var(--green-soft);background:#fafffb;}
+  .upload-item.error{border-color:var(--orange-soft);background:#fffaf8;}
+  .ui-ico{width:34px;height:34px;border-radius:9px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .upload-item.done .ui-ico{background:var(--green-soft);color:var(--green);}
+  .upload-item.error .ui-ico{background:var(--orange-soft);color:var(--orange);}
+  .ui-info{flex:1;min-width:0;}
+  .ui-name{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;}
+  .ui-meta{font-size:10.5px;color:var(--ink-faint);margin-top:3px;
+    display:flex;align-items:center;gap:8px;}
+  .ui-bar{height:4px;border-radius:999px;background:var(--line-soft);overflow:hidden;margin-top:6px;}
+  .ui-bar > i{display:block;height:100%;background:var(--primary);border-radius:999px;
+    transition:width .25s ease;width:0;}
+  .upload-item.done .ui-bar > i{background:var(--green);width:100% !important;}
+  .upload-item.error .ui-bar > i{background:var(--orange);}
+  .ui-remove{width:26px;height:26px;border-radius:7px;border:none;background:transparent;color:var(--ink-faint);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;}
+  .ui-remove:hover{background:var(--orange-soft);color:var(--orange);}
+  .drawer-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:14px 22px;border-top:1px solid var(--line-soft);background:#fbfcfe;}
+  .drawer-foot-info{font-size:11.5px;color:var(--ink-faint);font-weight:500;}
+  .drawer-foot-info b{color:var(--ink);font-weight:700;}
+  .drawer-actions{display:flex;align-items:center;gap:8px;}
+  .btn-ghost{padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+  .btn-ghost:hover{background:var(--bg);color:var(--ink);}
+  .btn-primary[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none;}
+
   /* ═══ Processing Agent floating widget ═══ */
   @keyframes typing-dot{0%,80%,100%{transform:translateY(0);opacity:.4;}40%{transform:translateY(-3px);opacity:1;}}
   @keyframes pa-pop{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
@@ -426,6 +515,10 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input id="searchInput" placeholder="Search files, applicants…" />
         </div>
+        <button class="btn-upload" id="uploadBtn" title="Upload notices">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload
+        </button>
       </div>
     </div>
 
@@ -516,6 +609,72 @@
     </div>
   </main>
 </div>
+
+<!-- ═══ Upload Drawer ═══ -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="drawer" id="uploadDrawer" aria-hidden="true" aria-label="Upload notices">
+  <div class="drawer-head">
+    <div class="drawer-head-l">
+      <div class="drawer-ico">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div>
+        <div class="drawer-title">Upload Notices</div>
+        <div class="drawer-sub">Drop USCIS notices to ingest into the queue</div>
+      </div>
+    </div>
+    <button class="drawer-close" id="drawerCloseBtn" title="Close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+    <div>
+      <label class="field-label" for="uploadFolder">Destination Folder</label>
+      <select id="uploadFolder" class="folder-select">
+        <option value="notices/inbox">Notices · Inbox</option>
+        <option value="notices/i130">I-130 · Family Sponsorship</option>
+        <option value="notices/i485">I-485 · Adjustment of Status</option>
+        <option value="notices/i765">I-765 · EAD</option>
+        <option value="notices/n400">N-400 · Naturalization</option>
+        <option value="notices/h4ead">H4-EAD</option>
+        <option value="notices/other">Other / Unclassified</option>
+      </select>
+    </div>
+
+    <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Drop files or click to browse">
+      <div class="drop-ico">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div>
+        <div class="drop-title">Drop files here or <b>click to browse</b></div>
+        <div class="drop-sub">PDF, JPG, PNG · up to 25 MB each</div>
+      </div>
+      <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/*" />
+    </div>
+
+    <div class="upload-list" id="uploadList" style="display:none;">
+      <div class="upload-list-head">
+        <span class="upload-list-title">Files <span id="ulCount">0</span></span>
+        <button class="upload-clear" id="ulClear">Clear all</button>
+      </div>
+      <div id="ulItems"></div>
+    </div>
+  </div>
+
+  <div class="drawer-foot">
+    <div class="drawer-foot-info">
+      <span id="ulFootInfo"><b>0</b> files queued</span>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn-ghost" id="drawerCancelBtn">Cancel</button>
+      <button class="btn-primary" id="uploadStartBtn" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Upload
+      </button>
+    </div>
+  </div>
+</aside>
 
 <!-- ═══ Processing Agent floating widget ═══ -->
 <div class="pa-widget" id="paWidget">
@@ -1092,6 +1251,145 @@ document.querySelector('.icon-btn-sm[title="Refresh"]')?.addEventListener('click
 renderNav();
 renderGrids();
 loadQueue();
+
+/* ═══ Upload Drawer ═══ */
+const drawer = document.getElementById('uploadDrawer');
+const drawerOverlay = document.getElementById('drawerOverlay');
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const folderSel = document.getElementById('uploadFolder');
+const ulItems = document.getElementById('ulItems');
+const ulCount = document.getElementById('ulCount');
+const ulFootInfo = document.getElementById('ulFootInfo');
+const uploadList = document.getElementById('uploadList');
+const uploadStartBtn = document.getElementById('uploadStartBtn');
+
+let pending = [];
+
+function openDrawer(){
+  drawer.classList.add('open');
+  drawerOverlay.classList.add('open');
+  drawer.setAttribute('aria-hidden','false');
+}
+function closeDrawer(){
+  drawer.classList.remove('open');
+  drawerOverlay.classList.remove('open');
+  drawer.setAttribute('aria-hidden','true');
+}
+document.getElementById('uploadBtn').onclick = openDrawer;
+document.getElementById('drawerCloseBtn').onclick = closeDrawer;
+document.getElementById('drawerCancelBtn').onclick = closeDrawer;
+drawerOverlay.onclick = closeDrawer;
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && drawer.classList.contains('open')) closeDrawer(); });
+
+function fmtSize(b){
+  if(b<1024) return b+' B';
+  if(b<1024*1024) return (b/1024).toFixed(1)+' KB';
+  return (b/(1024*1024)).toFixed(1)+' MB';
+}
+
+const PDF_ICO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+const IMG_ICO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+const DONE_ICO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const ERR_ICO  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>';
+
+function iconFor(item){
+  if(item.status==='done') return DONE_ICO;
+  if(item.status==='error') return ERR_ICO;
+  return item.file.type.startsWith('image/') ? IMG_ICO : PDF_ICO;
+}
+
+function renderUploadList(){
+  if(pending.length===0){
+    uploadList.style.display='none';
+    ulFootInfo.innerHTML='<b>0</b> files queued';
+    uploadStartBtn.disabled=true;
+    return;
+  }
+  uploadList.style.display='flex';
+  ulCount.textContent=pending.length;
+  ulItems.innerHTML=pending.map(it=>{
+    const stateTxt=it.status==='done'?'Uploaded':it.status==='error'?(it.error||'Failed'):it.status==='uploading'?Math.round(it.progress)+'%':'Ready';
+    return `<div class="upload-item ${it.status}" data-id="${it.id}">
+      <div class="ui-ico">${iconFor(it)}</div>
+      <div class="ui-info">
+        <div class="ui-name" title="${it.file.name}">${it.file.name}</div>
+        <div class="ui-meta"><span>${fmtSize(it.file.size)}</span><span>·</span><span>${stateTxt}</span></div>
+        <div class="ui-bar"><i style="width:${it.progress||0}%;"></i></div>
+      </div>
+      <button class="ui-remove" data-rm="${it.id}" title="Remove">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+  ulItems.querySelectorAll('[data-rm]').forEach(b=>{
+    b.onclick=()=>{ pending=pending.filter(p=>p.id!==b.dataset.rm); renderUploadList(); };
+  });
+  const queued=pending.filter(p=>p.status==='queued').length;
+  const done=pending.filter(p=>p.status==='done').length;
+  ulFootInfo.innerHTML=`<b>${queued}</b> queued · <b>${done}</b> uploaded`;
+  uploadStartBtn.disabled=queued===0;
+}
+
+document.getElementById('ulClear').onclick=()=>{ pending=[]; renderUploadList(); };
+
+const MAX_BYTES=25*1024*1024;
+const OK_TYPES=/\.(pdf|jpe?g|png)$/i;
+
+function addFiles(fileList){
+  Array.from(fileList).forEach(f=>{
+    if(!OK_TYPES.test(f.name)) return;
+    if(f.size>MAX_BYTES) return;
+    if(pending.some(p=>p.file.name===f.name && p.file.size===f.size)) return;
+    pending.push({id:'f_'+Math.random().toString(36).slice(2,9),file:f,status:'queued',progress:0});
+  });
+  renderUploadList();
+}
+
+dropZone.onclick=()=>fileInput.click();
+dropZone.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();fileInput.click();} };
+fileInput.onchange=e=>{ addFiles(e.target.files); fileInput.value=''; };
+
+['dragenter','dragover'].forEach(ev=>{
+  dropZone.addEventListener(ev,e=>{ e.preventDefault();e.stopPropagation();dropZone.classList.add('dragging'); });
+});
+['dragleave','drop'].forEach(ev=>{
+  dropZone.addEventListener(ev,e=>{ e.preventDefault();e.stopPropagation();dropZone.classList.remove('dragging'); });
+});
+dropZone.addEventListener('drop',e=>{ const f=e.dataTransfer?.files; if(f&&f.length) addFiles(f); });
+['dragover','drop'].forEach(ev=>{
+  window.addEventListener(ev,e=>{ if(drawer.classList.contains('open')) e.preventDefault(); });
+});
+
+function uploadOne(item){
+  return new Promise(resolve=>{
+    const fd=new FormData();
+    fd.append('file',item.file);
+    const xhr=new XMLHttpRequest();
+    xhr.upload.onprogress=e=>{
+      if(e.lengthComputable){ item.progress=(e.loaded/e.total)*100; item.status='uploading'; renderUploadList(); }
+    };
+    xhr.onload=()=>{
+      if(xhr.status>=200&&xhr.status<300){ item.status='done'; item.progress=100; }
+      else { item.status='error'; item.error='HTTP '+xhr.status; }
+      renderUploadList();
+      resolve();
+    };
+    xhr.onerror=()=>{ item.status='error'; item.error='Network error'; renderUploadList(); resolve(); };
+    xhr.open('POST', `${API}/upload`);
+    xhr.send(fd);
+  });
+}
+
+uploadStartBtn.onclick=async()=>{
+  const queue=pending.filter(p=>p.status==='queued');
+  if(!queue.length) return;
+  uploadStartBtn.disabled=true;
+  for(const item of queue) await uploadOne(item);
+  renderUploadList();
+  // Refresh queue so newly uploaded cases appear
+  loadQueue();
+};
 </script>
 </body>
 </html>
