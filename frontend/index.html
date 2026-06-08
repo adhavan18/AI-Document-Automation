@@ -711,6 +711,9 @@ function renderNav(){
 const API = '/legal';
 let AUTO_QUE = [];     // Processed Notices  (approved / rejected / completed)
 let REVIEW_QUE = [];   // Review Que         (processing / pending / in_review)
+/* Selection lives here — keyed by case_id — so it survives every re-render. */
+const SELECTED = new Set();
+const isSel = (row)=> SELECTED.has(row.case_id);
 
 /* Map a backend case record → the row shape this grid renders. */
 function mapCase(c){
@@ -734,7 +737,6 @@ function mapCase(c){
     accuracy,
     status: mapStatus(c.status),
     raw_status: c.status,
-    _sel: false,
   };
 }
 
@@ -756,6 +758,9 @@ async function loadQueue(){
     const rows = (data.cases || []).map(mapCase);
     REVIEW_QUE = rows.filter(x => x.status === 'processing' || x.status === 'ready');
     AUTO_QUE   = rows.filter(x => x.status === 'completed'  || x.status === 'failed');
+    // Drop selections for cases that no longer exist
+    const liveIds = new Set(rows.map(r=>r.case_id));
+    [...SELECTED].forEach(id=>{ if(!liveIds.has(id)) SELECTED.delete(id); });
     renderGrids();
     renderAgent();
   }catch(e){
@@ -836,10 +841,11 @@ function actionsCell(row){
 function rowHTML(row, opts){
   const selectable = opts && opts.selectable;
   const idx = opts && opts.idx;
+  const sel = isSel(row);
   const leading = selectable
-    ? `<td class="col-chk"><input type="checkbox" class="chk row-chk" data-idx="${idx}" ${row._sel?'checked':''}/></td>`
+    ? `<td class="col-chk"><input type="checkbox" class="chk row-chk" data-idx="${idx}" ${sel?'checked':''}/></td>`
     : '';
-  return `<tr class="${selectable && row._sel ? 'selected':''}">
+  return `<tr class="${selectable && sel ? 'selected':''}">
     ${leading}
     <td>
       <div class="file-cell">
@@ -902,8 +908,9 @@ function renderHead(){
   </tr>`;
   document.getElementById('selAll').onchange = (e)=>{
     const on = e.target.checked;
-    activeData().forEach(r=> r._sel = on);
-    renderGrids();
+    activeData().forEach(r=>{ if(on) SELECTED.add(r.case_id); else SELECTED.delete(r.case_id); });
+    document.querySelectorAll('.row-chk').forEach(b=>{ b.checked = on; b.closest('tr')?.classList.toggle('selected', on); });
+    updateSelectionUI();
   };
 }
 
@@ -978,6 +985,13 @@ function renderGrids(){
         return rowHTML(r, {selectable:true, idx:absoluteIdx});
       }).join('')
     : `<tr><td colspan="7" class="empty">No rows to display</td></tr>`;
+  // Force-apply checked state after innerHTML rebuild (attribute alone is unreliable)
+  document.querySelectorAll('.row-chk').forEach(box=>{
+    const i = +box.dataset.idx;
+    const on = data[i] ? SELECTED.has(data[i].case_id) : false;
+    box.checked = on;
+    box.closest('tr')?.classList.toggle('selected', on);
+  });
   renderFooter();
   wireRowSelection();
   updateSelectionUI();
@@ -986,11 +1000,19 @@ function renderGrids(){
 function wireRowSelection(){
   const data = activeData();
   document.querySelectorAll('.row-chk').forEach(box=>{
-    box.onchange = ()=>{
+    box.onclick = (e)=>{
+      e.stopPropagation();
+      e.preventDefault();
       const i = +box.dataset.idx;
-      data[i]._sel = box.checked;
+      const row = data[i];
+      if(!row) return;
+      const wasChecked = box.checked;
+      const newChecked = !wasChecked;
+      if(newChecked) SELECTED.add(row.case_id);
+      else SELECTED.delete(row.case_id);
+      box.checked = newChecked;
       const tr = box.closest('tr');
-      if(tr) tr.classList.toggle('selected', box.checked);
+      if(tr) tr.classList.toggle('selected', newChecked);
       updateSelectionUI();
     };
   });
@@ -999,14 +1021,14 @@ function wireRowSelection(){
 function updateSelectionUI(){
   const data = activeData();
   const total = data.length;
-  const sel = data.filter(r=>r._sel).length;
+  const sel = data.filter(isSel).length;
   const selAll = document.getElementById('selAll');
   if(selAll){
     selAll.checked = sel===total && total>0;
     selAll.indeterminate = sel>0 && sel<total;
   }
   const reviewTotal = REVIEW_QUE.length;
-  const reviewSel = REVIEW_QUE.filter(r=>r._sel).length;
+  const reviewSel = REVIEW_QUE.filter(isSel).length;
   const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
   set('cntAll', reviewTotal);
   set('cntAll2', reviewTotal);
@@ -1032,7 +1054,6 @@ document.getElementById('pageSize').onchange = (e)=>{
 };
 
 /* Poll the backend every 5s so processing → ready transitions appear live. */
-setInterval(loadQueue, 5000);
 
 /* ─── Pipeline stage polling ─── */
 /* Polls /legal/pipeline/status every 2 s when a case is processing, giving
@@ -1225,7 +1246,7 @@ menu.querySelectorAll('.menu-item').forEach(item=>{
   item.onclick = ()=>{
     if(item.classList.contains('disabled')) return;
     const action = item.dataset.action;
-    const sel = REVIEW_QUE.filter(r=>r._sel);
+    const sel = REVIEW_QUE.filter(isSel);
     const targets = action.endsWith('-all') ? REVIEW_QUE : sel;
     if(targets.length===0) return;
     menu.classList.remove('open');
