@@ -1080,8 +1080,7 @@ async function pollPipelineStatus(){
     renderAgent();
   }catch(_){}
 }
-setInterval(pollPipelineStatus, 2000);
-pollPipelineStatus();
+// Only poll on manual refresh — no auto-refresh
 
 /* ─── Processing Agent widget ─── */
 /* widget view-state: 'min' | 'med' | 'max' — defaults to medium */
