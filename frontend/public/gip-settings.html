@@ -990,6 +990,7 @@ function syncThr(){
   if(inp && inp !== document.activeElement) inp.value = v;
 }
 thrSlider.addEventListener('input', syncThr);
+thrSlider.addEventListener('change', saveSettings);
 syncThr();
 
 document.getElementById('thrInput').addEventListener('input', function(){
