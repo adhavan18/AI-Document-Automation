@@ -354,8 +354,11 @@ def _finalize_to_s3(case_id_str: str, local_pdf_path: str) -> None:
             if case and case.s3_key and case.s3_key.startswith("incoming/"):
                 processed_key = s3_store.move_to_processed(case.s3_key)
                 crud.update_case_s3_key(_db, cid, processed_key)
+                # Mark as completed — now visible in Processed Notices tab
+                if case.status in ('pending', 'approved'):
+                    crud.update_case_status(_db, cid, 'completed')
                 _db.commit()
-                print(f'[S3] Case {case_id_str[:8]} → {processed_key}', flush=True)
+                print(f'[S3] Case {case_id_str[:8]} → {processed_key} (completed)', flush=True)
         finally:
             _db.close()
 
