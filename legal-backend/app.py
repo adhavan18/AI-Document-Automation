@@ -448,6 +448,25 @@ async def update_settings_endpoint(request: Request) -> JSONResponse:
     updated = update_settings(patch)
     updated = dict(updated)
     updated["confidence_threshold_pct"] = round(updated.get("confidence_threshold", 0.7) * 100)
+
+    # Re-evaluate all pending cases against the new threshold
+    if "confidence_threshold" in patch:
+        try:
+            from database.connection import SessionLocal
+            from database.models import Case
+            from sqlalchemy import select
+            _db = SessionLocal()
+            try:
+                pending = _db.execute(
+                    select(Case).where(Case.status == 'pending')
+                ).scalars().all()
+                for case in pending:
+                    _maybe_auto_approve(str(case.id))
+            finally:
+                _db.close()
+        except Exception as exc:
+            print(f'[SETTINGS] Re-evaluate pending cases failed: {exc}', flush=True)
+
     return JSONResponse(content=updated)
 
 
