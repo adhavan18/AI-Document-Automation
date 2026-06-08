@@ -459,23 +459,40 @@ async def update_settings_endpoint(request: Request) -> JSONResponse:
     updated = dict(updated)
     updated["confidence_threshold_pct"] = round(updated.get("confidence_threshold", 0.7) * 100)
 
-    # Re-evaluate all pending cases against the new threshold
+    # Re-evaluate all active cases against the new threshold
     if "confidence_threshold" in patch:
         try:
             from database.connection import SessionLocal
-            from database.models import Case
+            from database.models import Case, ExtractedField
             from sqlalchemy import select
+            from settings_store import get_threshold
+            threshold = get_threshold()
             _db = SessionLocal()
             try:
+                # Promote pending → approved if they now meet the threshold
                 pending = _db.execute(
                     select(Case).where(Case.status == 'pending')
                 ).scalars().all()
                 for case in pending:
                     _maybe_auto_approve(str(case.id))
+
+                # Demote approved → pending if they no longer meet the raised threshold
+                approved = _db.execute(
+                    select(Case).where(Case.status == 'approved')
+                ).scalars().all()
+                from database import crud
+                for case in approved:
+                    fields = _db.execute(
+                        select(ExtractedField).where(ExtractedField.case_id == case.id)
+                    ).scalars().all()
+                    if fields and not all(f.confidence >= threshold for f in fields):
+                        crud.update_case_status(_db, case.id, 'pending')
+                        _db.commit()
+                        print(f'[SETTINGS] Demoted {str(case.id)[:8]} → pending (below new threshold {threshold:.0%})', flush=True)
             finally:
                 _db.close()
         except Exception as exc:
-            print(f'[SETTINGS] Re-evaluate pending cases failed: {exc}', flush=True)
+            print(f'[SETTINGS] Re-evaluate cases failed: {exc}', flush=True)
 
     return JSONResponse(content=updated)
 
