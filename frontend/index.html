@@ -734,7 +734,6 @@ function mapCase(c){
     accuracy,
     status: mapStatus(c.status),
     raw_status: c.status,
-    progress: c.status === 'processing' ? 60 : undefined,
     _sel: false,
   };
 }
@@ -799,8 +798,9 @@ function accuracyCell(a){
   </div>`;
 }
 
-function processingStatusCell(progress){
-  const pct = Math.round(progress);
+function processingStatusCell(){
+  const si = STAGE_INFO[_pipelineStage] || STAGE_INFO[0];
+  const pct = si.pct;
   const C = 2 * Math.PI * 14;
   const offset = C * (1 - pct/100);
   return `<div class="proc-status">
@@ -815,14 +815,14 @@ function processingStatusCell(progress){
       <div class="proc-pct">${pct}%</div>
     </div>
     <div class="proc-txt">
-      <span class="lbl">Processing</span>
-      <span class="sub">Extracting fields…</span>
+      <span class="lbl">Stage ${_pipelineStage||'?'}/4</span>
+      <span class="sub">${si.label}</span>
     </div>
   </div>`;
 }
 
 function statusCell(row){
-  if(row.status==='processing') return processingStatusCell(row.progress ?? 0);
+  if(row.status==='processing') return processingStatusCell();
   return `<span class="pill ${row.status}">${STATUS[row.status]?.label || row.status}</span>`;
 }
 
@@ -1034,6 +1034,34 @@ document.getElementById('pageSize').onchange = (e)=>{
 /* Poll the backend every 5s so processing → ready transitions appear live. */
 setInterval(loadQueue, 5000);
 
+/* ─── Pipeline stage polling ─── */
+/* Polls /legal/pipeline/status every 2 s when a case is processing, giving
+   accurate real-time stage info instead of a hardcoded percentage. */
+const STAGE_INFO = {
+  0: { pct: 0,   label: 'Waiting…' },
+  1: { pct: 15,  label: 'Resolving identity…' },
+  2: { pct: 38,  label: 'Classifying form…' },
+  3: { pct: 62,  label: 'Extracting fields…' },
+  4: { pct: 85,  label: 'Running AI correction…' },
+};
+let _pipelineStage = 0;
+let _pipelineActiveCaseId = null;
+let _pipelineQueueDepth = 0;
+
+async function pollPipelineStatus(){
+  try{
+    const r = await fetch(`${API}/pipeline/status`);
+    if(!r.ok) return;
+    const d = await r.json();
+    _pipelineStage = d.active_stage || 0;
+    _pipelineActiveCaseId = d.active_case_id || null;
+    _pipelineQueueDepth = d.queued || 0;
+    renderAgent();
+  }catch(_){}
+}
+setInterval(pollPipelineStatus, 2000);
+pollPipelineStatus();
+
 /* ─── Processing Agent widget ─── */
 /* widget view-state: 'min' | 'med' | 'max' — defaults to medium */
 let paState = 'med';
@@ -1088,7 +1116,9 @@ function renderAgent(){
     return;
   }
 
-  const pct = Math.round(active.progress || 0);
+  const stageInfo = STAGE_INFO[_pipelineStage] || STAGE_INFO[0];
+  const pct = stageInfo.pct;
+  const stageLabel = stageInfo.label;
   const C = 2 * Math.PI * 17;
   const offset = C * (1 - pct/100);
   const activeBlock = `
@@ -1107,7 +1137,7 @@ function renderAgent(){
         <div class="pa-file-name" title="${active.file}">${active.file}</div>
         <div class="pa-file-meta">
           <span class="form-tag">${active.form}</span>
-          <span>${active.fn}</span>
+          <span style="color:var(--amber);font-weight:600;">Stage ${_pipelineStage||'?'}/4 · ${stageLabel}</span>
         </div>
       </div>
     </div>`;
@@ -1123,7 +1153,7 @@ function renderAgent(){
         <div class="pa-q-item ${r.status}">
           <span class="q-form">${r.form}</span>
           <span class="q-file" title="${r.file}">${r.file}</span>
-          <span class="q-state">${r.status==='processing' ? Math.round(r.progress||0)+'%' : 'Queued'}</span>
+          <span class="q-state">${r.status==='processing' ? pct+'% · '+stageLabel : 'Queued'}</span>
         </div>`).join('')
     : `<div class="pa-sub" style="margin:0;">No files in pipeline.</div>`;
   body.innerHTML = `${activeBlock}

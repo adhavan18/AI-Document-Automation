@@ -489,11 +489,11 @@ def reject_case(
 # GET /queue/{case_id}/pdf
 # ---------------------------------------------------------------------------
 
-@router.get("/{case_id}/pdf")
+@router.get("/{case_id}/pdf", response_model=None)
 def stream_pdf(
     case_id: str,
     db: Annotated[Session, Depends(get_db)],
-) -> StreamingResponse | FileResponse:
+):
     case = _require_case(db, case_id)
 
     # Try S3 first (post-processing files)
