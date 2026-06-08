@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIP Agent Operations — Cost & ROI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --navy:#204496; --navy-d:#16336f; --ink:#1a2233; --ink-faint:#9aa1b2; --muted:#6b7280; --muted-l:#9aa3b2;
+    --bg:#f4f6fb; --card:#ffffff; --line:#e8ecf4; --line-2:#eef1f7;
+    --blue:#2563eb; --blue-bg:#eef2ff; --amber:#d97706; --amber-bg:#fef3e2;
+    --green:#16a34a; --green-bg:#e7f6ec; --red:#dc2626; --orange:#e14a28;
+    --side-bg:#0e1326; --side-bg-2:#111733; --side-text:#aab2c6; --side-text-hi:#ffffff; --side-line:#222a45;
+    --accent:#4d82f0; --accent-soft:rgba(77,130,240,.14);
+    --shadow:0 1px 2px rgba(16,30,60,.04),0 4px 16px rgba(16,30,60,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;}
+  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);
+    -webkit-font-smoothing:antialiased;display:flex;overflow:hidden;}
+  .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+
+  /* ═══ SIDEBAR ═══ */
+  .sidebar{width:252px;flex-shrink:0;background:linear-gradient(180deg,var(--side-bg),var(--side-bg-2));
+    display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);
+    position:sticky;top:0;height:100vh;}
+  .sidebar.collapsed{width:74px;}
+
+  .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
+  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
+    background:transparent;border:none;padding:0;cursor:pointer;
+    color:var(--side-text);display:none;align-items:center;justify-content:center;
+    transition:background .15s, color .15s;}
+  .brand-icon:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .brand-logo{display:none;}
+  .sidebar.collapsed .brand-icon{display:flex;margin:0 auto;}
+  .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
+    background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;
+    transition:background .15s;cursor:pointer;}
+  .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
+  .sidebar.collapsed .collapse-btn{display:none;}
+
+  .nav{flex:1;overflow-y:auto;padding:6px 12px;}
+  .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
+    text-transform:uppercase;padding:14px 10px 7px;}
+  .sidebar.collapsed .nav-label{display:none;}
+  .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
+    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:13.5px;
+    font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;
+    text-decoration:none;}
+  a.nav-item,a.nav-item:hover,a.nav-item:focus{text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:var(--side-text-hi);}
+  .nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600;}
+  .nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--accent);box-shadow:0 0 10px var(--accent);}
+  .nav-item .ico{flex-shrink:0;display:flex;}
+  .nav-item.active .ico{color:var(--accent);}
+  .nav-item .lbl{overflow:hidden;text-overflow:ellipsis;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding:11px 0;}
+  .sidebar.collapsed .nav-item .lbl{display:none;}
+  .sidebar.collapsed .nav-item:hover::after{content:attr(data-label);position:absolute;left:calc(100% + 10px);
+    top:50%;transform:translateY(-50%);background:#1c2340;color:#fff;font-size:12px;font-weight:500;
+    padding:6px 10px;border-radius:7px;white-space:nowrap;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+
+  .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
+  .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
+    border:none;background:transparent;color:var(--side-text);font-size:13px;font-weight:500;
+    margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;cursor:pointer;}
+  .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+  a.foot-item{text-decoration:none;}
+  .foot-item .badge-n{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:700;
+    min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+  .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
+  .sidebar.collapsed .foot-item .lbl,.sidebar.collapsed .foot-item .badge-n{display:none;}
+  .user{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-top:6px;border-radius:10px;
+    transition:background .15s;}
+  .user:hover{background:rgba(255,255,255,.05);}
+  .avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--orange);color:#fff;
+    font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .user-txt{overflow:hidden;white-space:nowrap;}
+  .user-name{font-size:13px;font-weight:600;color:#fff;line-height:1.1;}
+  .user-role{font-size:11px;color:var(--ink-faint);}
+  .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
+  .sidebar.collapsed .user-txt{display:none;}
+
+  /* main */
+  main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 30px;
+    background:var(--card);border-bottom:1px solid var(--line);}
+  .topbar h1{font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em;color:var(--ink);}
+  .topbar .date{font-size:12.5px;color:var(--muted);margin-top:3px;max-width:680px;line-height:1.45;}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .content{flex:1;overflow-y:auto;padding:26px 30px 40px;}
+  .seg{display:flex;gap:6px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px}
+  .seg button{border:0;background:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);
+    padding:6px 12px;border-radius:7px;cursor:pointer}
+  .seg button.on{background:var(--navy);color:#fff}
+
+  /* kpi strip */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 17px;box-shadow:var(--shadow)}
+  .kpi .ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;margin-bottom:12px}
+  .kpi .ico svg{width:17px;height:17px}
+  .kpi .v{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .kpi .l{font-size:12.5px;color:var(--muted);margin-top:7px;font-weight:500}
+  .kpi .s{font-size:11.5px;font-weight:600;margin-top:5px}
+  .pos{color:var(--green)} .neg{color:var(--red)} .acc{color:var(--navy)}
+
+  .grid{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .row3{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;align-items:start}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+  .ph{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 13px;border-bottom:1px solid var(--line-2)}
+  .ph h2{font-size:14px;font-weight:700;letter-spacing:-.01em}
+  .ph .hint{font-size:11.5px;color:var(--muted-l)}
+  .pb{padding:6px 18px 18px}
+
+  /* agent table */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:right;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-l);
+    font-weight:700;padding:12px 8px 10px}
+  th:first-child{text-align:left}
+  td{padding:13px 8px;border-top:1px solid var(--line-2);text-align:right}
+  td:first-child{text-align:left}
+  .ag{display:flex;align-items:center;gap:10px}
+  .ag .ai{width:30px;height:30px;border-radius:8px;background:var(--blue-bg);display:grid;place-items:center;flex:none}
+  .ag .ai svg{width:15px;height:15px;color:var(--navy)}
+  .ag .nm{font-weight:600;font-size:13px}
+  .ag .form{font-size:11px;color:var(--muted-l)}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:20px}
+  .b-ready{background:var(--blue-bg);color:var(--blue)}
+  .b-proc{background:var(--amber-bg);color:var(--amber)}
+  .b-done{background:var(--green-bg);color:var(--green)}
+  .bar{height:6px;border-radius:4px;background:var(--line);overflow:hidden;width:74px;display:inline-block;vertical-align:middle}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,#3a63d6,#204496)}
+
+  /* compare bars */
+  .cmp{display:flex;flex-direction:column;gap:16px;padding-top:6px}
+  .cmprow .t{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px;font-weight:600}
+  .cmprow .t span:last-child{font-family:'JetBrains Mono',monospace}
+  .track{height:13px;border-radius:7px;background:var(--line-2);overflow:hidden}
+  .track i{display:block;height:100%;border-radius:7px}
+  .fill-h{background:linear-gradient(90deg,#c7d0e6,#8a9bc4)}
+  .fill-a{background:linear-gradient(90deg,#3a63d6,#204496)}
+  .savecall{margin-top:18px;padding:15px 16px;border-radius:12px;background:linear-gradient(135deg,#eef2ff,#e7f6ec);
+    border:1px solid #d8e0f5;display:flex;align-items:center;justify-content:space-between}
+  .savecall .big{font-size:23px;font-weight:800;color:var(--green)}
+  .savecall .lab{font-size:12px;color:var(--muted);font-weight:600}
+
+  /* inputs */
+  .ig{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;padding-top:4px}
+  .ig.full{grid-template-columns:1fr}
+  .fld label{display:block;font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px}
+  .inwrap{display:flex;align-items:center;background:#f7f9fd;border:1px solid var(--line);border-radius:9px;
+    padding:0 10px;transition:.15s}
+  .inwrap:focus-within{border-color:var(--navy);background:#fff;box-shadow:0 0 0 3px rgba(32,68,150,.08)}
+  .inwrap .pre{color:var(--muted-l);font-size:13px;font-weight:600}
+  .inwrap input{border:0;background:none;outline:none;font:inherit;font-family:'JetBrains Mono',monospace;
+    font-weight:600;font-size:13px;width:100%;padding:9px 6px;text-align:right;color:var(--ink)}
+  .inwrap .suf{color:var(--muted-l);font-size:11px;font-weight:600;white-space:nowrap}
+  .sub{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);font-weight:700;
+    margin:16px 0 9px;grid-column:1/-1}
+  .sub:first-child{margin-top:4px}
+
+  /* tco */
+  .tco-list{display:flex;flex-direction:column;gap:11px;padding-top:6px}
+  .tco-item{display:flex;align-items:center;gap:11px;font-size:13px}
+  .tco-item .sw{width:11px;height:11px;border-radius:3px;flex:none}
+  .tco-item .nm{flex:1;color:var(--ink);font-weight:500}
+  .tco-item .vl{font-family:'JetBrains Mono',monospace;font-weight:600}
+  .tco-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:14px 0 4px;background:var(--line-2)}
+  .tco-bar i{height:100%}
+  .tco-total{display:flex;justify-content:space-between;align-items:baseline;padding-top:14px;margin-top:6px;
+    border-top:1px solid var(--line-2)}
+  .tco-total .lab{font-size:12px;color:var(--muted);font-weight:600}
+  .tco-total .amt{font-size:22px;font-weight:800;letter-spacing:-.02em}
+
+  .chart-wrap{position:relative;height:300px;padding:8px 4px 0}
+  .be-note{display:flex;gap:18px;padding:0 18px 16px;flex-wrap:wrap}
+  .be-note .it{font-size:12px;color:var(--muted)}
+  .be-note .it b{color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:13px}
+
+  @media(max-width:1080px){.kpis{grid-template-columns:repeat(2,1fr)}.grid,.row3{grid-template-columns:1fr}
+    .sidebar{display:none}.topbar{padding:14px 20px}.content{padding:20px}}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="side-head">
+    <img class="brand-logo" src="assets/logo_white.png" alt="GIP" />
+    <button class="brand-icon" id="brandIcon" title="Expand menu" aria-label="Expand menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+    </button>
+    <button class="collapse-btn" id="collapseBtn" title="Collapse">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+    </button>
+  </div>
+
+  <nav class="nav" id="nav"></nav>
+
+  <div class="side-foot">
+    <a class="foot-item" href="gip-settings.html" data-label="Settings" title="Settings">
+      <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+      <span class="lbl">Settings</span>
+    </a>
+    <button class="foot-item" data-label="Status" title="Status">
+      <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg></span>
+      <span class="lbl">Status</span>
+    </button>
+    <button class="foot-item" data-label="Notifications" title="Notifications">
+      <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+      <span class="lbl">Notifications</span>
+      <span class="badge-n">0</span>
+    </button>
+    <div class="user" data-label="Austin" title="Austin · admin">
+      <div class="avatar">A</div>
+      <div class="user-txt">
+        <div class="user-name">Austin</div>
+        <div class="user-role">admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h1 id="pageTitle">Agent Operations &amp; ROI</h1>
+      <div class="date">Token consumption, cost-benefit vs. human baseline, and return on the GIP agent stack.</div>
+    </div>
+    <div class="top-actions">
+      <div class="seg">
+        <button data-period="7">This week</button>
+        <button class="on" data-period="30">This month</button>
+        <button data-period="90">Quarter</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- KPI STRIP -->
+  <div class="kpis">
+    <div class="kpi">
+      <div class="ico" style="background:var(--blue-bg)"><svg fill="none" stroke="var(--blue)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/></svg></div>
+      <div class="v num" id="k-tokens">—</div><div class="l">Tokens used</div>
+      <div class="s acc" id="k-docs">—</div>
+    </div>
+    <div class="kpi">
+      <div class="ico" style="background:var(--amber-bg)"><svg fill="none" stroke="var(--amber)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      <div class="v num" id="k-runcost">—</div><div class="l">Agent run cost</div>
+      <div class="s" id="k-perdoc">—</div>
+    </div>
+    <div class="kpi">
+      <div class="ico" style="background:var(--green-bg)"><svg fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+      <div class="v num" id="k-timesaved">—</div><div class="l">Processing time saved</div>
+      <div class="s pos" id="k-lag">—</div>
+    </div>
+    <div class="kpi">
+      <div class="ico" style="background:var(--green-bg)"><svg fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v6"/></svg></div>
+      <div class="v num pos" id="k-saved">—</div><div class="l">Cost avoided vs. human</div>
+      <div class="s pos" id="k-savepct">—</div>
+    </div>
+    <div class="kpi" style="border-color:#c9d6f5;background:linear-gradient(135deg,#fff,#f3f6ff)">
+      <div class="ico" style="background:var(--navy)"><svg fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 13l3 3 7-8"/></svg></div>
+      <div class="v num acc" id="k-roi">—</div><div class="l">ROI to date</div>
+      <div class="s" id="k-break">—</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- AGENT TABLE -->
+    <div class="panel">
+      <div class="ph"><h2>Agent Throughput &amp; Unit Economics</h2><span class="hint">per agent · selected period</span></div>
+      <div class="pb">
+        <table>
+          <thead><tr>
+            <th>Agent</th><th>Status</th><th>Docs</th><th>Tokens</th>
+            <th>Run cost</th><th>Time saved</th>
+          </tr></thead>
+          <tbody id="agent-rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COST BENEFIT -->
+    <div class="panel">
+      <div class="ph"><h2>Cost-Benefit · Agents vs. Humans</h2></div>
+      <div class="pb">
+        <div class="cmp">
+          <div class="cmprow">
+            <div class="t"><span>Human cost (fully-loaded labor)</span><span id="cb-h">—</span></div>
+            <div class="track"><i class="fill-h" id="cb-hbar" style="width:100%"></i></div>
+          </div>
+          <div class="cmprow">
+            <div class="t"><span>Agent cost (token + compute + reviewer)</span><span id="cb-a">—</span></div>
+            <div class="track"><i class="fill-a" id="cb-abar" style="width:18%"></i></div>
+          </div>
+        </div>
+        <div class="savecall">
+          <div><div class="lab">Net savings this period</div><div class="big" id="cb-net">—</div></div>
+          <div style="text-align:right"><div class="lab">Cost reduction</div><div class="big acc" id="cb-pct">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row3">
+    <!-- ASSUMPTIONS -->
+    <div class="panel">
+      <div class="ph"><h2>Assumptions &amp; Cost of Ownership</h2><span class="hint">edit to recompute</span></div>
+      <div class="pb">
+        <div class="ig">
+          <div class="sub">Pricing &amp; labor baseline</div>
+          <div class="fld"><label>Blended token cost</label><div class="inwrap"><span class="pre">$</span><input id="in-tokrate" value="6.50"><span class="suf">/M tok</span></div></div>
+          <div class="fld"><label>Compute per doc</label><div class="inwrap"><span class="pre">$</span><input id="in-compute" value="0.04"><span class="suf">/doc</span></div></div>
+          <div class="fld"><label>Human fully-loaded rate</label><div class="inwrap"><span class="pre">$</span><input id="in-hrate" value="42"><span class="suf">/hr</span></div></div>
+          <div class="fld"><label>Reviewer (in-loop)</label><div class="inwrap"><span class="pre">$</span><input id="in-reviewer" value="3200"><span class="suf">/mo</span></div></div>
+
+          <div class="sub">Total cost of ownership</div>
+          <div class="fld"><label>Initial cost of ownership (one-time)</label><div class="inwrap"><span class="pre">$</span><input id="in-ico" value="24000"><span class="suf">build</span></div></div>
+          <div class="fld"><label>Projection horizon</label><div class="inwrap"><input id="in-horizon" value="12"><span class="suf">months</span></div></div>
+        </div>
+        <div class="ph" style="border:0;padding:14px 0 4px"><h2 style="font-size:12px;color:var(--muted)">Per-agent baselines (monthly volume · human min/doc · agent sec/doc · tokens/doc)</h2></div>
+        <div id="agent-inputs"></div>
+      </div>
+    </div>
+
+    <!-- TCO + ROI stacked -->
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="panel">
+        <div class="ph"><h2>Total Cost of Ownership</h2><span class="hint" id="tco-hz">over 12 mo</span></div>
+        <div class="pb">
+          <div class="tco-bar" id="tco-bar"></div>
+          <div class="tco-list" id="tco-list"></div>
+          <div class="tco-total"><span class="lab">TCO (ICO + run + reviewer)</span><span class="amt num" id="tco-total">—</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h2>ROI — Cumulative Net Benefit</h2><span class="hint">savings less TCO</span></div>
+        <div class="chart-wrap"><canvas id="roiChart"></canvas></div>
+        <div class="be-note">
+          <div class="it">Breakeven: <b id="be-month">—</b></div>
+          <div class="it">Net benefit @ horizon: <b id="be-net">—</b></div>
+          <div class="it">ROI @ horizon: <b id="be-roi">—</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</main>
+
+<script>
+/* ─── nav ─── */
+const ICONS = {
+  dashboard:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>',
+  notice:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>',
+  compliance:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>',
+  filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  agentops:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
+  email:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+};
+const NAV = [
+  {id:'dashboard', label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard},
+  {id:'notice',    label:'Notice Processing',        href:'gip-notice-list.html',icon:ICONS.notice,    group:'Agents'},
+  {id:'compliance',label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents'},
+  {id:'filing',    label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents'},
+  {id:'email',     label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools'},
+  {id:'agentops',  label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights'},
+];
+const ACTIVE_NAV = 'agentops';
+
+function renderNav(){
+  let html = '', currentGroup = null;
+  NAV.forEach(n=>{
+    const g = n.group || null;
+    if(g !== currentGroup){
+      currentGroup = g;
+      if(g) html += `<div class="nav-label lbl">${g}</div>`;
+    }
+    html += `<a class="nav-item ${n.id===ACTIVE_NAV?'active':''}" href="${n.href}" data-label="${n.label}" title="${n.label}">
+      <span class="ico">${n.icon}</span><span class="lbl">${n.label}</span>
+    </a>`;
+  });
+  document.getElementById('nav').innerHTML = html;
+}
+renderNav();
+
+document.getElementById('collapseBtn').onclick = ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+};
+document.getElementById('brandIcon').onclick = ()=>{
+  document.getElementById('sidebar').classList.remove('collapsed');
+};
+
+// ---- agent definitions (status counts illustrative; volume/baselines editable) ----
+const AGENTS = [
+  {key:'notice', name:'Notice Processing', form:'I-797C · USCIS notices',
+   icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+   vol:140, humanMin:22, agentSec:35, tokPerDoc:9000, ready:6, proc:2, done:12},
+  {key:'paf', name:'Compliance Doc (PAF)', form:'Public Access File',
+   icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+   vol:60, humanMin:48, agentSec:70, tokPerDoc:16000, ready:3, proc:1, done:5},
+  {key:'h4', name:'Automate Filing (H4 EAD)', form:'I-765 / H4 EAD',
+   icon:'<path d="M12 2a3 3 0 0 0-3 3v1H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3V5a3 3 0 0 0-3-3z"/>',
+   vol:45, humanMin:65, agentSec:95, tokPerDoc:22000, ready:2, proc:1, done:4},
+];
+
+const $=id=>document.getElementById(id);
+const money=n=>'$'+Math.round(n).toLocaleString();
+const money1=n=> n>=1000? '$'+(n/1000).toFixed(1)+'k' : '$'+n.toFixed(0);
+const compact=n=> n>=1e6? (n/1e6).toFixed(2)+'M' : n>=1e3? (n/1e3).toFixed(1)+'k' : ''+n;
+const num=id=>parseFloat($(id).value)||0;
+
+let period=30; // days; monthly volume scaled by period/30
+
+// build per-agent input rows
+const aiWrap=$('agent-inputs');
+AGENTS.forEach(a=>{
+  const row=document.createElement('div');
+  row.className='ig';
+  row.style.cssText='grid-template-columns:1.4fr .8fr .8fr .9fr;align-items:end;margin-top:10px';
+  row.innerHTML=`
+    <div class="fld"><label>${a.name}</label>
+      <div class="inwrap"><input id="v-${a.key}-vol" value="${a.vol}"><span class="suf">/mo</span></div></div>
+    <div class="fld"><label>Human</label>
+      <div class="inwrap"><input id="v-${a.key}-hm" value="${a.humanMin}"><span class="suf">min</span></div></div>
+    <div class="fld"><label>Agent</label>
+      <div class="inwrap"><input id="v-${a.key}-as" value="${a.agentSec}"><span class="suf">sec</span></div></div>
+    <div class="fld"><label>Tokens</label>
+      <div class="inwrap"><input id="v-${a.key}-tk" value="${a.tokPerDoc}"><span class="suf">/doc</span></div></div>`;
+  aiWrap.appendChild(row);
+});
+
+let roiChart;
+
+function compute(){
+  const tokRate=num('in-tokrate'), computePD=num('in-compute'), hRate=num('in-hrate');
+  const reviewerMo=num('in-reviewer'), ico=num('in-ico'), horizon=Math.max(1,num('in-horizon'));
+  const scale=period/30; // selected-period fraction of a month
+
+  let docs=0, tokens=0, tokenCost=0, computeCost=0, humanHrs=0, agentHrs=0;
+  const rows=[];
+  AGENTS.forEach(a=>{
+    const volMo=num(`v-${a.key}-vol`), hMin=num(`v-${a.key}-hm`),
+          aSec=num(`v-${a.key}-as`), tpd=num(`v-${a.key}-tk`);
+    const d=volMo*scale;
+    const tk=d*tpd;
+    const tc=tk/1e6*tokRate;
+    const cc=d*computePD;
+    const hH=d*hMin/60, aH=d*aSec/3600;
+    docs+=d; tokens+=tk; tokenCost+=tc; computeCost+=cc; humanHrs+=hH; agentHrs+=aH;
+    rows.push({a,d,tk,run:tc+cc,saved:hH-aH,hMin,aSec});
+  });
+
+  const reviewerPeriod=reviewerMo*scale;
+  const agentCost=tokenCost+computeCost+reviewerPeriod;
+  const humanCost=humanHrs*hRate;
+  const netSave=humanCost-agentCost;
+  const timeSavedHrs=humanHrs-agentHrs;
+
+  // ---- agent table ----
+  const tb=$('agent-rows'); tb.innerHTML='';
+  const maxSaved=Math.max(...rows.map(r=>r.saved),1);
+  rows.forEach(r=>{
+    const st = r.a.proc>0 ? `<span class="badge b-proc">${r.a.proc} processing</span>`
+             : `<span class="badge b-ready">${r.a.ready} ready</span>`;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><div class="ag"><div class="ai"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${r.a.icon}</svg></div>
+        <div><div class="nm">${r.a.name}</div><div class="form">${r.a.form}</div></div></div></td>
+      <td>${st}</td>
+      <td class="num">${Math.round(r.d)}</td>
+      <td class="num">${compact(r.tk)}</td>
+      <td class="num">${money(r.run)}</td>
+      <td class="num">${Math.round(r.saved)} h
+        <span class="bar"><i style="width:${Math.max(6,r.saved/maxSaved*100)}%"></i></span></td>`;
+    tb.appendChild(tr);
+  });
+
+  // ---- KPIs ----
+  $('k-tokens').textContent=compact(tokens);
+  $('k-docs').textContent=Math.round(docs)+' docs · 3 agents';
+  $('k-runcost').textContent=money(agentCost);
+  $('k-perdoc').textContent=money(agentCost/Math.max(docs,1))+' / doc';
+  $('k-timesaved').textContent=Math.round(timeSavedHrs)+' h';
+  $('k-lag').textContent='≈ '+(timeSavedHrs/8).toFixed(1)+' workdays · near-zero queue lag';
+  $('k-saved').textContent=money(netSave);
+  $('k-savepct').textContent=(netSave/Math.max(humanCost,1)*100).toFixed(0)+'% lower than manual';
+
+  // ---- cost-benefit bars ----
+  $('cb-h').textContent=money(humanCost);
+  $('cb-a').textContent=money(agentCost);
+  $('cb-net').textContent=money(netSave);
+  $('cb-pct').textContent=(netSave/Math.max(humanCost,1)*100).toFixed(0)+'%';
+  $('cb-abar').style.width=Math.max(4,agentCost/Math.max(humanCost,1)*100)+'%';
+
+  // ---- TCO (over horizon) ----
+  const tokH=tokenCost/scale*horizon, compH=computeCost/scale*horizon, revH=reviewerMo*horizon;
+  const tco=ico+tokH+compH+revH;
+  const parts=[
+    {nm:'Initial cost of ownership',v:ico,c:'#204496'},
+    {nm:'Token cost',v:tokH,c:'#3a63d6'},
+    {nm:'Compute',v:compH,c:'#7da0ec'},
+    {nm:'Reviewer (in-loop)',v:revH,c:'#c2d2f5'},
+  ];
+  $('tco-hz').textContent='over '+horizon+' mo';
+  $('tco-bar').innerHTML=parts.map(p=>`<i style="width:${p.v/tco*100}%;background:${p.c}"></i>`).join('');
+  $('tco-list').innerHTML=parts.map(p=>`<div class="tco-item"><span class="sw" style="background:${p.c}"></span>
+    <span class="nm">${p.nm}</span><span class="vl">${money(p.v)}</span></div>`).join('');
+  $('tco-total').textContent=money(tco);
+
+  // ---- ROI projection (monthly) ----
+  const netSaveMo=netSave/scale; // operational net savings per month
+  const labels=[], cum=[], invest=[];
+  let c=-ico, breakeven=null;
+  for(let m=1;m<=horizon;m++){
+    c+=netSaveMo;
+    labels.push('M'+m);
+    cum.push(Math.round(c));
+    invest.push(Math.round(ico+(tokH+compH+revH)/horizon*m));
+    if(breakeven===null && c>=0) breakeven=m;
+  }
+  const netEnd=cum[cum.length-1];
+  const roiEnd=netEnd/tco*100;
+  $('be-month').textContent= breakeven? 'Month '+breakeven : '> '+horizon+' mo';
+  $('be-net').textContent=money(netEnd);
+  $('be-roi').textContent=roiEnd.toFixed(0)+'%';
+  $('k-roi').textContent=roiEnd.toFixed(0)+'%';
+  $('k-break').innerHTML= breakeven? `Breakeven · month ${breakeven}` : 'No breakeven in horizon';
+  $('k-break').className='s '+(breakeven?'pos':'neg');
+
+  drawChart(labels,cum,breakeven);
+}
+
+function drawChart(labels,cum,be){
+  const ctx=$('roiChart');
+  const pos=cum.map(v=>v>=0?v:null), neg=cum.map(v=>v<0?v:null);
+  if(roiChart) roiChart.destroy();
+  const g=ctx.getContext('2d').createLinearGradient(0,0,0,300);
+  g.addColorStop(0,'rgba(32,68,150,.22)'); g.addColorStop(1,'rgba(32,68,150,0)');
+  roiChart=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[{
+      label:'Cumulative net benefit',data:cum,borderColor:'#204496',borderWidth:2.5,
+      backgroundColor:g,fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,
+      pointBackgroundColor:'#204496',
+      segment:{borderColor:c=>c.p0.parsed.y<0?'#d97706':'#204496'}
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>(c.parsed.y>=0?'+':'')+'$'+c.parsed.y.toLocaleString()}}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{family:'JetBrains Mono',size:11},color:'#9aa3b2'}},
+        y:{grid:{color:'#eef1f7'},ticks:{font:{family:'JetBrains Mono',size:11},color:'#9aa3b2',
+          callback:v=> (v>=0?'$':'-$')+Math.abs(v/1000).toFixed(0)+'k'}}
+      },
+      // zero line
+    },
+    plugins:[{id:'zero',afterDraw(c){
+      const y=c.scales.y.getPixelForValue(0);
+      const ax=c.chartArea;
+      const cx=c.ctx; cx.save();
+      cx.strokeStyle='#cbd3e2';cx.setLineDash([4,4]);cx.lineWidth=1;
+      cx.beginPath();cx.moveTo(ax.left,y);cx.lineTo(ax.right,y);cx.stroke();
+      if(be){const bx=c.scales.x.getPixelForValue('M'+be);
+        cx.setLineDash([3,3]);cx.strokeStyle='#16a34a';
+        cx.beginPath();cx.moveTo(bx,ax.top);cx.lineTo(bx,ax.bottom);cx.stroke();
+        cx.fillStyle='#16a34a';cx.font='600 11px JetBrains Mono';
+        cx.fillText('breakeven',bx+4,ax.top+12);}
+      cx.restore();
+    }}]
+  });
+}
+
+// listeners
+document.querySelectorAll('input').forEach(i=>i.addEventListener('input',compute));
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelector('.seg button.on').classList.remove('on');
+  b.classList.add('on'); period=+b.dataset.period; compute();
+}));
+compute();
+</script>
+</body>
+</html>
