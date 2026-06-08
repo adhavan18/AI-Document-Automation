@@ -433,7 +433,7 @@
 
         <div class="f-list" id="flist"></div>
 
-        <div class="f-actions">
+        <div class="f-actions" id="factions">
           <button class="btn-confirm" id="confirmBtn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             Confirm All Fields
@@ -722,6 +722,11 @@ function renderSummary(){
 function renderFields(){
   renderSummary();
   const d = QUEUE.find(x=>x.id===activeId);
+  const isCompleted = d && (d.status==='completed' || d.status==='failed');
+
+  // Hide action buttons for completed/failed cases
+  document.getElementById('factions').style.display = isCompleted ? 'none' : 'flex';
+
   if(!FIELDS.length){
     const msg = (d && d.status==='processing')
       ? 'Extraction in progress… fields will appear automatically.'
@@ -738,6 +743,7 @@ function renderFields(){
     let className = '';
     if(isDefault) className = 'default';
     else if(lowConf) className = 'low';
+    const disabled = isCompleted ? 'disabled' : '';
     return `<div class="field ${className}">
       <div class="field-top">
         <span class="field-key">${f.key}</span>
@@ -749,14 +755,14 @@ function renderFields(){
       </div>
       <div class="field-input">
         ${f.type==='date'
-          ? `<input type="date" value="${f.value??''}" placeholder="mm/dd/yyyy" />${ICON.calendar}`
+          ? `<input type="date" value="${f.value??''}" placeholder="mm/dd/yyyy" ${disabled} />${ICON.calendar}`
         : f.type==='select'
-          ? `<select>${(f.options||[]).filter(o=>o!=null).map(o=>`<option ${o===f.value?'selected':''}>${o}</option>`).join('')}</select>${ICON.chevron}`
+          ? `<select ${disabled}>${(f.options||[]).filter(o=>o!=null).map(o=>`<option ${o===f.value?'selected':''}>${o}</option>`).join('')}</select>${ICON.chevron}`
         : f.type==='textarea'
-          ? `<textarea rows="3" placeholder="Add notes…">${f.value??''}</textarea>`
+          ? `<textarea rows="3" placeholder="Add notes…" ${disabled}>${f.value??''}</textarea>`
         : f.type==='number'
-          ? `<input type="text" inputmode="numeric" value="${f.value??''}" />${ICON.pencil}`
-          : `<input value="${f.value??''}" />${ICON.pencil}`}
+          ? `<input type="text" inputmode="numeric" value="${f.value??''}" ${disabled} />${ICON.pencil}`
+          : `<input value="${f.value??''}" ${disabled} />${ICON.pencil}`}
       </div>
       ${lowConf?`<div class="field-warn">${ICON.spark}Manual Review— verify against original</div>`:''}
     </div>`;
