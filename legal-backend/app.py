@@ -226,6 +226,7 @@ def _pipeline_background(
         )
         print(f'[UPLOAD] Pipeline complete for {case_id_str[:8]}')
         _maybe_auto_approve(case_id_str)
+        _finalize_to_s3(case_id_str, pdf_path_str)
     except Exception as exc:
         print(f'[UPLOAD] Pipeline failed for {case_id_str}: {exc}')
         try:
@@ -294,7 +295,7 @@ async def pipeline_status() -> JSONResponse:
     })
 
 
-def _ingest_pdf(pdf_path: Path, original_name: str) -> str:
+def _ingest_pdf(pdf_path: Path, original_name: str, s3_incoming_key: str | None = None) -> str:
     """
     Create a processing case for an on-disk PDF and enqueue it for serial processing.
     Returns the case_id string. Used by /upload and the folder watcher.
@@ -312,6 +313,7 @@ def _ingest_pdf(pdf_path: Path, original_name: str) -> str:
                 _db,
                 form_type=form_type_override or 'processing',
                 pdf_path=str(pdf_path),
+                s3_key=s3_incoming_key,
                 case_id=case_id,
                 status='processing',
             )
@@ -334,25 +336,65 @@ def _ingest_pdf(pdf_path: Path, original_name: str) -> str:
     return str(case_id)
 
 
+def _finalize_to_s3(case_id_str: str, local_pdf_path: str) -> None:
+    """
+    After pipeline completes: move the file from S3 incoming/ → processed/,
+    update the DB s3_key, and delete the local temp file.
+    Called from _pipeline_background after a successful run.
+    """
+    try:
+        import s3_store
+        from database.connection import SessionLocal
+        from database import crud
+
+        _db = SessionLocal()
+        try:
+            cid = uuid.UUID(case_id_str)
+            case = crud.get_case(_db, cid)
+            if case and case.s3_key and case.s3_key.startswith("incoming/"):
+                processed_key = s3_store.move_to_processed(case.s3_key)
+                crud.update_case_s3_key(_db, cid, processed_key)
+                _db.commit()
+                print(f'[S3] Case {case_id_str[:8]} → {processed_key}', flush=True)
+        finally:
+            _db.close()
+
+        # Clean up local temp file
+        local = Path(local_pdf_path)
+        if local.exists():
+            local.unlink()
+            print(f'[UPLOAD] Deleted local temp file {local.name}', flush=True)
+    except Exception as exc:
+        print(f'[S3] finalize_to_s3 failed for {case_id_str[:8]}: {exc}', flush=True)
+
+
 @app.post("/upload", status_code=200)
 async def upload(
     file: UploadFile = File(...),
     background_tasks=None,
 ) -> JSONResponse:
     """
-    Accept a PDF upload, immediately create a 'processing' case in the DB,
-    fire the extraction pipeline as a background task, and return the case_id
-    right away — no more network timeouts on large or scanned PDFs.
+    Accept a PDF upload, save locally, upload to S3 incoming/, create a
+    'processing' case in the DB, enqueue for extraction, and return immediately.
     """
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Uploaded file must be a PDF.")
 
     tmp_id = uuid.uuid4()
-    pdf_path = UPLOADS_DIR / f"{tmp_id}.pdf"
+    pdf_filename = f"{tmp_id}.pdf"
+    pdf_path = UPLOADS_DIR / pdf_filename
     contents = await file.read()
     pdf_path.write_bytes(contents)
 
-    case_id_result = _ingest_pdf(pdf_path, file.filename)
+    # Upload to S3 incoming/
+    s3_incoming_key: str | None = None
+    try:
+        import s3_store
+        s3_incoming_key = s3_store.upload_to_incoming(pdf_path, pdf_filename)
+    except Exception as s3_err:
+        print(f'[S3] Upload to incoming/ failed (continuing without S3): {s3_err}', flush=True)
+
+    case_id_result = _ingest_pdf(pdf_path, file.filename, s3_incoming_key)
 
     # Return immediately — frontend polls /cases/{id}/status
     return JSONResponse(content={

@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -493,16 +493,30 @@ def reject_case(
 def stream_pdf(
     case_id: str,
     db: Annotated[Session, Depends(get_db)],
-) -> FileResponse:
+) -> StreamingResponse | FileResponse:
     case = _require_case(db, case_id)
-    path = Path(case.pdf_path)
 
+    # Try S3 first (post-processing files)
+    if case.s3_key:
+        try:
+            import s3_store
+            body = s3_store.stream_object(case.s3_key)
+            filename = case.s3_key.split("/")[-1]
+            return StreamingResponse(
+                body.iter_chunks(65536),
+                media_type="application/pdf",
+                headers={"Content-Disposition": f'inline; filename="{filename}"'},
+            )
+        except Exception as s3_err:
+            print(f"[S3] stream_pdf fallback for {case_id[:8]}: {s3_err}", flush=True)
+
+    # Fall back to local disk (file still being processed or S3 unavailable)
+    path = Path(case.pdf_path)
     if not path.is_file():
         raise HTTPException(
             status_code=404,
-            detail=f"PDF not found on disk at {case.pdf_path!r}",
+            detail="PDF not available (not yet processed or S3 unreachable)",
         )
-
     return FileResponse(
         path=str(path),
         media_type="application/pdf",

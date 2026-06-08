@@ -60,6 +60,7 @@ class Case(Base):
         UUID(as_uuid=True), ForeignKey("caseworkers.id"), nullable=True
     )
     pdf_path: Mapped[str] = mapped_column(Text, nullable=False)
+    s3_key: Mapped[str | None] = mapped_column(Text, nullable=True)  # e.g. "processed/uuid.pdf"
     form_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     edition_date: Mapped[str | None] = mapped_column(String(50), nullable=True)
     page_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

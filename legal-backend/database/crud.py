@@ -25,6 +25,7 @@ def create_case(
     *,
     form_type: str,
     pdf_path: str,
+    s3_key: str | None = None,
     page_count: int = 0,
     form_version: str | None = None,
     edition_date: str | None = None,
@@ -36,11 +37,21 @@ def create_case(
         form_type=form_type,
         status=status,
         pdf_path=pdf_path,
+        s3_key=s3_key,
         page_count=page_count,
         form_version=form_version,
         edition_date=edition_date,
     )
     db.add(case)
+    db.flush()
+    return case
+
+
+def update_case_s3_key(db: Session, case_id: uuid.UUID, s3_key: str) -> Case | None:
+    case = db.get(Case, case_id)
+    if case is None:
+        return None
+    case.s3_key = s3_key
     db.flush()
     return case
 
