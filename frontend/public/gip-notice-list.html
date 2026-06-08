@@ -1015,18 +1015,14 @@ function renderGrids(){
 function wireRowSelection(){
   const data = activeData();
   document.querySelectorAll('.row-chk').forEach(box=>{
-    box.onclick = (e)=>{
-      e.stopPropagation();
-      e.preventDefault();
+    box.onchange = (e)=>{
       const i = +box.dataset.idx;
       const row = data[i];
       if(!row) return;
-      const newChecked = !box.checked;
-      if(newChecked) SELECTED.add(row.case_id);
+      if(box.checked) SELECTED.add(row.case_id);
       else SELECTED.delete(row.case_id);
-      box.checked = newChecked;
       const tr = box.closest('tr');
-      if(tr) tr.classList.toggle('selected', newChecked);
+      if(tr) tr.classList.toggle('selected', box.checked);
       updateSelectionUI();
     };
   });
