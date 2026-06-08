@@ -721,6 +721,8 @@ let REVIEW_QUE = [];     // Review Que         (pending / in_review — low-conf
 let PROCESSING_QUE = []; // Background only    (currently extracting — not shown in tabs)
 let PIPELINE_ACTIVE_ID = null;  // case_id the worker is currently running
 let PIPELINE_ACTIVE_STAGE = 0; // 1-4; 0 = idle
+const SELECTED = new Set(); // persistent selection — survives all re-renders
+const isSel = (row) => SELECTED.has(row.case_id);
 
 /* Map a backend case record → the row shape this grid renders. */
 function mapCase(c){
@@ -745,7 +747,6 @@ function mapCase(c){
     status: mapStatus(c.status),
     raw_status: c.status,
     progress: c.status === 'processing' ? 60 : undefined,
-    _sel: false,
   };
 }
 
@@ -855,10 +856,11 @@ function actionsCell(row){
 function rowHTML(row, opts){
   const selectable = opts && opts.selectable;
   const idx = opts && opts.idx;
+  const sel = isSel(row);
   const leading = selectable
-    ? `<td class="col-chk"><input type="checkbox" class="chk row-chk" data-idx="${idx}" ${row._sel?'checked':''}/></td>`
+    ? `<td class="col-chk"><input type="checkbox" class="chk row-chk" data-idx="${idx}" ${sel?'checked':''}/></td>`
     : '';
-  return `<tr class="${selectable && row._sel ? 'selected':''}">
+  return `<tr class="${selectable && sel ? 'selected':''}">
     ${leading}
     <td>
       <div class="file-cell">
@@ -921,8 +923,9 @@ function renderHead(){
   </tr>`;
   document.getElementById('selAll').onchange = (e)=>{
     const on = e.target.checked;
-    activeData().forEach(r=> r._sel = on);
-    renderGrids();
+    activeData().forEach(r=>{ if(on) SELECTED.add(r.case_id); else SELECTED.delete(r.case_id); });
+    document.querySelectorAll('.row-chk').forEach(b=>{ b.checked = on; b.closest('tr')?.classList.toggle('selected', on); });
+    updateSelectionUI();
   };
 }
 
@@ -997,6 +1000,13 @@ function renderGrids(){
         return rowHTML(r, {selectable:true, idx:absoluteIdx});
       }).join('')
     : `<tr><td colspan="7" class="empty">No rows to display</td></tr>`;
+  // Force-apply SELECTED state after innerHTML rebuild
+  document.querySelectorAll('.row-chk').forEach(box=>{
+    const i = +box.dataset.idx;
+    const on = data[i] ? SELECTED.has(data[i].case_id) : false;
+    box.checked = on;
+    box.closest('tr')?.classList.toggle('selected', on);
+  });
   renderFooter();
   wireRowSelection();
   updateSelectionUI();
@@ -1005,11 +1015,18 @@ function renderGrids(){
 function wireRowSelection(){
   const data = activeData();
   document.querySelectorAll('.row-chk').forEach(box=>{
-    box.onchange = ()=>{
+    box.onclick = (e)=>{
+      e.stopPropagation();
+      e.preventDefault();
       const i = +box.dataset.idx;
-      data[i]._sel = box.checked;
+      const row = data[i];
+      if(!row) return;
+      const newChecked = !box.checked;
+      if(newChecked) SELECTED.add(row.case_id);
+      else SELECTED.delete(row.case_id);
+      box.checked = newChecked;
       const tr = box.closest('tr');
-      if(tr) tr.classList.toggle('selected', box.checked);
+      if(tr) tr.classList.toggle('selected', newChecked);
       updateSelectionUI();
     };
   });
@@ -1018,14 +1035,14 @@ function wireRowSelection(){
 function updateSelectionUI(){
   const data = activeData();
   const total = data.length;
-  const sel = data.filter(r=>r._sel).length;
+  const sel = data.filter(isSel).length;
   const selAll = document.getElementById('selAll');
   if(selAll){
     selAll.checked = sel===total && total>0;
     selAll.indeterminate = sel>0 && sel<total;
   }
   const reviewTotal = REVIEW_QUE.length;
-  const reviewSel = REVIEW_QUE.filter(r=>r._sel).length;
+  const reviewSel = REVIEW_QUE.filter(isSel).length;
   const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
   set('cntAll', reviewTotal);
   set('cntAll2', reviewTotal);
@@ -1050,8 +1067,7 @@ document.getElementById('pageSize').onchange = (e)=>{
   renderGrids();
 };
 
-/* Poll the backend every 5s so processing → ready transitions appear live. */
-setInterval(loadQueue, 5000);
+/* No auto-refresh — queue updates on manual Refresh or after upload only. */
 
 /* Poll pipeline/status every 2s independently so progress updates are fast
    and we trigger an immediate loadQueue when a file finishes (stage goes 0). */
@@ -1214,7 +1230,7 @@ menu.querySelectorAll('.menu-item').forEach(item=>{
   item.onclick = ()=>{
     if(item.classList.contains('disabled')) return;
     const action = item.dataset.action;
-    const sel = REVIEW_QUE.filter(r=>r._sel);
+    const sel = REVIEW_QUE.filter(isSel);
     const targets = action.endsWith('-all') ? REVIEW_QUE : sel;
     if(targets.length===0) return;
     menu.classList.remove('open');
