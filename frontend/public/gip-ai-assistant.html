@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GIP AI Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
+    --bg:#f3f5fa; --card:#ffffff;
+    --ink:#1a1f2e; --ink-soft:#5b6376; --ink-faint:#9aa1b2;
+    --line:#e6e9f0; --line-soft:#eef1f7;
+    --green:#1f8a52; --green-soft:#e4f3ea;
+    --amber:#b8791a; --amber-soft:#fbf0db;
+    --orange:#e14a28; --orange-soft:#fbe8e2;
+    --side-bg:#0e1326; --side-bg-2:#111733;
+    --side-text:#aab2c6; --side-text-hi:#ffffff;
+    --side-line:#222a45;
+    --accent:#4d82f0; --accent-soft:rgba(77,130,240,.14);
+    --font:'Inter',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes fade-in{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+  .spin{animation:spin 1s linear infinite;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#d3d8e4;border-radius:9px;}
+  button{font-family:var(--font);cursor:pointer;}
+  .shell{display:flex;height:100vh;}
+
+  /* ═══ SIDEBAR ═══ */
+  .sidebar{width:252px;flex-shrink:0;background:linear-gradient(180deg,var(--side-bg),var(--side-bg-2));
+    display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);}
+  .sidebar.collapsed{width:74px;}
+
+  .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
+  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
+    background:transparent;border:none;padding:0;cursor:pointer;
+    color:var(--side-text);display:none;align-items:center;justify-content:center;
+    transition:background .15s, color .15s;}
+  .brand-icon:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .brand-logo{display:none;}
+  .sidebar.collapsed .brand-icon{display:flex;margin:0 auto;}
+  .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
+    background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;
+    transition:background .15s;}
+  .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
+  .sidebar.collapsed .collapse-btn{display:none;}
+
+  .nav{flex:1;overflow-y:auto;padding:6px 12px;}
+  .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
+    text-transform:uppercase;padding:14px 10px 7px;}
+  .sidebar.collapsed .nav-label{display:none;}
+  .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
+    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:12px;
+    font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;
+    text-decoration:none;}
+  a.nav-item,a.nav-item:hover,a.nav-item:focus{text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:var(--side-text-hi);}
+  .nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600;}
+  .nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--accent);box-shadow:0 0 10px var(--accent);}
+  .nav-item .ico{flex-shrink:0;display:flex;}
+  .nav-item.active .ico{color:var(--accent);}
+  .nav-item .lbl{overflow:hidden;text-overflow:ellipsis;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding:11px 0;}
+  .sidebar.collapsed .nav-item .lbl{display:none;}
+  .sidebar.collapsed .nav-item:hover::after{content:attr(data-label);position:absolute;left:calc(100% + 10px);
+    top:50%;transform:translateY(-50%);background:#1c2340;color:#fff;font-size:12px;font-weight:500;
+    padding:6px 10px;border-radius:7px;white-space:nowrap;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+
+  .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
+  .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
+    border:none;background:transparent;color:var(--side-text);font-size:12px;font-weight:500;
+    margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;text-decoration:none;}
+  .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+  .foot-item .badge{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:700;
+    min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+  .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
+  .sidebar.collapsed .foot-item .lbl,.sidebar.collapsed .foot-item .badge{display:none;}
+  .user{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-top:6px;border-radius:10px;
+    background:rgba(255,255,255,.04);border:1px solid var(--side-line);
+    transition:background .15s, border-color .15s;}
+  .user:hover{background:transparent;border-color:transparent;}
+  .avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--orange);color:#fff;
+    font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .user-txt{overflow:hidden;white-space:nowrap;}
+  .user-name{font-size:13px;font-weight:600;color:#fff;line-height:1.1;}
+  .user-role{font-size:11px;color:var(--ink-faint);}
+  .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
+  .sidebar.collapsed .user-txt{display:none;}
+  .user{cursor:pointer;width:100%;text-align:left;border:none;font:inherit;}
+  .user-caret{margin-left:auto;color:var(--ink-faint);display:flex;align-items:center;transition:transform .15s;}
+  .user-wrap{position:relative;}
+  .user-pop{position:absolute;left:12px;right:12px;bottom:calc(100% + 6px);
+    background:#1a2236;border:1px solid var(--side-line);border-radius:10px;
+    box-shadow:0 12px 28px rgba(0,0,0,.45);padding:5px;display:none;z-index:50;}
+  .user-pop.open{display:block;}
+  .user-pop-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+    border:none;background:transparent;color:var(--side-text);font-size:12.5px;font-weight:500;
+    border-radius:7px;cursor:pointer;text-align:left;text-decoration:none;}
+  .user-pop-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .user-pop-item .ico{display:flex;align-items:center;color:var(--ink-faint);}
+  .user-pop-sep{height:1px;background:var(--side-line);margin:4px 6px;}
+  .sidebar.collapsed .user-txt,.sidebar.collapsed .user-caret{display:none;}
+  .sidebar.collapsed .user-pop{left:auto;right:-216px;bottom:6px;width:200px;}
+
+  /* ═══ MAIN ═══ */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;
+    background:var(--card);border-bottom:1px solid var(--line);}
+  .topbar h1{font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;}
+  .topbar .sub{font-size:12.5px;color:var(--ink-faint);margin-top:2px;}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .btn-primary{padding:9px 16px;border-radius:9px;border:none;background:var(--primary);color:#fff;
+    font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 2px 10px rgba(32,68,150,.22);
+    transition:background .15s;}
+  .btn-primary:hover{background:var(--primary-2);}
+  .btn-ghost{padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);
+    font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:all .15s;}
+  .btn-ghost:hover{border-color:var(--primary);color:var(--primary);}
+  .icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);position:relative;
+    transition:all .15s;}
+  .icon-btn:hover{color:var(--primary);border-color:var(--primary);}
+
+  /* assistant layout: 3 columns — chat list / chat thread / citations */
+  .assistant{flex:1;display:grid;grid-template-columns:280px 1fr 320px;min-height:0;overflow:hidden;}
+
+  /* ═══ LEFT: CHAT LIST ═══ */
+  .clist{background:var(--card);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;}
+  .clist-head{padding:16px 16px 12px;border-bottom:1px solid var(--line-soft);}
+  .new-chat{width:100%;padding:11px 14px;border-radius:10px;border:none;background:var(--primary);color:#fff;
+    font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 2px 10px rgba(32,68,150,.22);transition:background .15s;}
+  .new-chat:hover{background:var(--primary-2);}
+  .clist-search{position:relative;margin-top:11px;}
+  .clist-search input{width:100%;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13px;outline:none;transition:all .15s;}
+  .clist-search input:focus{border-color:var(--primary);background:#fff;}
+  .clist-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
+  .clist-tabs{display:flex;gap:4px;padding:10px 12px 8px;border-bottom:1px solid var(--line-soft);}
+  .ctab{flex:1;padding:7px 10px;border-radius:8px;border:none;background:transparent;color:var(--ink-soft);
+    font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:5px;
+    transition:all .15s;}
+  .ctab:hover{background:var(--bg);color:var(--ink);}
+  .ctab.active{background:var(--primary-soft);color:var(--primary);}
+  .ctab .ct-badge{background:#fff;color:var(--primary);font-size:10px;padding:1px 6px;border-radius:8px;font-weight:700;}
+
+  .clist-body{flex:1;overflow-y:auto;padding:8px 8px 12px;}
+  .clist-group{font-size:10.5px;font-weight:700;color:var(--ink-faint);letter-spacing:.1em;
+    text-transform:uppercase;padding:14px 10px 6px;}
+  .citem{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:10px;cursor:pointer;
+    transition:background .15s;position:relative;}
+  .citem:hover{background:var(--bg);}
+  .citem.active{background:var(--primary-soft);}
+  .citem.active::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--primary);}
+  .citem-row{display:flex;align-items:center;gap:6px;}
+  .citem-title{font-size:13px;font-weight:600;color:var(--ink);flex:1;min-width:0;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .citem-star{flex-shrink:0;color:var(--ink-faint);transition:color .15s;background:none;border:none;padding:0;display:flex;}
+  .citem-star.starred{color:var(--amber);}
+  .citem-star:hover{color:var(--amber);}
+  .citem-alert{flex-shrink:0;color:var(--primary);display:none;}
+  .citem.has-alert .citem-alert{display:flex;}
+  .citem-preview{font-size:11.5px;color:var(--ink-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .citem-meta{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-faint);margin-top:2px;}
+  .citem-pill{padding:1px 7px;border-radius:8px;font-size:9.5px;font-weight:700;
+    background:var(--primary-soft);color:var(--primary);letter-spacing:.04em;text-transform:uppercase;}
+
+  /* ═══ CENTER: CHAT THREAD ═══ */
+  .thread{display:flex;flex-direction:column;min-height:0;background:var(--bg);}
+  .thread-head{display:flex;align-items:center;gap:12px;padding:14px 22px;background:var(--card);
+    border-bottom:1px solid var(--line);}
+  .thread-title{flex:1;min-width:0;}
+  .thread-title h2{font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px;}
+  .thread-title .tt-meta{font-size:11.5px;color:var(--ink-faint);margin-top:2px;display:flex;align-items:center;gap:8px;}
+  .alert-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:8px;
+    background:var(--primary-soft);color:var(--primary);font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+  .thread-actions{display:flex;gap:6px;}
+
+  .msgs{flex:1;overflow-y:auto;padding:22px 22px 12px;display:flex;flex-direction:column;gap:18px;}
+  .msg{max-width:760px;display:flex;gap:12px;animation:fade-in .25s ease;}
+  .msg.user{align-self:flex-end;flex-direction:row-reverse;}
+  .msg-avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:13px;}
+  .msg.assistant .msg-avatar{background:var(--primary-soft);color:var(--primary);}
+  .msg.user .msg-avatar{background:var(--orange);color:#fff;}
+  .msg-body{flex:1;min-width:0;}
+  .msg-bubble{padding:12px 15px;border-radius:13px;font-size:13.5px;line-height:1.55;color:var(--ink);}
+  .msg.assistant .msg-bubble{background:var(--card);border:1px solid var(--line);border-top-left-radius:4px;}
+  .msg.user .msg-bubble{background:var(--primary);color:#fff;border-top-right-radius:4px;}
+  .msg-bubble p{margin:0 0 8px;}
+  .msg-bubble p:last-child{margin-bottom:0;}
+  .msg-bubble strong{font-weight:700;}
+  .msg-bubble ul{margin:6px 0;padding-left:18px;}
+  .msg-bubble li{margin-bottom:3px;}
+  .msg-bubble code{background:var(--bg);padding:1px 5px;border-radius:4px;font-size:12px;font-family:'Menlo','Consolas',monospace;}
+  .msg.user .msg-bubble code{background:rgba(255,255,255,.18);}
+  .cite-ref{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;
+    padding:0 5px;margin:0 2px;border-radius:5px;background:var(--accent-soft);color:var(--accent);
+    font-size:10.5px;font-weight:700;cursor:pointer;vertical-align:1px;transition:all .15s;}
+  .cite-ref:hover{background:var(--accent);color:#fff;}
+  .msg-foot{display:flex;align-items:center;gap:8px;margin-top:6px;padding:0 4px;}
+  .msg.user .msg-foot{justify-content:flex-end;}
+  .msg-time{font-size:11px;color:var(--ink-faint);}
+  .msg-act{background:transparent;border:none;padding:3px;color:var(--ink-faint);display:inline-flex;border-radius:5px;transition:all .15s;}
+  .msg-act:hover{background:var(--card);color:var(--primary);}
+
+  .typing{display:flex;gap:4px;padding:4px 0;}
+  .typing span{width:7px;height:7px;border-radius:50%;background:var(--ink-faint);animation:pulse 1.2s infinite;}
+  .typing span:nth-child(2){animation-delay:.2s;}
+  .typing span:nth-child(3){animation-delay:.4s;}
+
+  /* composer */
+  .composer{padding:14px 22px 20px;background:var(--bg);border-top:1px solid var(--line);}
+  .composer-box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;
+    display:flex;flex-direction:column;gap:8px;box-shadow:0 2px 14px rgba(15,23,42,.04);}
+  .composer-box:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft);}
+  .composer-input{width:100%;min-height:42px;max-height:160px;border:none;outline:none;resize:none;
+    font-family:var(--font);font-size:13.5px;line-height:1.5;color:var(--ink);padding:6px 4px;background:transparent;}
+  .composer-bar{display:flex;align-items:center;gap:6px;}
+  .composer-bar .c-tool{background:transparent;border:none;width:32px;height:32px;border-radius:8px;
+    color:var(--ink-soft);display:inline-flex;align-items:center;justify-content:center;transition:all .15s;}
+  .composer-bar .c-tool:hover{background:var(--bg);color:var(--primary);}
+  .composer-bar .spacer{flex:1;}
+  .composer-hint{font-size:10.5px;color:var(--ink-faint);}
+  .composer-send{width:34px;height:34px;border-radius:9px;border:none;background:var(--primary);color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(32,68,150,.25);
+    transition:background .15s;}
+  .composer-send:hover{background:var(--primary-2);}
+  .composer-send:disabled{background:var(--ink-faint);box-shadow:none;cursor:not-allowed;}
+
+  /* ═══ RIGHT: CITATIONS ═══ */
+  .citepane{background:var(--card);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;}
+  .citepane-head{padding:16px 18px 12px;border-bottom:1px solid var(--line-soft);}
+  .citepane-head h3{font-size:14px;font-weight:700;margin:0;display:flex;align-items:center;gap:7px;}
+  .citepane-head .sub{font-size:11.5px;color:var(--ink-faint);margin-top:3px;}
+  .citepane-tabs{display:flex;gap:4px;padding:10px 12px;border-bottom:1px solid var(--line-soft);}
+  .citepane-tabs .ctab{flex:1;}
+  .citepane-body{flex:1;overflow-y:auto;padding:8px 12px 16px;}
+  .cite-card{padding:12px;border-radius:11px;border:1px solid var(--line);background:#fff;margin-bottom:10px;
+    transition:all .15s;cursor:pointer;}
+  .cite-card:hover{border-color:var(--primary);box-shadow:0 4px 14px rgba(32,68,150,.08);}
+  .cite-card-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .cite-num{width:22px;height:22px;border-radius:6px;background:var(--accent-soft);color:var(--accent);
+    font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .cite-fico{width:30px;height:30px;border-radius:8px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .cite-main{flex:1;min-width:0;}
+  .cite-title{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cite-meta{font-size:11px;color:var(--ink-faint);margin-top:1px;}
+  .cite-snip{font-size:11.5px;color:var(--ink-soft);line-height:1.45;margin-top:8px;padding:8px 10px;
+    background:var(--bg);border-radius:8px;border-left:2px solid var(--accent);}
+  .cite-actions{display:flex;gap:6px;margin-top:8px;}
+  .cite-link{font-size:11px;color:var(--primary);font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px;}
+
+  /* ═══ MODAL ═══ */
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,20,38,.42);z-index:100;display:none;
+    align-items:center;justify-content:center;animation:fade-in .15s ease;}
+  .modal-overlay.open{display:flex;}
+  .modal{width:520px;max-width:90vw;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(15,20,38,.3);
+    display:flex;flex-direction:column;max-height:90vh;overflow:hidden;}
+  .modal-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+  .modal-head h2{font-size:16px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px;}
+  .modal-head .x{background:transparent;border:none;width:30px;height:30px;border-radius:8px;color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .modal-head .x:hover{background:var(--bg);color:var(--ink);}
+  .modal-body{padding:20px 22px;overflow-y:auto;}
+  .modal-body p.intro{font-size:12.5px;color:var(--ink-soft);margin:0 0 16px;line-height:1.5;}
+  .modal-body .field{margin-bottom:16px;}
+  .modal-body label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:6px;}
+  .modal-body input[type=text], .modal-body select, .modal-body textarea{
+    width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    font-family:var(--font);font-size:13px;color:var(--ink);outline:none;transition:all .15s;}
+  .modal-body input[type=text]:focus, .modal-body select:focus, .modal-body textarea:focus{
+    border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft);}
+  .modal-body textarea{resize:vertical;min-height:60px;}
+  .freq-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .freq-opt{padding:10px 8px;border-radius:9px;border:1px solid var(--line);background:#fff;text-align:center;
+    cursor:pointer;transition:all .15s;font-size:12px;font-weight:600;color:var(--ink-soft);}
+  .freq-opt:hover{border-color:var(--primary);color:var(--primary);}
+  .freq-opt.active{border-color:var(--primary);background:var(--primary-soft);color:var(--primary);}
+  .freq-opt .fo-sub{display:block;font-size:10px;font-weight:500;color:var(--ink-faint);margin-top:2px;}
+  .freq-opt.active .fo-sub{color:var(--primary);}
+  .deliver-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .deliver-opt{padding:11px 12px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;gap:9px;cursor:pointer;transition:all .15s;}
+  .deliver-opt:hover{border-color:var(--primary);}
+  .deliver-opt input{margin:0;}
+  .deliver-opt.active{border-color:var(--primary);background:var(--primary-soft);}
+  .deliver-opt .d-ico{width:30px;height:30px;border-radius:8px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .deliver-opt.active .d-ico{background:#fff;}
+  .deliver-opt .d-txt{flex:1;min-width:0;}
+  .deliver-opt .d-title{font-size:12.5px;font-weight:600;color:var(--ink);}
+  .deliver-opt .d-sub{font-size:10.5px;color:var(--ink-faint);margin-top:1px;}
+  .modal-foot{padding:14px 22px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg);}
+  .modal-foot .info{font-size:11.5px;color:var(--ink-faint);display:flex;align-items:center;gap:6px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <img class="brand-logo" src="assets/logo_white.png" alt="GIP" />
+      <button class="brand-icon" id="brandIcon" title="Expand menu" aria-label="Expand menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <button class="collapse-btn" id="collapseBtn" title="Collapse">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+    </div>
+
+    <nav class="nav" id="nav"></nav>
+
+    <div class="side-foot">
+      <div id="footItems"></div>
+      <div class="user-wrap">
+        <button class="user" id="userBtn" data-label="Austin" title="Austin · admin" aria-haspopup="true" aria-expanded="false">
+          <div class="avatar">A</div>
+          <div class="user-txt">
+            <div class="user-name">Austin</div>
+            <div class="user-role">admin</div>
+          </div>
+          <span class="user-caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+        </button>
+        <div class="user-pop" id="userPop" role="menu" aria-labelledby="userBtn">
+          <a class="user-pop-item" href="help.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
+            Help
+          </a>
+          <a class="user-pop-item" href="support.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+            Support
+          </a>
+          <div class="user-pop-sep"></div>
+          <a class="user-pop-item" href="gip-login.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+            Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>AI Assistant</h1>
+        <div class="sub">GIP - Ask Me Anything</div>
+      </div>
+      <div class="top-actions">
+        <button class="btn-ghost" id="alertsBtn" title="View saved alerts">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Alerts <span style="background:var(--primary-soft);color:var(--primary);padding:1px 7px;border-radius:8px;font-size:11px;margin-left:4px;" id="alertCount">3</span>
+        </button>
+        <button class="icon-btn" title="Knowledge base">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- assistant 3-column layout -->
+    <div class="assistant">
+
+      <!-- LEFT: chat list -->
+      <aside class="clist">
+        <div class="clist-head">
+          <button class="new-chat" id="newChatBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Chat
+          </button>
+          <div class="clist-search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="chatSearch" placeholder="Search chats…" />
+          </div>
+        </div>
+        <div class="clist-tabs">
+          <button class="ctab active" data-tab="all">All <span class="ct-badge" id="cntAll">0</span></button>
+          <button class="ctab" data-tab="starred">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Starred
+          </button>
+          <button class="ctab" data-tab="alerts">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            Alerts
+          </button>
+        </div>
+        <div class="clist-body" id="chatList"></div>
+      </aside>
+
+      <!-- CENTER: thread -->
+      <section class="thread">
+        <div class="thread-head">
+          <div class="thread-title">
+            <h2 id="threadTitle">
+              <span>RFE response policy for I-130</span>
+              <span class="alert-chip" id="alertChip" style="display:none;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+                <span id="alertChipText">Daily 9:00 AM</span>
+              </span>
+            </h2>
+            <div class="tt-meta" id="threadMeta">Last updated 12 min ago · 4 messages · 6 citations</div>
+          </div>
+          <div class="thread-actions">
+            <button class="icon-btn" id="starBtn" title="Star chat">
+              <svg id="starIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </button>
+            <button class="icon-btn" id="saveAlertBtn" title="Save as Alert">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+            <button class="icon-btn" title="More options">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="msgs" id="msgs"></div>
+
+        <div class="composer">
+          <div class="composer-box">
+            <textarea class="composer-input" id="composerInput" placeholder="Ask about a process, policy, case status, or document…" rows="1"></textarea>
+            <div class="composer-bar">
+              <button class="c-tool" title="Attach document">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              </button>
+              <button class="c-tool" title="Filter sources">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              </button>
+              <button class="c-tool" title="Voice">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              </button>
+              <span class="spacer"></span>
+              <span class="composer-hint">Enter ↵ to send · Shift+Enter for newline</span>
+              <button class="composer-send" id="sendBtn" disabled title="Send">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: citations -->
+      <aside class="citepane">
+        <div class="citepane-head">
+          <h3>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Sources & Citations
+          </h3>
+          <div class="sub" id="citeSub">6 references found · Ranked by relevance</div>
+        </div>
+        <div class="citepane-tabs">
+          <button class="ctab active" data-ct="all">All</button>
+          <button class="ctab" data-ct="policy">Policy</button>
+          <button class="ctab" data-ct="case">Case</button>
+          <button class="ctab" data-ct="form">Forms</button>
+        </div>
+        <div class="citepane-body" id="citeBody"></div>
+      </aside>
+
+    </div>
+  </main>
+</div>
+
+<!-- ═══ Save as Alert Modal ═══ -->
+<div class="modal-overlay" id="alertModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>
+        <span style="display:inline-flex;width:28px;height:28px;border-radius:8px;background:var(--primary-soft);color:var(--primary);align-items:center;justify-content:center;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </span>
+        Save Chat as Alert
+      </h2>
+      <button class="x" id="closeAlertBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="intro">Re-run this chat on a schedule. We'll send you the latest answer whenever the underlying data changes or on your chosen frequency.</p>
+
+      <div class="field">
+        <label>Alert Name</label>
+        <input type="text" id="alertName" value="RFE response policy for I-130" />
+      </div>
+
+      <div class="field">
+        <label>Question to re-run</label>
+        <textarea id="alertQuery">What is our current SOP for responding to an RFE on I-130 petitions, and are there any cases this week that need attention?</textarea>
+      </div>
+
+      <div class="field">
+        <label>Frequency</label>
+        <div class="freq-grid">
+          <button class="freq-opt" data-freq="realtime">Real-time<span class="fo-sub">On change</span></button>
+          <button class="freq-opt" data-freq="hourly">Hourly<span class="fo-sub">Every hour</span></button>
+          <button class="freq-opt active" data-freq="daily">Daily<span class="fo-sub">9:00 AM</span></button>
+          <button class="freq-opt" data-freq="weekly">Weekly<span class="fo-sub">Monday</span></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Deliver via</label>
+        <div class="deliver-grid">
+          <label class="deliver-opt active">
+            <span class="d-ico">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+            </span>
+            <span class="d-txt">
+              <span class="d-title">Email</span>
+              <span class="d-sub">ai@altascio.com</span>
+            </span>
+            <input type="checkbox" checked style="display:none;" />
+          </label>
+          <label class="deliver-opt active">
+            <span class="d-ico">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </span>
+            <span class="d-txt">
+              <span class="d-title">In-app</span>
+              <span class="d-sub">Notification center</span>
+            </span>
+            <input type="checkbox" checked style="display:none;" />
+          </label>
+          <label class="deliver-opt">
+            <span class="d-ico">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </span>
+            <span class="d-txt">
+              <span class="d-title">Slack</span>
+              <span class="d-sub">#gip-ops</span>
+            </span>
+            <input type="checkbox" style="display:none;" />
+          </label>
+          <label class="deliver-opt">
+            <span class="d-ico">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </span>
+            <span class="d-txt">
+              <span class="d-title">SMS</span>
+              <span class="d-sub">+1 (555) ••• 0142</span>
+            </span>
+            <input type="checkbox" style="display:none;" />
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Only notify if</label>
+        <select id="alertCondition">
+          <option value="always">Always send result (even if unchanged)</option>
+          <option value="changed" selected>Answer has changed since last run</option>
+          <option value="threshold">Specific keyword/threshold detected</option>
+          <option value="newdoc">A new source document is referenced</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="info">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Next run: <strong id="nextRun" style="color:var(--ink);margin-left:3px;">Tomorrow at 9:00 AM</strong>
+      </span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-ghost" id="cancelAlertBtn">Cancel</button>
+        <button class="btn-primary" id="confirmAlertBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Create Alert
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ICONS = {
+  dashboard:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>',
+  notice:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>',
+  compliance:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>',
+  filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  agentops:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
+  email:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  assistant:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+  star:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  starFill:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  bell:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+  copy:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  thumbUp:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>',
+  thumbDown:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg>',
+  redo:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>',
+  pdf:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  link:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+};
+
+const NAV = [
+  {id:'dashboard',  label:'Dashboard',                icon:ICONS.dashboard, href:'gip-dashboard.html',                          visible:1},
+  {id:'assistant',  label:'AI Assistant',             icon:ICONS.assistant, href:'gip-ai-assistant.html', group:'Agents',       visible:0},
+  {id:'notice',     label:'Notice Processing',        icon:ICONS.notice,    href:'gip-notice-list.html',  group:'Agents',       visible:1},
+  {id:'compliance', label:'Compliance Doc (PAF)',     icon:ICONS.compliance,href:'gip-compliance.html',   group:'Agents',       visible:0},
+  {id:'filing',     label:'Automate Filing (H4 EAD)', icon:ICONS.filing,    href:'gip-autofiling.html',   group:'Agents',       visible:0},
+  {id:'email',      label:'Email Templates',          icon:ICONS.email,     href:'#',                     group:'Tools',        visible:0},
+  {id:'agentops',   label:'Agent Ops',                icon:ICONS.agentops,  href:'gip-agent-ops.html',    group:'Insights',     visible:0},
+];
+const ACTIVE_NAV = 'assistant';
+
+const FOOT_ICONS = {
+  settings:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  status:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>',
+  notifications:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+};
+const FOOT = [
+  {id:'settings',      label:'Settings',      icon:FOOT_ICONS.settings,      href:'gip-settings.html', visible:0},
+  {id:'status',        label:'Status',        icon:FOOT_ICONS.status,                                   visible:0},
+  {id:'notifications', label:'Notifications', icon:FOOT_ICONS.notifications, badge:'2',                 visible:0},
+];
+
+function renderFoot(){
+  document.getElementById('footItems').innerHTML = FOOT.filter(f=>f.visible).map(f=>{
+    const tag = f.href ? 'a' : 'button';
+    const href = f.href ? ` href="${f.href}"` : '';
+    const badge = f.badge ? `<span class="badge">${f.badge}</span>` : '';
+    return `<${tag} class="foot-item"${href} data-label="${f.label}" title="${f.label}">
+      <span class="ico">${f.icon}</span><span class="lbl">${f.label}</span>${badge}
+    </${tag}>`;
+  }).join('');
+}
+
+/* ═══ data ═══ */
+const CHATS = [
+  {id:'c1', title:'RFE response policy for I-130', preview:'What is our current SOP for responding to an RFE…',
+    when:'12 min ago', group:'Today', starred:true, alert:{freq:'Daily 9:00 AM'}, active:true},
+  {id:'c2', title:'H-1B cap-exempt eligibility check', preview:'Can our nonprofit client file H-1B cap-exempt…',
+    when:'1 hr ago', group:'Today', starred:false, alert:null},
+  {id:'c3', title:'Status: Elena Rodriguez N-400', preview:'Where are we on the N-400 for Elena…',
+    when:'3 hr ago', group:'Today', starred:false, alert:null},
+  {id:'c4', title:'Document checklist for I-485 AOS', preview:'Generate a full evidentiary checklist for…',
+    when:'Yesterday', group:'Yesterday', starred:true, alert:{freq:'Weekly · Monday'}},
+  {id:'c5', title:'PERM recruitment timeline', preview:'Walk me through the PERM recruitment timeline…',
+    when:'Yesterday', group:'Yesterday', starred:false, alert:null},
+  {id:'c6', title:'New USCIS fee schedule summary', preview:'Summarize the changes from the April fee rule…',
+    when:'Jun 4', group:'This week', starred:true, alert:{freq:'Real-time'}},
+  {id:'c7', title:'EAD renewal SOP walkthrough', preview:'Step-by-step walkthrough for renewing an EAD…',
+    when:'Jun 3', group:'This week', starred:false, alert:null},
+  {id:'c8', title:'Priority date prediction — EB-2 India', preview:'Based on the latest visa bulletin, when…',
+    when:'May 28', group:'Earlier', starred:false, alert:null},
+  {id:'c9', title:'Onboarding new paralegal — playbook', preview:'Build a 2-week onboarding plan for a new…',
+    when:'May 22', group:'Earlier', starred:false, alert:null},
+];
+
+const MESSAGES_BY_CHAT = {
+  c1: [
+    {role:'user', time:'12:14 PM', text:'What is our current SOP for responding to an RFE on I-130 petitions, and are there any cases this week that need attention?'},
+    {role:'assistant', time:'12:14 PM', text:
+      `<p>Here's our internal SOP for responding to an RFE on an <strong>I-130</strong> petition, drawn from the <em>USCIS Response Playbook v3.2</em> <a class="cite-ref" data-cite="1">1</a> and our internal <em>Notice Triage SOP</em> <a class="cite-ref" data-cite="2">2</a>:</p>
+       <ul>
+         <li><strong>Within 24 hours of receipt</strong> — Log the RFE in the Notice Queue and tag the assigned attorney. Confirm the deadline (usually <code>87 days</code> from notice issuance).</li>
+         <li><strong>Days 1–7</strong> — Identify the specific evidence requested. Compare against our <em>I-130 Evidentiary Checklist</em> <a class="cite-ref" data-cite="3">3</a>.</li>
+         <li><strong>Days 7–30</strong> — Collect missing documents from the petitioner. Draft the response cover letter using template <code>RFE-I130-COVER</code>.</li>
+         <li><strong>Days 30–60</strong> — Attorney review, paralegal QA, beneficiary affidavit sign-off.</li>
+         <li><strong>Days 60–80</strong> — Final compile, FedEx with tracking, file copies to client portal.</li>
+       </ul>
+       <p><strong>Active cases needing attention this week:</strong></p>
+       <ul>
+         <li><strong>Marcus Chen</strong> (I-130) — RFE response due <strong>Jun 8</strong>. Status: pending bona-fide marriage evidence <a class="cite-ref" data-cite="4">4</a>.</li>
+         <li><strong>Sarah Patel</strong> (I-130) — RFE response due <strong>Jun 14</strong>. Status: cover letter in draft.</li>
+       </ul>
+       <p>Want me to draft the Marcus Chen response cover letter or pull the missing evidence checklist?</p>`
+    },
+    {role:'user', time:'12:16 PM', text:'Pull the missing evidence checklist for Marcus Chen and confirm what the petitioner still owes us.'},
+    {role:'assistant', time:'12:16 PM', text:
+      `<p>Based on the latest case file <a class="cite-ref" data-cite="4">4</a> and the standard I-130 bona-fide marriage evidence matrix <a class="cite-ref" data-cite="5">5</a>, here's where Marcus Chen's RFE stands:</p>
+       <p><strong>Received from petitioner ✓</strong></p>
+       <ul>
+         <li>Joint lease agreement (2023–present)</li>
+         <li>Joint bank statement (Chase, last 6 months)</li>
+         <li>Marriage certificate (certified copy)</li>
+       </ul>
+       <p><strong>Still needed ✗</strong></p>
+       <ul>
+         <li>Joint utility bills (PG&amp;E or equivalent) — at least 3 months</li>
+         <li>Photographs across multiple events/years with date metadata</li>
+         <li>Two affidavits from disinterested third parties (we have one)</li>
+         <li>Joint travel itinerary or trip receipts</li>
+       </ul>
+       <p>I can send an outreach email to the petitioner using template <code>RFE-EVIDENCE-REQ</code> <a class="cite-ref" data-cite="6">6</a>. The current deadline is <strong>Jun 8</strong> — <strong>0 days remaining</strong>. Recommend escalating today.</p>`
+    },
+  ],
+  c2:[
+    {role:'user', time:'11:02 AM', text:'Can our nonprofit client file H-1B cap-exempt? They are affiliated with a university.'},
+    {role:'assistant', time:'11:02 AM', text:`<p>Likely yes — under <strong>INA 214(g)(5)(A)</strong> a nonprofit "affiliated with" an institution of higher education is cap-exempt if the affiliation is formalized via written agreement or shared facility/programmatic ties. I'll pull the qualifying criteria and check our existing template engagement letter for the affiliation language.</p>`},
+  ],
+  c3:[
+    {role:'user', time:'9:18 AM', text:'Where are we on the N-400 for Elena Rodriguez?'},
+    {role:'assistant', time:'9:18 AM', text:`<p>N-400 for Elena Rodriguez is <strong>ready for review</strong> at 97% confidence. Biometrics scheduled <strong>Jun 14</strong>. Civics test prep packet was sent on May 30. No outstanding items.</p>`},
+  ],
+};
+
+const CITATIONS_BY_CHAT = {
+  c1:[
+    {n:1, cat:'policy', title:'USCIS Response Playbook v3.2', meta:'Internal SOP · Section 4.1', snippet:'For all RFEs on family-based I-130 petitions, the response timeline begins on the notice issuance date, not the receipt date…', updated:'Updated Apr 2026'},
+    {n:2, cat:'policy', title:'Notice Triage SOP', meta:'Internal SOP · v2.1', snippet:'All incoming RFE notices must be logged within 24 hours, tagged with assigned attorney and beneficiary…', updated:'Updated Mar 2026'},
+    {n:3, cat:'form', title:'I-130 Evidentiary Checklist', meta:'Form template · Marriage-based', snippet:'Required: marriage certificate; joint financial documents covering at least 6 months; affidavits from two disinterested parties…', updated:'Updated Feb 2026'},
+    {n:4, cat:'case', title:'Marcus Chen — Case File MC-2024-0142', meta:'Case · I-130 marriage-based', snippet:'RFE received May 11, 2026. Bona-fide marriage evidence requested. Petitioner has submitted joint lease and bank statements…', updated:'Updated Jun 7'},
+    {n:5, cat:'policy', title:'Bona-fide Marriage Evidence Matrix', meta:'Internal guidance', snippet:'Tier 1 evidence: joint lease, joint bank, joint utilities. Tier 2: photographs, travel, third-party affidavits…', updated:'Updated Jan 2026'},
+    {n:6, cat:'form', title:'Email template — RFE-EVIDENCE-REQ', meta:'Template · Petitioner outreach', snippet:'"Dear {petitioner_name}, in order to respond to the RFE issued on your I-130 petition, we need the following documents…"', updated:'Updated Mar 2026'},
+  ],
+  c2:[
+    {n:1, cat:'policy', title:'INA 214(g)(5)(A) — Cap-exempt eligibility', meta:'Statute', snippet:'Nonprofits affiliated or related to an institution of higher education are exempt from the H-1B numerical cap…', updated:'Statute'},
+    {n:2, cat:'form', title:'Affiliation Agreement template', meta:'Form template', snippet:'Written affiliation agreement establishing formal connection between the nonprofit and the qualifying institution…', updated:'Updated Apr 2026'},
+  ],
+  c3:[
+    {n:1, cat:'case', title:'Elena Rodriguez — Case File ER-2024-0089', meta:'Case · N-400', snippet:'Application submitted Feb 14, 2026. Biometrics scheduled Jun 14. Civics prep materials sent May 30…', updated:'Updated Jun 5'},
+  ],
+};
+
+/* ═══ state ═══ */
+let state = {
+  activeChat: 'c1',
+  listFilter: 'all',
+  citeFilter: 'all',
+  chats: JSON.parse(JSON.stringify(CHATS)),
+  chatSearch: '',
+};
+
+/* ═══ render: sidebar nav ═══ */
+function renderNav(){
+  let html = '', currentGroup = null;
+  NAV.filter(n=>n.visible).forEach(n=>{
+    const g = n.group || null;
+    if(g !== currentGroup){
+      currentGroup = g;
+      if(g) html += `<div class="nav-label lbl">${g}</div>`;
+    }
+    html += `<a class="nav-item ${n.id===ACTIVE_NAV?'active':''}" href="${n.href}" data-label="${n.label}" title="${n.label}">
+      <span class="ico">${n.icon}</span><span class="lbl">${n.label}</span>
+    </a>`;
+  });
+  document.getElementById('nav').innerHTML = html;
+}
+
+/* ═══ render: chat list ═══ */
+function renderChatList(){
+  const term = state.chatSearch.toLowerCase().trim();
+  const filtered = state.chats.filter(c=>{
+    if(state.listFilter==='starred' && !c.starred) return false;
+    if(state.listFilter==='alerts' && !c.alert) return false;
+    if(term && !(c.title.toLowerCase().includes(term)||c.preview.toLowerCase().includes(term))) return false;
+    return true;
+  });
+  // group ordering preserved by source order
+  const groups = {};
+  filtered.forEach(c=>{ (groups[c.group] ||= []).push(c); });
+  let html = '';
+  if(filtered.length===0){
+    html = `<div style="padding:30px 16px;text-align:center;color:var(--ink-faint);font-size:12.5px;">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4;margin-bottom:8px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <div>No chats match your search.</div>
+    </div>`;
+  } else {
+    Object.entries(groups).forEach(([grp, items])=>{
+      html += `<div class="clist-group">${grp}</div>`;
+      items.forEach(c=>{
+        html += `<div class="citem ${c.id===state.activeChat?'active':''} ${c.alert?'has-alert':''}" data-id="${c.id}">
+          <div class="citem-row">
+            <span class="citem-title">${c.title}</span>
+            <button class="citem-star ${c.starred?'starred':''}" data-star="${c.id}" title="${c.starred?'Unstar':'Star'}">${c.starred?ICONS.starFill:ICONS.star}</button>
+          </div>
+          <div class="citem-preview">${c.preview}</div>
+          <div class="citem-meta">
+            <span>${c.when}</span>
+            ${c.alert?`<span class="citem-pill">${ICONS.bell} Alert</span>`:''}
+          </div>
+        </div>`;
+      });
+    });
+  }
+  document.getElementById('chatList').innerHTML = html;
+  document.getElementById('cntAll').textContent = state.chats.length;
+
+  // events
+  document.querySelectorAll('.citem').forEach(el=>{
+    el.onclick = (e)=>{
+      if(e.target.closest('[data-star]')) return;
+      state.activeChat = el.dataset.id;
+      renderChatList(); renderThread(); renderCitations();
+    };
+  });
+  document.querySelectorAll('[data-star]').forEach(el=>{
+    el.onclick = (e)=>{
+      e.stopPropagation();
+      const c = state.chats.find(x=>x.id===el.dataset.star);
+      c.starred = !c.starred;
+      renderChatList();
+    };
+  });
+}
+
+/* ═══ render: thread ═══ */
+function renderThread(){
+  const chat = state.chats.find(c=>c.id===state.activeChat);
+  const msgs = MESSAGES_BY_CHAT[state.activeChat] || [];
+  document.getElementById('threadTitle').querySelector('span:first-child').textContent = chat.title;
+  const meta = `${msgs.length} message${msgs.length===1?'':'s'} · ${(CITATIONS_BY_CHAT[state.activeChat]||[]).length} citations · Last updated ${chat.when}`;
+  document.getElementById('threadMeta').textContent = meta;
+
+  // star button state
+  document.getElementById('starIcon').outerHTML = chat.starred
+    ? `<svg id="starIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--amber);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
+    : `<svg id="starIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+
+  // alert chip
+  const chip = document.getElementById('alertChip');
+  if(chat.alert){
+    chip.style.display = 'inline-flex';
+    document.getElementById('alertChipText').textContent = chat.alert.freq;
+  } else {
+    chip.style.display = 'none';
+  }
+
+  // messages
+  let html = '';
+  msgs.forEach(m=>{
+    if(m.role==='assistant'){
+      html += `<div class="msg assistant">
+        <div class="msg-avatar">${ICONS.assistant}</div>
+        <div class="msg-body">
+          <div class="msg-bubble">${m.text}</div>
+          <div class="msg-foot">
+            <span class="msg-time">${m.time}</span>
+            <button class="msg-act" title="Copy">${ICONS.copy}</button>
+            <button class="msg-act" title="Helpful">${ICONS.thumbUp}</button>
+            <button class="msg-act" title="Not helpful">${ICONS.thumbDown}</button>
+            <button class="msg-act" title="Regenerate">${ICONS.redo}</button>
+          </div>
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="msg user">
+        <div class="msg-avatar">A</div>
+        <div class="msg-body">
+          <div class="msg-bubble">${m.text}</div>
+          <div class="msg-foot"><span class="msg-time">${m.time}</span></div>
+        </div>
+      </div>`;
+    }
+  });
+  if(msgs.length===0){
+    html = `<div style="margin:auto;text-align:center;color:var(--ink-faint);padding:60px 20px;">
+      <div style="width:54px;height:54px;border-radius:14px;background:var(--primary-soft);color:var(--primary);display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;">
+        ${ICONS.assistant}
+      </div>
+      <h3 style="font-size:17px;font-weight:700;color:var(--ink);margin:0 0 6px;">Ask GIP Assistant anything</h3>
+      <p style="font-size:13px;margin:0 0 4px;">Internal processes, case status, policy summaries, document lookups — all grounded in your firm's knowledge base.</p>
+    </div>`;
+  }
+  document.getElementById('msgs').innerHTML = html;
+  document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
+
+  // cite-ref click → scroll into citation panel
+  document.querySelectorAll('.cite-ref').forEach(el=>{
+    el.onclick = ()=>{
+      const n = el.dataset.cite;
+      const card = document.querySelector(`.cite-card[data-n="${n}"]`);
+      if(card){
+        card.scrollIntoView({behavior:'smooth', block:'center'});
+        card.style.borderColor = 'var(--primary)';
+        card.style.boxShadow = '0 0 0 3px var(--primary-soft)';
+        setTimeout(()=>{card.style.borderColor=''; card.style.boxShadow='';}, 1400);
+      }
+    };
+  });
+}
+
+/* ═══ render: citations ═══ */
+function renderCitations(){
+  const list = CITATIONS_BY_CHAT[state.activeChat] || [];
+  document.getElementById('citeSub').textContent =
+    `${list.length} reference${list.length===1?'':'s'} found · Ranked by relevance`;
+  const filtered = list.filter(c=> state.citeFilter==='all' || c.cat===state.citeFilter);
+  let html = '';
+  if(filtered.length===0){
+    html = `<div style="padding:30px 16px;text-align:center;color:var(--ink-faint);font-size:12.5px;">
+      No sources in this category.
+    </div>`;
+  } else {
+    filtered.forEach(c=>{
+      html += `<div class="cite-card" data-n="${c.n}">
+        <div class="cite-card-head">
+          <span class="cite-num">${c.n}</span>
+          <div class="cite-main">
+            <div class="cite-title">${c.title}</div>
+            <div class="cite-meta">${c.meta} · ${c.updated}</div>
+          </div>
+        </div>
+        <div class="cite-snip">${c.snippet}</div>
+        <div class="cite-actions">
+          <a class="cite-link" href="#">${ICONS.link} Open source</a>
+          <span style="flex:1;"></span>
+          <a class="cite-link" href="#" style="color:var(--ink-faint);">Copy citation</a>
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('citeBody').innerHTML = html;
+}
+
+/* ═══ events ═══ */
+document.getElementById('collapseBtn').onclick = ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+};
+document.getElementById('brandIcon').onclick = ()=>{
+  document.getElementById('sidebar').classList.remove('collapsed');
+};
+
+// user popout
+(function(){
+  const btn = document.getElementById('userBtn');
+  const pop = document.getElementById('userPop');
+  if(!btn || !pop) return;
+  const close = ()=>{ pop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const open = pop.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', e=>{
+    if(!pop.classList.contains('open')) return;
+    if(!pop.contains(e.target) && !btn.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+})();
+document.getElementById('chatSearch').oninput = (e)=>{
+  state.chatSearch = e.target.value;
+  renderChatList();
+};
+
+document.querySelectorAll('.clist-tabs .ctab').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('.clist-tabs .ctab').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    state.listFilter = b.dataset.tab;
+    renderChatList();
+  };
+});
+
+document.querySelectorAll('.citepane-tabs .ctab').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('.citepane-tabs .ctab').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    state.citeFilter = b.dataset.ct;
+    renderCitations();
+  };
+});
+
+document.getElementById('newChatBtn').onclick = ()=>{
+  const id = 'c' + (Date.now());
+  const nc = {id, title:'New chat', preview:'(no messages yet)', when:'just now', group:'Today', starred:false, alert:null};
+  state.chats.unshift(nc);
+  MESSAGES_BY_CHAT[id] = [];
+  CITATIONS_BY_CHAT[id] = [];
+  state.activeChat = id;
+  renderChatList(); renderThread(); renderCitations();
+  document.getElementById('composerInput').focus();
+};
+
+document.getElementById('starBtn').onclick = ()=>{
+  const c = state.chats.find(x=>x.id===state.activeChat);
+  c.starred = !c.starred;
+  renderChatList(); renderThread();
+};
+
+/* composer */
+const input = document.getElementById('composerInput');
+const sendBtn = document.getElementById('sendBtn');
+input.addEventListener('input', ()=>{
+  sendBtn.disabled = !input.value.trim();
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+});
+input.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter' && !e.shiftKey){
+    e.preventDefault();
+    if(!sendBtn.disabled) sendMessage();
+  }
+});
+sendBtn.onclick = ()=> sendMessage();
+
+function sendMessage(){
+  const text = input.value.trim();
+  if(!text) return;
+  const now = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  const list = MESSAGES_BY_CHAT[state.activeChat] || (MESSAGES_BY_CHAT[state.activeChat]=[]);
+  list.push({role:'user', time:now, text});
+  // update preview
+  const chat = state.chats.find(c=>c.id===state.activeChat);
+  if(chat){
+    if(chat.title==='New chat') chat.title = text.slice(0,50);
+    chat.preview = text;
+    chat.when = 'just now';
+  }
+  input.value = ''; input.style.height='auto'; sendBtn.disabled = true;
+  renderThread(); renderChatList();
+
+  // simulate assistant response
+  setTimeout(()=>{
+    const msgsEl = document.getElementById('msgs');
+    const tEl = document.createElement('div');
+    tEl.className = 'msg assistant';
+    tEl.innerHTML = `<div class="msg-avatar">${ICONS.assistant}</div>
+      <div class="msg-body"><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>`;
+    msgsEl.appendChild(tEl);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+
+    setTimeout(()=>{
+      tEl.remove();
+      list.push({role:'assistant', time:new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}), text:
+        `<p>I'll look into that and pull from our internal knowledge base. Here's what I found:</p>
+         <ul>
+           <li>Reviewed 4 relevant policy documents and 2 case files <a class="cite-ref" data-cite="1">1</a></li>
+           <li>Based on our current SOP <a class="cite-ref" data-cite="2">2</a>, the recommended approach is to escalate immediately.</li>
+         </ul>
+         <p>This is a preview response — connect your live knowledge base for full answers.</p>`
+      });
+      renderThread();
+    }, 1100);
+  }, 200);
+}
+
+/* ═══ Alert modal ═══ */
+const alertModal = document.getElementById('alertModal');
+function openAlert(){
+  const chat = state.chats.find(c=>c.id===state.activeChat);
+  document.getElementById('alertName').value = chat.title;
+  alertModal.classList.add('open');
+}
+function closeAlert(){ alertModal.classList.remove('open'); }
+document.getElementById('saveAlertBtn').onclick = openAlert;
+document.getElementById('closeAlertBtn').onclick = closeAlert;
+document.getElementById('cancelAlertBtn').onclick = closeAlert;
+alertModal.onclick = (e)=>{ if(e.target===alertModal) closeAlert(); };
+
+document.querySelectorAll('.freq-opt').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('.freq-opt').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    const labels = {realtime:'Real-time · live', hourly:'Top of next hour', daily:'Tomorrow at 9:00 AM',
+      weekly:'Monday at 9:00 AM'};
+    document.getElementById('nextRun').textContent = labels[b.dataset.freq];
+  };
+});
+
+document.querySelectorAll('.deliver-opt').forEach(b=>{
+  b.onclick = (e)=>{
+    e.preventDefault();
+    b.classList.toggle('active');
+    const cb = b.querySelector('input');
+    if(cb) cb.checked = b.classList.contains('active');
+  };
+});
+
+document.getElementById('confirmAlertBtn').onclick = ()=>{
+  const chat = state.chats.find(c=>c.id===state.activeChat);
+  const freqMap = {realtime:'Real-time', hourly:'Hourly', daily:'Daily 9:00 AM', weekly:'Weekly · Monday'};
+  const freqKey = document.querySelector('.freq-opt.active')?.dataset.freq || 'daily';
+  chat.alert = {freq: freqMap[freqKey]};
+  document.getElementById('alertCount').textContent =
+    state.chats.filter(c=>c.alert).length;
+  closeAlert();
+  renderThread(); renderChatList();
+};
+
+document.getElementById('alertsBtn').onclick = ()=>{
+  document.querySelectorAll('.clist-tabs .ctab').forEach(x=>x.classList.remove('active'));
+  document.querySelector('.clist-tabs .ctab[data-tab="alerts"]').classList.add('active');
+  state.listFilter = 'alerts';
+  renderChatList();
+};
+
+document.getElementById('alertCount').textContent =
+  state.chats.filter(c=>c.alert).length;
+
+/* init */
+if(!localStorage.getItem('access_token')) window.location.href = 'login.html';
+renderNav();
+renderFoot();
+renderChatList();
+renderThread();
+renderCitations();
+</script>
+</body>
+</html>

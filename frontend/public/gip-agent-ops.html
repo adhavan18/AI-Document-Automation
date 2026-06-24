@@ -51,7 +51,7 @@
     text-transform:uppercase;padding:14px 10px 7px;}
   .sidebar.collapsed .nav-label{display:none;}
   .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
-    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:13.5px;
+    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:12px;
     font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;
     text-decoration:none;}
   a.nav-item,a.nav-item:hover,a.nav-item:focus{text-decoration:none;}
@@ -70,7 +70,7 @@
 
   .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
   .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
-    border:none;background:transparent;color:var(--side-text);font-size:13px;font-weight:500;
+    border:none;background:transparent;color:var(--side-text);font-size:12px;font-weight:500;
     margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;cursor:pointer;}
   .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
   a.foot-item{text-decoration:none;}
@@ -79,8 +79,9 @@
   .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
   .sidebar.collapsed .foot-item .lbl,.sidebar.collapsed .foot-item .badge-n{display:none;}
   .user{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-top:6px;border-radius:10px;
-    transition:background .15s;}
-  .user:hover{background:rgba(255,255,255,.05);}
+    background:rgba(255,255,255,.04);border:1px solid var(--side-line);
+    transition:background .15s, border-color .15s;}
+  .user:hover{background:transparent;border-color:transparent;}
   .avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--orange);color:#fff;
     font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
   .user-txt{overflow:hidden;white-space:nowrap;}
@@ -88,6 +89,21 @@
   .user-role{font-size:11px;color:var(--ink-faint);}
   .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
   .sidebar.collapsed .user-txt{display:none;}
+  .user{cursor:pointer;width:100%;text-align:left;border:none;font:inherit;}
+  .user-caret{margin-left:auto;color:var(--ink-faint);display:flex;align-items:center;transition:transform .15s;}
+  .user-wrap{position:relative;}
+  .user-pop{position:absolute;left:12px;right:12px;bottom:calc(100% + 6px);
+    background:#1a2236;border:1px solid var(--side-line);border-radius:10px;
+    box-shadow:0 12px 28px rgba(0,0,0,.45);padding:5px;display:none;z-index:50;}
+  .user-pop.open{display:block;}
+  .user-pop-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+    border:none;background:transparent;color:var(--side-text);font-size:12.5px;font-weight:500;
+    border-radius:7px;cursor:pointer;text-align:left;text-decoration:none;}
+  .user-pop-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .user-pop-item .ico{display:flex;align-items:center;color:var(--ink-faint);}
+  .user-pop-sep{height:1px;background:var(--side-line);margin:4px 6px;}
+  .sidebar.collapsed .user-txt,.sidebar.collapsed .user-caret{display:none;}
+  .sidebar.collapsed .user-pop{left:auto;right:-216px;bottom:6px;width:200px;}
 
   /* main */
   main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
@@ -102,6 +118,30 @@
     padding:6px 12px;border-radius:7px;cursor:pointer}
   .seg button.on{background:var(--navy);color:#fff}
 
+  /* agent selector */
+  .agent-sel{position:relative;display:inline-block}
+  .agent-sel-btn{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
+    border-radius:10px;padding:7px 12px;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink);
+    cursor:pointer;transition:.15s;min-width:170px;justify-content:space-between}
+  .agent-sel-btn:hover{border-color:#c9d2e6}
+  .agent-sel-btn .sel-ico{width:22px;height:22px;border-radius:6px;background:var(--blue-bg);display:grid;
+    place-items:center;flex:none;color:var(--navy)}
+  .agent-sel-btn .sel-ico svg{width:13px;height:13px}
+  .agent-sel-btn .sel-txt{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .agent-sel-btn .chev{color:var(--muted-l);flex:none}
+  .agent-sel-menu{position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--line);
+    border-radius:11px;box-shadow:0 8px 28px rgba(16,30,60,.12);padding:6px;min-width:240px;z-index:30;
+    display:none}
+  .agent-sel.open .agent-sel-menu{display:block}
+  .agent-sel-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;
+    font-size:13px;font-weight:500;color:var(--ink);transition:background .12s}
+  .agent-sel-item:hover{background:#f3f6fb}
+  .agent-sel-item.on{background:var(--accent-soft);color:var(--navy);font-weight:600}
+  .agent-sel-item .it-ico{width:24px;height:24px;border-radius:7px;background:var(--blue-bg);display:grid;
+    place-items:center;flex:none;color:var(--navy)}
+  .agent-sel-item .it-ico svg{width:13px;height:13px}
+  .agent-sel-divider{height:1px;background:var(--line-2);margin:4px 6px}
+
   /* kpi strip */
   .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
   .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 17px;box-shadow:var(--shadow)}
@@ -113,7 +153,14 @@
   .pos{color:var(--green)} .neg{color:var(--red)} .acc{color:var(--navy)}
 
   .grid{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+  .row-full{margin-top:18px}
   .row3{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;align-items:start}
+  /* equal-height variant: both panels stretch to the taller of the two */
+  .row3-match{align-items:stretch}
+  .row3-match > .panel{display:flex;flex-direction:column;min-height:0;}
+  .row3-match > .panel > .pb{flex:1;min-height:0;}
+  .row3-match .pb-scroll{overflow-y:auto;max-height:100%;}
+  .row3-match .chart-wrap-flex{height:auto;flex:1;min-height:240px;}
   .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
   .ph{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 13px;border-bottom:1px solid var(--line-2)}
   .ph h2{font-size:14px;font-weight:700;letter-spacing:-.01em}
@@ -151,6 +198,22 @@
     border:1px solid #d8e0f5;display:flex;align-items:center;justify-content:space-between}
   .savecall .big{font-size:23px;font-weight:800;color:var(--green)}
   .savecall .lab{font-size:12px;color:var(--muted);font-weight:600}
+
+  /* assumptions summary (read-only) */
+  .assum-grid{padding-top:6px;display:flex;flex-direction:column}
+  .assum-sub{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);font-weight:700;
+    margin:12px 0 8px}
+  .assum-sub:first-child{margin-top:2px}
+  .assum-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;
+    border-bottom:1px dashed var(--line-2);font-size:13px}
+  .assum-row .lab{color:var(--muted);font-weight:500}
+  .assum-row .val{font-weight:700;color:var(--ink)}
+  .assum-agent{padding:10px 12px;border:1px solid var(--line-2);border-radius:10px;margin-top:8px;background:#fafbfe}
+  .assum-agent .nm{font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:6px}
+  .assum-agent .mini{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .assum-agent .mini .m{display:flex;flex-direction:column;gap:1px}
+  .assum-agent .mini .m .k{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-l);font-weight:600}
+  .assum-agent .mini .m .v{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--ink)}
 
   /* inputs */
   .ig{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;padding-top:4px}
@@ -205,24 +268,30 @@
   <nav class="nav" id="nav"></nav>
 
   <div class="side-foot">
-    <a class="foot-item" href="gip-settings.html" data-label="Settings" title="Settings">
-      <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-      <span class="lbl">Settings</span>
-    </a>
-    <button class="foot-item" data-label="Status" title="Status">
-      <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg></span>
-      <span class="lbl">Status</span>
-    </button>
-    <button class="foot-item" data-label="Notifications" title="Notifications">
-      <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
-      <span class="lbl">Notifications</span>
-      <span class="badge-n">0</span>
-    </button>
-    <div class="user" data-label="Austin" title="Austin · admin">
-      <div class="avatar">A</div>
-      <div class="user-txt">
-        <div class="user-name">Austin</div>
-        <div class="user-role">admin</div>
+    <div id="footItems"></div>
+    <div class="user-wrap">
+      <button class="user" id="userBtn" data-label="Austin" title="Austin · admin" aria-haspopup="true" aria-expanded="false">
+        <div class="avatar">A</div>
+        <div class="user-txt">
+          <div class="user-name">Austin</div>
+          <div class="user-role">admin</div>
+        </div>
+        <span class="user-caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+      </button>
+      <div class="user-pop" id="userPop" role="menu" aria-labelledby="userBtn">
+        <a class="user-pop-item" href="help.html" role="menuitem">
+          <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
+          Help
+        </a>
+        <a class="user-pop-item" href="support.html" role="menuitem">
+          <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+          Support
+        </a>
+        <div class="user-pop-sep"></div>
+        <a class="user-pop-item" href="gip-login.html" role="menuitem">
+          <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+          Logout
+        </a>
       </div>
     </div>
   </div>
@@ -235,6 +304,14 @@
       <div class="date">Token consumption, cost-benefit vs. human baseline, and return on the GIP agent stack.</div>
     </div>
     <div class="top-actions">
+      <div class="agent-sel" id="agentSel">
+        <button type="button" class="agent-sel-btn" id="agentSelBtn">
+          <span class="sel-ico"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></span>
+          <span class="sel-txt" id="agentSelTxt">All Agents</span>
+          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="agent-sel-menu" id="agentSelMenu"></div>
+      </div>
       <div class="seg">
         <button data-period="7">This week</button>
         <button class="on" data-period="30">This month</button>
@@ -274,22 +351,17 @@
     </div>
   </div>
 
+  <!-- ROW 1: TCO + Cost-Benefit -->
   <div class="grid">
-    <!-- AGENT TABLE -->
     <div class="panel">
-      <div class="ph"><h2>Agent Throughput &amp; Unit Economics</h2><span class="hint">per agent · selected period</span></div>
+      <div class="ph"><h2>Total Cost of Ownership</h2><span class="hint" id="tco-hz">over 12 mo</span></div>
       <div class="pb">
-        <table>
-          <thead><tr>
-            <th>Agent</th><th>Status</th><th>Docs</th><th>Tokens</th>
-            <th>Run cost</th><th>Time saved</th>
-          </tr></thead>
-          <tbody id="agent-rows"></tbody>
-        </table>
+        <div class="tco-bar" id="tco-bar"></div>
+        <div class="tco-list" id="tco-list"></div>
+        <div class="tco-total"><span class="lab">TCO (ICO + run + reviewer)</span><span class="amt num" id="tco-total">—</span></div>
       </div>
     </div>
 
-    <!-- COST BENEFIT -->
     <div class="panel">
       <div class="ph"><h2>Cost-Benefit · Agents vs. Humans</h2></div>
       <div class="pb">
@@ -311,45 +383,52 @@
     </div>
   </div>
 
-  <div class="row3">
-    <!-- ASSUMPTIONS -->
+  <!-- ROW 2: Agent Throughput (full-width) -->
+  <div class="row-full">
     <div class="panel">
-      <div class="ph"><h2>Assumptions &amp; Cost of Ownership</h2><span class="hint">edit to recompute</span></div>
+      <div class="ph"><h2>Agent Throughput &amp; Unit Economics</h2><span class="hint">per agent · selected period</span></div>
       <div class="pb">
-        <div class="ig">
-          <div class="sub">Pricing &amp; labor baseline</div>
-          <div class="fld"><label>Blended token cost</label><div class="inwrap"><span class="pre">$</span><input id="in-tokrate" value="6.50"><span class="suf">/M tok</span></div></div>
-          <div class="fld"><label>Compute per doc</label><div class="inwrap"><span class="pre">$</span><input id="in-compute" value="0.04"><span class="suf">/doc</span></div></div>
-          <div class="fld"><label>Human fully-loaded rate</label><div class="inwrap"><span class="pre">$</span><input id="in-hrate" value="42"><span class="suf">/hr</span></div></div>
-          <div class="fld"><label>Reviewer (in-loop)</label><div class="inwrap"><span class="pre">$</span><input id="in-reviewer" value="3200"><span class="suf">/mo</span></div></div>
+        <table>
+          <thead><tr>
+            <th>Agent</th><th>Status</th><th>Docs</th><th>Tokens</th>
+            <th>Run cost</th><th>Time saved</th>
+          </tr></thead>
+          <tbody id="agent-rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-          <div class="sub">Total cost of ownership</div>
-          <div class="fld"><label>Initial cost of ownership (one-time)</label><div class="inwrap"><span class="pre">$</span><input id="in-ico" value="24000"><span class="suf">build</span></div></div>
-          <div class="fld"><label>Projection horizon</label><div class="inwrap"><input id="in-horizon" value="12"><span class="suf">months</span></div></div>
+  <!-- ROW 3: Active Assumptions + ROI (height-matched) -->
+  <div class="row3 row3-match">
+    <div class="panel">
+      <div class="ph">
+        <h2>Active Assumptions</h2>
+        <a href="gip-settings.html" class="hint" style="text-decoration:none;color:var(--blue);font-weight:600">Edit in Settings ↗</a>
+      </div>
+      <div class="pb pb-scroll">
+        <div class="assum-grid">
+          <div class="assum-sub">Pricing &amp; labor (global)</div>
+          <div class="assum-row"><span class="lab">Blended token cost</span><span class="val num" id="as-tokrate">—</span></div>
+          <div class="assum-row"><span class="lab">Compute per doc</span><span class="val num" id="as-compute">—</span></div>
+          <div class="assum-row"><span class="lab">Human fully-loaded rate</span><span class="val num" id="as-hrate">—</span></div>
+          <div class="assum-row"><span class="lab">Reviewer (in-loop)</span><span class="val num" id="as-reviewer">—</span></div>
+          <div class="assum-sub">Cost of ownership</div>
+          <div class="assum-row"><span class="lab">Initial cost of ownership</span><span class="val num" id="as-ico">—</span></div>
+          <div class="assum-row"><span class="lab">Projection horizon</span><span class="val num" id="as-horizon">—</span></div>
+          <div class="assum-sub" id="as-agent-sub">Per-agent baselines</div>
+          <div id="as-agent-list"></div>
         </div>
-        <div class="ph" style="border:0;padding:14px 0 4px"><h2 style="font-size:12px;color:var(--muted)">Per-agent baselines (monthly volume · human min/doc · agent sec/doc · tokens/doc)</h2></div>
-        <div id="agent-inputs"></div>
       </div>
     </div>
 
-    <!-- TCO + ROI stacked -->
-    <div style="display:flex;flex-direction:column;gap:18px">
-      <div class="panel">
-        <div class="ph"><h2>Total Cost of Ownership</h2><span class="hint" id="tco-hz">over 12 mo</span></div>
-        <div class="pb">
-          <div class="tco-bar" id="tco-bar"></div>
-          <div class="tco-list" id="tco-list"></div>
-          <div class="tco-total"><span class="lab">TCO (ICO + run + reviewer)</span><span class="amt num" id="tco-total">—</span></div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="ph"><h2>ROI — Cumulative Net Benefit</h2><span class="hint">savings less TCO</span></div>
-        <div class="chart-wrap"><canvas id="roiChart"></canvas></div>
-        <div class="be-note">
-          <div class="it">Breakeven: <b id="be-month">—</b></div>
-          <div class="it">Net benefit @ horizon: <b id="be-net">—</b></div>
-          <div class="it">ROI @ horizon: <b id="be-roi">—</b></div>
-        </div>
+    <div class="panel">
+      <div class="ph"><h2>ROI — Cumulative Net Benefit</h2><span class="hint">savings less TCO</span></div>
+      <div class="chart-wrap chart-wrap-flex"><canvas id="roiChart"></canvas></div>
+      <div class="be-note">
+        <div class="it">Breakeven: <b id="be-month">—</b></div>
+        <div class="it">Net benefit @ horizon: <b id="be-net">—</b></div>
+        <div class="it">ROI @ horizon: <b id="be-roi">—</b></div>
       </div>
     </div>
   </div>
@@ -365,20 +444,44 @@ const ICONS = {
   filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
   agentops:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
   email:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  assistant:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
 };
 const NAV = [
-  {id:'dashboard', label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard},
-  {id:'notice',    label:'Notice Processing',        href:'gip-notice-list.html',icon:ICONS.notice,    group:'Agents'},
-  {id:'compliance',label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents'},
-  {id:'filing',    label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents'},
-  {id:'email',     label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools'},
-  {id:'agentops',  label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights'},
+  {id:'dashboard', label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard,                        visible:1},
+  {id:'assistant', label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:0},
+  {id:'notice',    label:'Notice Processing',        href:'gip-notice-list.html',icon:ICONS.notice,    group:'Agents',         visible:1},
+  {id:'compliance',label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:0},
+  {id:'filing',    label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:0},
+  {id:'email',     label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:0},
+  {id:'agentops',  label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights',       visible:0},
 ];
 const ACTIVE_NAV = 'agentops';
 
+const FOOT_ICONS = {
+  settings:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  status:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>',
+  notifications:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+};
+const FOOT = [
+  {id:'settings',      label:'Settings',      icon:FOOT_ICONS.settings,      href:'gip-settings.html', visible:0},
+  {id:'status',        label:'Status',        icon:FOOT_ICONS.status,                                   visible:0},
+  {id:'notifications', label:'Notifications', icon:FOOT_ICONS.notifications, badge:'0',                 visible:0},
+];
+
+function renderFoot(){
+  document.getElementById('footItems').innerHTML = FOOT.filter(f=>f.visible).map(f=>{
+    const tag = f.href ? 'a' : 'button';
+    const href = f.href ? ` href="${f.href}"` : '';
+    const badge = f.badge ? `<span class="badge-n">${f.badge}</span>` : '';
+    return `<${tag} class="foot-item"${href} data-label="${f.label}" title="${f.label}">
+      <span class="ico">${f.icon}</span><span class="lbl">${f.label}</span>${badge}
+    </${tag}>`;
+  }).join('');
+}
+
 function renderNav(){
   let html = '', currentGroup = null;
-  NAV.forEach(n=>{
+  NAV.filter(n=>n.visible).forEach(n=>{
     const g = n.group || null;
     if(g !== currentGroup){
       currentGroup = g;
@@ -390,7 +493,9 @@ function renderNav(){
   });
   document.getElementById('nav').innerHTML = html;
 }
+if(!localStorage.getItem('access_token')) window.location.href = 'login.html';
 renderNav();
+renderFoot();
 
 document.getElementById('collapseBtn').onclick = ()=>{
   document.getElementById('sidebar').classList.toggle('collapsed');
@@ -399,57 +504,130 @@ document.getElementById('brandIcon').onclick = ()=>{
   document.getElementById('sidebar').classList.remove('collapsed');
 };
 
-// ---- agent definitions (status counts illustrative; volume/baselines editable) ----
-const AGENTS = [
-  {key:'notice', name:'Notice Processing', form:'I-797C · USCIS notices',
+// user popout
+(function(){
+  const btn = document.getElementById('userBtn');
+  const pop = document.getElementById('userPop');
+  if(!btn || !pop) return;
+  const close = ()=>{ pop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const open = pop.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', e=>{
+    if(!pop.classList.contains('open')) return;
+    if(!pop.contains(e.target) && !btn.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+})();
+
+// ---- agent definitions (status counts illustrative; baselines come from Settings) ----
+// presentation-only fields (form / icon / queue counts) live here;
+// editable fields (vol, humanMin, agentSec, tokPerDoc) come from the AO_STORE_KEY state.
+const AGENT_META = {
+  assistant: {name:'AI Assistant', form:'Conversational copilot',
+   icon:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+   ready:9, proc:3, done:38},
+  notice: {name:'Notice Processing', form:'I-797C · USCIS notices',
    icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
-   vol:140, humanMin:22, agentSec:35, tokPerDoc:9000, ready:6, proc:2, done:12},
-  {key:'paf', name:'Compliance Doc (PAF)', form:'Public Access File',
+   ready:6, proc:2, done:12},
+  paf: {name:'Compliance Doc (PAF)', form:'Public Access File',
    icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
-   vol:60, humanMin:48, agentSec:70, tokPerDoc:16000, ready:3, proc:1, done:5},
-  {key:'h4', name:'Automate Filing (H4 EAD)', form:'I-765 / H4 EAD',
+   ready:3, proc:1, done:5},
+  h4: {name:'Automate Filing (H4 EAD)', form:'I-765 / H4 EAD',
    icon:'<path d="M12 2a3 3 0 0 0-3 3v1H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3V5a3 3 0 0 0-3-3z"/>',
-   vol:45, humanMin:65, agentSec:95, tokPerDoc:22000, ready:2, proc:1, done:4},
-];
+   ready:2, proc:1, done:4},
+};
+const AGENT_ORDER = ['assistant','notice','paf','h4'];
+
+// ---- shared config (mirrors Settings → Agent Ops) ----
+const AO_STORE_KEY = 'gip.agentops.config';
+const AO_DEFAULTS = {
+  globals: { tokRate:6.50, computePD:0.04, hRate:42, reviewerMo:3200, ico:24000, horizon:12 },
+  agents: {
+    assistant: { vol:420, humanMin:6,  agentSec:8,  tokPerDoc:3500 },
+    notice:    { vol:140, humanMin:22, agentSec:35, tokPerDoc:9000 },
+    paf:       { vol:60,  humanMin:48, agentSec:70, tokPerDoc:16000 },
+    h4:        { vol:45,  humanMin:65, agentSec:95, tokPerDoc:22000 },
+  }
+};
+function aoLoad(){
+  try{
+    const raw = localStorage.getItem(AO_STORE_KEY);
+    if(!raw) return JSON.parse(JSON.stringify(AO_DEFAULTS));
+    const saved = JSON.parse(raw);
+    return {
+      globals: { ...AO_DEFAULTS.globals, ...(saved.globals||{}) },
+      agents: Object.fromEntries(Object.keys(AO_DEFAULTS.agents).map(k=>[
+        k, { ...AO_DEFAULTS.agents[k], ...((saved.agents||{})[k]||{}) }
+      ]))
+    };
+  }catch(e){ return JSON.parse(JSON.stringify(AO_DEFAULTS)); }
+}
+let aoState = aoLoad();
+
+// Build the agent list for the rest of the page (merging meta + editable state)
+function getAgents(){
+  return AGENT_ORDER.map(k => ({
+    key: k,
+    ...AGENT_META[k],
+    ...aoState.agents[k],
+  }));
+}
+
+let selectedAgent = 'all'; // 'all' or an agent key
 
 const $=id=>document.getElementById(id);
 const money=n=>'$'+Math.round(n).toLocaleString();
-const money1=n=> n>=1000? '$'+(n/1000).toFixed(1)+'k' : '$'+n.toFixed(0);
 const compact=n=> n>=1e6? (n/1e6).toFixed(2)+'M' : n>=1e3? (n/1e3).toFixed(1)+'k' : ''+n;
-const num=id=>parseFloat($(id).value)||0;
 
 let period=30; // days; monthly volume scaled by period/30
 
-// build per-agent input rows
-const aiWrap=$('agent-inputs');
-AGENTS.forEach(a=>{
-  const row=document.createElement('div');
-  row.className='ig';
-  row.style.cssText='grid-template-columns:1.4fr .8fr .8fr .9fr;align-items:end;margin-top:10px';
-  row.innerHTML=`
-    <div class="fld"><label>${a.name}</label>
-      <div class="inwrap"><input id="v-${a.key}-vol" value="${a.vol}"><span class="suf">/mo</span></div></div>
-    <div class="fld"><label>Human</label>
-      <div class="inwrap"><input id="v-${a.key}-hm" value="${a.humanMin}"><span class="suf">min</span></div></div>
-    <div class="fld"><label>Agent</label>
-      <div class="inwrap"><input id="v-${a.key}-as" value="${a.agentSec}"><span class="suf">sec</span></div></div>
-    <div class="fld"><label>Tokens</label>
-      <div class="inwrap"><input id="v-${a.key}-tk" value="${a.tokPerDoc}"><span class="suf">/doc</span></div></div>`;
-  aiWrap.appendChild(row);
-});
-
 let roiChart;
 
+function renderAssumptions(){
+  const g = aoState.globals;
+  $('as-tokrate').textContent  = '$'+g.tokRate.toFixed(2)+' / M tok';
+  $('as-compute').textContent  = '$'+g.computePD.toFixed(2)+' / doc';
+  $('as-hrate').textContent    = '$'+g.hRate+' / hr';
+  $('as-reviewer').textContent = money(g.reviewerMo)+' / mo';
+  $('as-ico').textContent      = money(g.ico);
+  $('as-horizon').textContent  = g.horizon+' mo';
+
+  const list = selectedAgent==='all' ? AGENT_ORDER : [selectedAgent];
+  $('as-agent-sub').textContent = list.length===1
+    ? `Baselines · ${AGENT_META[list[0]].name}`
+    : 'Per-agent baselines';
+  $('as-agent-list').innerHTML = list.map(k=>{
+    const a = aoState.agents[k], m = AGENT_META[k];
+    return `<div class="assum-agent">
+      <div class="nm">${m.name}</div>
+      <div class="mini">
+        <div class="m"><span class="k">Volume</span><span class="v">${a.vol} /mo</span></div>
+        <div class="m"><span class="k">Human</span><span class="v">${a.humanMin} min</span></div>
+        <div class="m"><span class="k">Agent</span><span class="v">${a.agentSec} sec</span></div>
+        <div class="m"><span class="k">Tokens</span><span class="v">${compact(a.tokPerDoc)}/doc</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function compute(){
-  const tokRate=num('in-tokrate'), computePD=num('in-compute'), hRate=num('in-hrate');
-  const reviewerMo=num('in-reviewer'), ico=num('in-ico'), horizon=Math.max(1,num('in-horizon'));
+  // pull latest from localStorage (in case Settings was edited in another tab)
+  aoState = aoLoad();
+
+  const g = aoState.globals;
+  const tokRate=g.tokRate, computePD=g.computePD, hRate=g.hRate;
+  const reviewerMo=g.reviewerMo, ico=g.ico, horizon=Math.max(1,g.horizon);
   const scale=period/30; // selected-period fraction of a month
 
   let docs=0, tokens=0, tokenCost=0, computeCost=0, humanHrs=0, agentHrs=0;
   const rows=[];
-  AGENTS.forEach(a=>{
-    const volMo=num(`v-${a.key}-vol`), hMin=num(`v-${a.key}-hm`),
-          aSec=num(`v-${a.key}-as`), tpd=num(`v-${a.key}-tk`);
+  const allAgents = getAgents();
+  const activeAgents = selectedAgent==='all' ? allAgents : allAgents.filter(a=>a.key===selectedAgent);
+  activeAgents.forEach(a=>{
+    const volMo=a.vol, hMin=a.humanMin, aSec=a.agentSec, tpd=a.tokPerDoc;
     const d=volMo*scale;
     const tk=d*tpd;
     const tc=tk/1e6*tokRate;
@@ -458,6 +636,8 @@ function compute(){
     docs+=d; tokens+=tk; tokenCost+=tc; computeCost+=cc; humanHrs+=hH; agentHrs+=aH;
     rows.push({a,d,tk,run:tc+cc,saved:hH-aH,hMin,aSec});
   });
+
+  renderAssumptions();
 
   const reviewerPeriod=reviewerMo*scale;
   const agentCost=tokenCost+computeCost+reviewerPeriod;
@@ -486,7 +666,7 @@ function compute(){
 
   // ---- KPIs ----
   $('k-tokens').textContent=compact(tokens);
-  $('k-docs').textContent=Math.round(docs)+' docs · 3 agents';
+  $('k-docs').textContent=Math.round(docs)+' docs · '+activeAgents.length+' agent'+(activeAgents.length===1?'':'s');
   $('k-runcost').textContent=money(agentCost);
   $('k-perdoc').textContent=money(agentCost/Math.max(docs,1))+' / doc';
   $('k-timesaved').textContent=Math.round(timeSavedHrs)+' h';
@@ -579,12 +759,49 @@ function drawChart(labels,cum,be){
   });
 }
 
+// ---- agent selector ----
+const allIcon = '<path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>';
+function renderAgentMenu(){
+  const items = [
+    {key:'all', name:'All Agents', icon:allIcon},
+    ...AGENT_ORDER.map(k=>({key:k, name:AGENT_META[k].name, icon:AGENT_META[k].icon})),
+  ];
+  let html = '';
+  items.forEach((a,i)=>{
+    if(i===1) html += '<div class="agent-sel-divider"></div>';
+    html += `<div class="agent-sel-item ${a.key===selectedAgent?'on':''}" data-key="${a.key}">
+      <span class="it-ico"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${a.icon}</svg></span>
+      <span>${a.name}</span>
+    </div>`;
+  });
+  $('agentSelMenu').innerHTML = html;
+  $('agentSelMenu').querySelectorAll('.agent-sel-item').forEach(el=>{
+    el.addEventListener('click',()=>{
+      selectedAgent = el.dataset.key;
+      const picked = el.dataset.key==='all' ? {name:'All Agents'} : AGENT_META[el.dataset.key];
+      $('agentSelTxt').textContent = picked.name;
+      $('agentSel').classList.remove('open');
+      renderAgentMenu();
+      compute();
+    });
+  });
+}
+renderAgentMenu();
+$('agentSelBtn').addEventListener('click',e=>{
+  e.stopPropagation();
+  $('agentSel').classList.toggle('open');
+});
+document.addEventListener('click',e=>{
+  if(!$('agentSel').contains(e.target)) $('agentSel').classList.remove('open');
+});
+
 // listeners
-document.querySelectorAll('input').forEach(i=>i.addEventListener('input',compute));
 document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelector('.seg button.on').classList.remove('on');
   b.classList.add('on'); period=+b.dataset.period; compute();
 }));
+// recompute when Settings updates the shared config in another tab
+window.addEventListener('storage', e=>{ if(e.key===AO_STORE_KEY) compute(); });
 compute();
 </script>
 </body>

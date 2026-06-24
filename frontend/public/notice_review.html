@@ -203,6 +203,8 @@
   .pill.completed{background:var(--green-soft);color:var(--green);}
   .pill.queued{background:var(--line-soft);color:var(--ink-soft);}
   .pill.failed{background:var(--orange-soft);color:var(--orange);}
+  .pill.approved{background:var(--green-soft);color:var(--green);}
+  .pill.rejected{background:var(--orange-soft);color:var(--orange);}
 
   /* processing status with ring + % */
   .proc-status{display:flex;align-items:center;gap:10px;min-width:160px;}
@@ -401,6 +403,7 @@
   .btn-upload{padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:#fff;
     color:var(--primary);font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;
     transition:all .15s;}
+  .btn-upload[hidden]{display:none;}
   .btn-upload:hover{background:var(--primary-soft);border-color:var(--primary-soft);}
   .btn-upload svg{flex-shrink:0;}
 
@@ -613,11 +616,11 @@
     border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .15s;}
   .rv-toggle[aria-checked="true"]{background:var(--green);}
   .rv-toggle[aria-checked="true"] .rv-toggle-thumb{left:18px;}
-  .rv-conf{display:flex;align-items:center;gap:9px;padding:7px 11px;
-    border-radius:10px;background:var(--bg);border:1px solid var(--line);
-    flex:1 1 auto;min-width:200px;}
-  .rv-conf .lbl{font-size:11px;color:var(--ink-soft);font-weight:600;}
-  .rv-conf-track{flex:1;height:5px;border-radius:999px;background:var(--line-soft);overflow:hidden;}
+  .rv-conf{display:flex;align-items:center;gap:8px;padding:5px 10px;
+    border-radius:9px;background:var(--bg);border:1px solid var(--line);
+    flex:0 1 240px;min-width:180px;max-width:280px;}
+  .rv-conf .lbl{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
+  .rv-conf-track{flex:1;height:4px;border-radius:999px;background:var(--line-soft);overflow:hidden;}
   .rv-conf-track > i{display:block;height:100%;border-radius:999px;}
   .rv-summary{margin:14px 20px 0;display:flex;gap:8px;flex-wrap:wrap;font-size:11.5px;}
   .rv-summary .stat{display:inline-flex;align-items:center;gap:5px;font-weight:600;padding:3px 9px;
@@ -631,6 +634,41 @@
     transition:box-shadow .15s;}
   .rv-field:hover{box-shadow:0 2px 12px rgba(28,26,23,.05);}
   .rv-field.low{border-color:var(--orange);box-shadow:0 1px 10px rgba(225,74,40,.06);}
+
+  /* read-only / preview field (Processed & Reviewed Notices) */
+  .rv-field-ro{padding:10px 14px;border:1px solid var(--line-soft);background:var(--bg);}
+  .rv-field-ro:hover{box-shadow:none;}
+  .rv-field-ro .rv-field-top{margin-bottom:4px;}
+  .rv-field-ro .rv-field-key{font-size:11px;font-weight:600;color:var(--ink-faint);
+    letter-spacing:.02em;text-transform:none;}
+  .rv-fval{font-size:13px;color:var(--ink);font-weight:500;line-height:1.4;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rv-field-ro.wide .rv-fval{white-space:normal;}
+
+  /* hide overall confidence, primary flag, need-review chip slot, and approve/reject buttons in preview mode */
+  .rv-root.rv-preview .rv-conf,
+  .rv-root.rv-preview .rv-primary,
+  .rv-root.rv-preview #rvNeedReviewSlot,
+  .rv-root.rv-preview #rvApproveBtn,
+  .rv-root.rv-preview #rvRejectBtn{display:none !important;}
+
+  /* status badge shown in preview header (Reviewed Notices: Approved or Rejected) */
+  .rv-status-slot{display:none;align-items:center;gap:6px;}
+  .rv-root.rv-preview .rv-status-slot:not(:empty){display:flex;}
+  .rv-status-badge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;
+    letter-spacing:.02em;padding:5px 10px;border-radius:999px;}
+  .rv-status-badge.approved{color:var(--green);background:var(--green-soft);}
+  .rv-status-badge.rejected{color:var(--orange);background:var(--orange-soft);}
+  .rv-status-badge svg{flex-shrink:0;}
+
+  /* reject reason banner shown under header (Reviewed Notices, rejected only) */
+  .rv-reject-note{display:none;}
+  .rv-root.rv-preview .rv-reject-note:not(:empty){display:block;margin:0 20px;
+    padding:11px 14px;border-radius:10px;background:var(--orange-soft);border:1px solid var(--orange-soft);
+    margin-top:14px;}
+  .rv-reject-note-lbl{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--orange);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+  .rv-reject-note-txt{font-size:12.5px;color:var(--ink);line-height:1.45;white-space:pre-wrap;}
   .rv-field.wide{grid-column:1 / -1;}
   .rv-field-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
   .rv-field-key{font-size:11.5px;font-weight:700;color:var(--ink-soft);letter-spacing:.005em;}
@@ -688,6 +726,21 @@
     font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;cursor:pointer;
     box-shadow:0 2px 10px rgba(32,68,150,.22);transition:filter .15s;}
   .rv-btn-confirm:hover{filter:brightness(1.06);}
+  .rv-btn-approve{padding:9px 18px;border-radius:9px;border:none;background:var(--green);color:#fff;
+    font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;cursor:pointer;
+    box-shadow:0 2px 10px rgba(31,138,82,.25);transition:filter .15s;}
+  .rv-btn-approve:hover{filter:brightness(1.06);}
+  .rv-btn-reject{padding:9px 18px;border-radius:9px;border:none;background:var(--orange);color:#fff;
+    font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;cursor:pointer;
+    box-shadow:0 2px 10px rgba(225,74,40,.25);transition:filter .15s;}
+  .rv-btn-reject:hover{filter:brightness(1.06);}
+
+  /* Reject modal */
+  .rj-lbl{font-size:12px;font-weight:600;color:var(--ink-soft);}
+  .rj-text{width:100%;padding:11px 13px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13px;color:var(--ink);outline:none;
+    resize:vertical;min-height:110px;line-height:1.4;transition:all .15s;}
+  .rj-text:focus{border-color:var(--orange);background:#fff;}
 
   /* ═══════════════════════════════════════════════════════════════ */
   /*  GCM MODAL — sits ABOVE the fullscreen review                   */
@@ -800,20 +853,16 @@
           <span class="user-caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
         </button>
         <div class="user-pop" id="userPop" role="menu" aria-labelledby="userBtn">
-          <a class="user-pop-item" href="#" role="menuitem">
-            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-            Manage
-          </a>
-          <a class="user-pop-item" href="#" role="menuitem">
+          <a class="user-pop-item" href="help.html" role="menuitem">
             <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
             Help
           </a>
-          <a class="user-pop-item" href="#" role="menuitem">
+          <a class="user-pop-item" href="support.html" role="menuitem">
             <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
             Support
           </a>
           <div class="user-pop-sep"></div>
-          <a class="user-pop-item" href="#" role="menuitem">
+          <a class="user-pop-item" href="gip-login.html" role="menuitem">
             <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
             Logout
           </a>
@@ -834,7 +883,7 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input placeholder="Search files, applicants…" />
         </div>
-        <button class="btn-upload" id="uploadBtn" title="Upload notices">
+        <button class="btn-upload" id="uploadBtn" title="Upload notices" hidden>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Upload
         </button>
@@ -854,11 +903,15 @@
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
               Processed Notices <span class="cnt" id="tabAutoCount">0</span>
             </button>
+            <button class="tab-btn" data-tab="reviewed">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Reviewed Notices <span class="cnt" id="tabReviewedCount">0</span>
+            </button>
           </div>
           <button class="btn-review-mode" id="reviewModeBtn" title="Open immersive review workspace">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-            Review Mode
-            <span class="kbd">F</span>
+            <span id="reviewModeLabel">Review Mode</span>
+            <span class="kbd" id="reviewModeKbd">F</span>
           </button>
         </div>
 
@@ -1104,7 +1157,9 @@
             <span class="rv-toggle-thumb"></span>
           </button>
         </div>
+        <div class="rv-status-slot" id="rvStatusSlot"></div>
       </div>
+      <div class="rv-reject-note" id="rvRejectNote"></div>
 
       <div class="rv-flist" id="rvFlist"></div>
 
@@ -1124,9 +1179,13 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
             Skip
           </button>
-          <button class="rv-btn-confirm" id="rvConfirmBtn">
+          <button class="rv-btn-reject" id="rvRejectBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Reject
+          </button>
+          <button class="rv-btn-approve" id="rvApproveBtn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Confirm &amp; Next
+            Approve
           </button>
         </div>
       </div>
@@ -1170,6 +1229,44 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ═══ REJECT MODAL — feedback collection                        ═══ -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="gcm-overlay rj-overlay" id="rjOverlay" role="dialog" aria-modal="true" aria-label="Reject notice">
+  <div class="gcm-modal rj-modal" role="document" style="width:480px;">
+    <div class="gcm-head">
+      <div class="gcm-head-l">
+        <div class="gcm-ico" style="background:var(--orange-soft);color:var(--orange);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>
+        </div>
+        <div>
+          <div class="gcm-title">Reject this notice</div>
+          <div class="gcm-sub">Please share why you're rejecting so the model can improve.</div>
+        </div>
+      </div>
+      <button class="gcm-close" id="rjCloseBtn" title="Cancel (Esc)" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="gcm-body" style="gap:10px;">
+      <label class="rj-lbl" for="rjReason">Reason for rejection</label>
+      <textarea id="rjReason" class="rj-text" rows="5" placeholder="e.g. Receipt number doesn't match the document; Receipt For is the petitioner's name, not the beneficiary…"></textarea>
+    </div>
+
+    <div class="gcm-foot">
+      <div class="gcm-foot-info">Feedback is saved with this notice.</div>
+      <div class="gcm-foot-actions">
+        <button class="rv-btn-ghost" id="rjCancelBtn">Cancel</button>
+        <button class="rv-btn-reject" id="rjSubmitBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ Processing Agent floating widget ═══ -->
 <div class="pa-widget" id="paWidget">
   <div class="pa-head">
@@ -1199,7 +1296,7 @@ const ICONS = {
 const NAV = [
   {id:'dashboard',  label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard,                        visible:1},
   {id:'assistant',  label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:0},
-  {id:'notice',     label:'Notice Processing',        href:'gip-notice-list.html',icon:ICONS.notice,    group:'Agents',         visible:1},
+  {id:'notice',     label:'Notice Processing',        href:'gip-notice-list.html', icon:ICONS.notice,    group:'Agents',         visible:1},
   {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:0},
   {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:0},
   {id:'email',      label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:0},
@@ -1244,73 +1341,28 @@ function renderNav(){
   document.getElementById('nav').innerHTML = html;
 }
 
-/* ─── grid data — populated live from the backend (/legal/queue) ─── */
-const API = '/legal';
-let AUTO_QUE = [];       // Processed Notices  (approved / rejected / completed)
-let REVIEW_QUE = [];     // Review Que         (pending / in_review — low-conf fields)
-let PROCESSING_QUE = []; // Background only    (currently extracting — not shown in tabs)
-let PIPELINE_ACTIVE_ID = null;  // case_id the worker is currently running
-let PIPELINE_ACTIVE_STAGE = 0; // 1-4; 0 = idle
-const SELECTED = new Set(); // persistent selection — survives all re-renders
-const isSel = (row) => SELECTED.has(row.case_id);
+/* ─── grid data ─── */
+const AUTO_QUE = [
+  {file:'I130_Chen_Marcus_2026-06-03.pdf', size:'2.4 MB', date:'Jun 3, 2026', form:'I-130', fn:'Marcus Chen', accuracy:94, status:'completed'},
+  {file:'I485_Hassan_Ahmed_2026-06-03.pdf', size:'3.1 MB', date:'Jun 3, 2026', form:'I-485', fn:'Ahmed Hassan', accuracy:97, status:'completed'},
+  {file:'N400_Tanaka_Yuki_2026-06-03.pdf', size:'1.8 MB', date:'Jun 3, 2026', form:'N-400', fn:'Yuki Tanaka', accuracy:99, status:'completed'},
+  {file:'I765_Silva_Paulo_2026-06-03.pdf', size:'2.0 MB', date:'Jun 3, 2026', form:'I-765', fn:'Paulo Silva', accuracy:96, status:'completed'},
+  {file:'H4EAD_Kapoor_Riya_2026-06-03.pdf', size:'1.5 MB', date:'Jun 3, 2026', form:'H4-EAD', fn:'Riya Kapoor', accuracy:93, status:'completed'},
+  {file:'I140_Volkov_Anton_2026-06-02.pdf', size:'2.6 MB', date:'Jun 2, 2026', form:'I-140', fn:'Anton Volkov', accuracy:95, status:'completed'},
+  {file:'N400_Dubois_Camille_2026-06-02.pdf', size:'2.2 MB', date:'Jun 2, 2026', form:'N-400', fn:'Camille Dubois', accuracy:98, status:'completed'},
+  {file:'I539_Wong_Mei_2026-06-01.pdf', size:'1.7 MB', date:'Jun 1, 2026', form:'I-539', fn:'Mei Wong', accuracy:94, status:'completed'},
+];
 
-/* Map a backend case record → the row shape this grid renders. */
-function mapCase(c){
-  const fc = c.field_count || 0;
-  const low = c.low_confidence_count || 0;
-  const accuracy = (c.status === 'processing' || fc === 0)
-    ? null
-    : Math.round(((fc - low) / fc) * 100);
-  const d = c.uploaded_at ? new Date(c.uploaded_at) : null;
-  const dateStr = d ? d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
-  const shortId = (c.case_id || '').replace(/-/g,'').slice(0,8).toUpperCase();
-  return {
-    case_id: c.case_id,
-    file: `${c.form_type || 'DOC'}_${shortId}.pdf`,
-    size: fc ? `${fc} fields` : 'Processing…',
-    date: dateStr,
-    form: c.form_type || '—',
-    fn: 'Case #' + shortId,
-    accuracy,
-    status: mapStatus(c.status),
-    raw_status: c.status,
-    progress: c.status === 'processing' ? 60 : undefined,
-  };
-}
-
-/* Backend status → grid status bucket */
-function mapStatus(s){
-  if(s === 'processing')                   return 'processing';
-  if(s === 'pending' || s === 'in_review') return 'ready';
-  if(s === 'approved' || s === 'completed') return 'completed';
-  if(s === 'rejected')                     return 'failed';
-  return 'queued';
-}
-
-/* Fetch all cases and split into the two tabs. */
-async function loadQueue(){
-  try{
-    const [queueResp, pipelineResp] = await Promise.all([
-      fetch(`${API}/queue?status=all&limit=500`),
-      fetch(`${API}/pipeline/status`).catch(()=>null),
-    ]);
-    if(!queueResp.ok) throw new Error('HTTP ' + queueResp.status);
-    const data = await queueResp.json();
-    if(pipelineResp && pipelineResp.ok){
-      const ps = await pipelineResp.json();
-      PIPELINE_ACTIVE_ID    = ps.active_case_id || null;
-      PIPELINE_ACTIVE_STAGE = ps.active_stage   || 0;
-    }
-    const rows = (data.cases || []).map(mapCase);
-    PROCESSING_QUE = rows.filter(x => x.status === 'processing');
-    REVIEW_QUE     = rows.filter(x => x.status === 'ready');
-    AUTO_QUE       = rows.filter(x => x.status === 'completed' || x.status === 'failed');
-    renderGrids();
-    renderAgent();
-  }catch(e){
-    console.error('[GIP] queue load failed', e);
-  }
-}
+const REVIEW_QUE = [
+  {file:'N400_Rodriguez_Elena_2026-06-02.pdf', size:'2.7 MB', date:'Jun 2, 2026', form:'N-400', fn:'Elena Rodriguez', accuracy:91, status:'ready'},
+  {file:'H4EAD_Nair_Priya_2026-06-03.pdf', size:'1.9 MB', date:'Jun 3, 2026', form:'H4-EAD', fn:'Priya Nair', accuracy:88, status:'ready'},
+  {file:'I765_Okafor_David_2026-06-01.pdf', size:'2.2 MB', date:'Jun 1, 2026', form:'I-765', fn:'David Okafor', accuracy:84, status:'ready'},
+  {file:'N400_Mendez_Sofia_2026-06-01.pdf', size:'2.5 MB', date:'Jun 1, 2026', form:'N-400', fn:'Sofia Mendez', accuracy:78, status:'ready'},
+  {file:'I130_Bauer_Klaus_2026-05-31.pdf', size:'3.0 MB', date:'May 31, 2026', form:'I-130', fn:'Klaus Bauer', accuracy:73, status:'ready'},
+  {file:'I485_Park_Jiwoo_2026-05-31.pdf', size:'2.8 MB', date:'May 31, 2026', form:'I-485', fn:'Jiwoo Park', accuracy:68, status:'ready'},
+  {file:'I140_Costa_Mariana_2026-05-30.pdf', size:'2.3 MB', date:'May 30, 2026', form:'I-140', fn:'Mariana Costa', accuracy:89, status:'ready'},
+  {file:'I539_Al-Sayed_Omar_2026-05-30.pdf', size:'2.1 MB', date:'May 30, 2026', form:'I-539', fn:'Omar Al-Sayed', accuracy:82, status:'ready'},
+];
 
 const STATUS = {
   processing:{label:'Processing'},
@@ -1318,6 +1370,8 @@ const STATUS = {
   ready:{label:'Ready for Review'},
   completed:{label:'Completed'},
   failed:{label:'Failed'},
+  approved:{label:'Approved'},
+  rejected:{label:'Rejected'},
 };
 
 const ICON = {
@@ -1374,21 +1428,19 @@ function statusCell(row){
   return `<span class="pill ${row.status}">${STATUS[row.status]?.label || row.status}</span>`;
 }
 
-function actionsCell(row){
-  const cid = row && row.case_id ? encodeURIComponent(row.case_id) : '';
+function actionsCell(idx){
   return `<div class="actions" style="justify-content:center;">
-    <a class="act-btn" href="gip-notice.html?case=${cid}" title="View">${ICON.eye}</a>
+    <button type="button" class="act-btn" data-view-idx="${idx}" title="View in review mode">${ICON.eye}</button>
   </div>`;
 }
 
 function rowHTML(row, opts){
   const selectable = opts && opts.selectable;
   const idx = opts && opts.idx;
-  const sel = isSel(row);
   const leading = selectable
-    ? `<td class="col-chk"><input type="checkbox" class="chk row-chk" data-idx="${idx}" ${sel?'checked':''}/></td>`
+    ? `<td class="col-chk"><input type="checkbox" class="chk row-chk" data-idx="${idx}" ${row._sel?'checked':''}/></td>`
     : '';
-  return `<tr class="${selectable && sel ? 'selected':''}">
+  return `<tr class="${selectable && row._sel ? 'selected':''}">
     ${leading}
     <td>
       <div class="file-cell">
@@ -1405,7 +1457,7 @@ function rowHTML(row, opts){
     <td><span class="fn-name">${row.fn}</span></td>
     <td>${accuracyCell(row.accuracy)}</td>
     <td>${statusCell(row)}</td>
-    <td>${actionsCell(r)}</td>
+    <td>${actionsCell(idx)}</td>
   </tr>`;
 }
 
@@ -1427,16 +1479,20 @@ const TAB_META = {
     ico:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
     iconClass:'auto',
   },
+  reviewed:{
+    title:'Reviewed Notices',
+    sub:'Approved or rejected by reviewer',
+    ico:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+    iconClass:'auto',
+  },
 };
 
-let searchQ = '';
+const REVIEWED_QUE = [];
+
 function activeData(){
-  const base = activeTab==='review' ? REVIEW_QUE : AUTO_QUE;
-  if(!searchQ) return base;
-  const q = searchQ.toLowerCase();
-  return base.filter(r =>
-    (r.file + ' ' + r.form + ' ' + r.fn).toLowerCase().includes(q)
-  );
+  if(activeTab==='review') return REVIEW_QUE;
+  if(activeTab==='reviewed') return REVIEWED_QUE;
+  return AUTO_QUE;
 }
 
 function renderHead(){
@@ -1451,9 +1507,8 @@ function renderHead(){
   </tr>`;
   document.getElementById('selAll').onchange = (e)=>{
     const on = e.target.checked;
-    activeData().forEach(r=>{ if(on) SELECTED.add(r.case_id); else SELECTED.delete(r.case_id); });
-    document.querySelectorAll('.row-chk').forEach(b=>{ b.checked = on; b.closest('tr')?.classList.toggle('selected', on); });
-    updateSelectionUI();
+    activeData().forEach(r=> r._sel = on);
+    renderGrids();
   };
 }
 
@@ -1469,12 +1524,22 @@ function renderPanelHead(){
   if(rvBtn) rvBtn.style.display = activeTab==='review' ? 'flex' : 'none';
 }
 
+function rvArchiveCurrent(status, extra){
+  if(REVIEW_QUE.length===0) return;
+  const row = REVIEW_QUE[rvIndex];
+  if(!row) return;
+  const archived = {...row, status, _sel:false, ...extra};
+  REVIEW_QUE.splice(rvIndex, 1);
+  REVIEWED_QUE.unshift(archived);
+}
+
 function renderTabs(){
   document.querySelectorAll('.tab-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.tab===activeTab);
   });
   document.getElementById('tabReviewCount').textContent = REVIEW_QUE.length;
   document.getElementById('tabAutoCount').textContent = AUTO_QUE.length;
+  document.getElementById('tabReviewedCount').textContent = REVIEWED_QUE.length;
 }
 
 function pageSlice(){
@@ -1530,28 +1595,31 @@ function renderGrids(){
         return rowHTML(r, {selectable:true, idx:absoluteIdx});
       }).join('')
     : `<tr><td colspan="7" class="empty">No rows to display</td></tr>`;
-  // Force-apply SELECTED state after innerHTML rebuild
-  document.querySelectorAll('.row-chk').forEach(box=>{
-    const i = +box.dataset.idx;
-    const d = activeData();
-    const on = d[i] ? SELECTED.has(d[i].case_id) : false;
-    box.checked = on;
-    box.closest('tr')?.classList.toggle('selected', on);
-  });
   renderFooter();
   wireRowSelection();
+  wireRowViewButtons();
   updateSelectionUI();
+}
+
+function wireRowViewButtons(){
+  const data = activeData();
+  const preview = activeTab !== 'review';
+  document.querySelectorAll('#gridBody [data-view-idx]').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.preventDefault();
+      const i = +btn.dataset.viewIdx;
+      const row = data[i];
+      if(row) openSingleReview(row, {preview});
+    };
+  });
 }
 
 function wireRowSelection(){
   const data = activeData();
   document.querySelectorAll('.row-chk').forEach(box=>{
-    box.onchange = (e)=>{
+    box.onchange = ()=>{
       const i = +box.dataset.idx;
-      const row = data[i];
-      if(!row) return;
-      if(box.checked) SELECTED.add(row.case_id);
-      else SELECTED.delete(row.case_id);
+      data[i]._sel = box.checked;
       const tr = box.closest('tr');
       if(tr) tr.classList.toggle('selected', box.checked);
       updateSelectionUI();
@@ -1562,14 +1630,14 @@ function wireRowSelection(){
 function updateSelectionUI(){
   const data = activeData();
   const total = data.length;
-  const sel = data.filter(isSel).length;
+  const sel = data.filter(r=>r._sel).length;
   const selAll = document.getElementById('selAll');
   if(selAll){
     selAll.checked = sel===total && total>0;
     selAll.indeterminate = sel>0 && sel<total;
   }
   const reviewTotal = REVIEW_QUE.length;
-  const reviewSel = REVIEW_QUE.filter(isSel).length;
+  const reviewSel = REVIEW_QUE.filter(r=>r._sel).length;
   const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
   set('cntAll', reviewTotal);
   set('cntAll2', reviewTotal);
@@ -1594,20 +1662,23 @@ document.getElementById('pageSize').onchange = (e)=>{
   renderGrids();
 };
 
-/* Poll pipeline/status every 2s independently so progress updates are fast
-   and we trigger an immediate loadQueue when a file finishes (stage goes 0). */
-let _prevActiveId = null;
-setInterval(async ()=>{
-  try{
-    const ps = await fetch(`${API}/pipeline/status`).then(r=>r.json());
-    const wasActive = _prevActiveId;
-    PIPELINE_ACTIVE_ID    = ps.active_case_id || null;
-    PIPELINE_ACTIVE_STAGE = ps.active_stage   || 0;
-    _prevActiveId = PIPELINE_ACTIVE_ID;
-    if(wasActive && !PIPELINE_ACTIVE_ID) loadQueue();
-    else renderAgent();
-  }catch(e){}
-}, 2000);
+/* simulate processing progress ticking */
+function tickProgress(){
+  let dirty = false;
+  AUTO_QUE.forEach(r=>{
+    if(r.status==='processing'){
+      r.progress = Math.min(100, r.progress + Math.random()*3);
+      if(r.progress>=100){
+        r.status='completed';
+        r.accuracy = 82 + Math.floor(Math.random()*15);
+      }
+      dirty = true;
+    }
+  });
+  if(dirty) renderGrids();
+  renderAgent();
+}
+setInterval(tickProgress, 1500);
 
 /* ─── Processing Agent widget ─── */
 /* widget view-state: 'min' | 'med' | 'max' — defaults to medium */
@@ -1622,9 +1693,8 @@ function renderAgent(){
   if(paState==='min') widget.classList.add('min');
   else if(paState==='med') widget.classList.add('med');
 
-  const active = PROCESSING_QUE.find(r => r.case_id === PIPELINE_ACTIVE_ID)
-             || (PROCESSING_QUE.length ? PROCESSING_QUE[0] : null);
-  const pipeline = PROCESSING_QUE;
+  const active = AUTO_QUE.find(r=>r.status==='processing');
+  const pipeline = AUTO_QUE.filter(r=>r.status==='processing' || r.status==='queued');
   statusTxt.textContent = active ? 'Processing' : 'Listening';
 
   if(paState==='min') return; /* body hidden */
@@ -1662,8 +1732,7 @@ function renderAgent(){
     return;
   }
 
-  const stagePct = PIPELINE_ACTIVE_STAGE > 0 ? PIPELINE_ACTIVE_STAGE * 25 : 0;
-  const pct = stagePct > 0 ? stagePct : Math.round(active.progress || 0);
+  const pct = Math.round(active.progress || 0);
   const C = 2 * Math.PI * 17;
   const offset = C * (1 - pct/100);
   const activeBlock = `
@@ -1793,11 +1862,11 @@ menu.querySelectorAll('.menu-item').forEach(item=>{
     if(targets.length===0) return;
     menu.classList.remove('open');
     if(action==='review-all' || action==='review-selected'){
-      const first = targets[0];
-      const ids = targets.map(t=>t.case_id).filter(Boolean).join(',');
       const params = new URLSearchParams();
-      if(first && first.case_id) params.set('case', first.case_id);
-      if(ids) params.set('batch', ids);
+      params.set('count', targets.length);
+      if(action==='review-selected'){
+        params.set('fns', targets.map(t=>t.fn).join('|'));
+      }
       window.location.href = `gip-notice.html?${params.toString()}`;
       return;
     }
@@ -1805,37 +1874,10 @@ menu.querySelectorAll('.menu-item').forEach(item=>{
   };
 });
 
+if(!localStorage.getItem('access_token')) window.location.href = 'login.html';
 renderNav();
 renderFoot();
 renderGrids();
-loadQueue();
-
-/* ─── search ─── */
-const _searchEl = document.getElementById('searchInput');
-if(_searchEl){
-  _searchEl.addEventListener('input', e=>{
-    searchQ = e.target.value.trim();
-    currentPage = 1;
-    renderGrids();
-  });
-}
-
-/* ─── refresh button ─── */
-document.querySelector('.icon-btn-sm[title="Refresh"]')?.addEventListener('click', loadQueue);
-
-/* ─── auth guard ─── */
-if(!localStorage.getItem('access_token')) window.location.href = 'login.html';
-
-/* ─── user info in header ─── */
-(function(){
-  try{
-    const u = JSON.parse(localStorage.getItem('gip_user') || '{}');
-    const nameEl = document.getElementById('userDisplayName');
-    if(nameEl && u.full_name) nameEl.textContent = u.full_name;
-    const initEl = document.getElementById('userInitials');
-    if(initEl && u.full_name) initEl.textContent = u.full_name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
-  }catch(_){}
-})();
 
 /* ═══════════════════════════════════════════════════════════════ */
 /*  REVIEW MODE — fullscreen workspace                             */
@@ -1899,9 +1941,12 @@ const GCM_BY_FN = {
 let rvIndex = 0;     /* which row in REVIEW_QUE we are reviewing */
 let rvZoom = 100;
 let rvPage = 1;
+let rvSingleRow = null; /* when set, review mode shows this row only (no prev/next) */
+let rvPreviewMode = false; /* when true, fields are read-only and chrome is simplified (no chips, no %, no warnings) */
 const rvRoot = document.getElementById('rvRoot');
 
-function rvCurrent(){ return REVIEW_QUE[rvIndex] || null; }
+function rvCurrent(){ return rvSingleRow ? rvSingleRow : (REVIEW_QUE[rvIndex] || null); }
+function rvIsSingleMode(){ return rvSingleRow !== null; }
 function rvTotalPages(){ return 14; /* mock fixed page count for preview */ }
 
 function rvIcon(name){
@@ -2013,34 +2058,85 @@ function rvSyncPrimaryToggle(){
 
 function rvRenderFields(){
   const fields = rvFieldsForCurrent();
-  const scored = fields.filter(f=>f.type!=='textarea');
-  const total = scored.length;
-  const need  = scored.filter(f=>f.conf<80).length;
-  const native = scored.filter(f=>f.src==='native' && f.conf>=80).length;
-  const llm   = scored.filter(f=>f.src==='llm' && f.conf>=80).length;
-  const overall = Math.round(scored.reduce((a,f)=>a+f.conf,0) / Math.max(1,scored.length));
-  const tone = rvConfTone(overall);
-  document.getElementById('rvConfBar').style.width = overall+'%';
-  document.getElementById('rvConfBar').style.background = tone;
-  const pctEl = document.getElementById('rvConfPct');
-  pctEl.textContent = overall+'%';
-  pctEl.style.color = tone;
+  const preview = rvPreviewMode;
 
-  const needSlot = document.getElementById('rvNeedReviewSlot');
-  needSlot.innerHTML = need > 0
-    ? `<span class="stat" style="color:var(--orange);background:var(--orange-soft);
-        display:inline-flex;align-items:center;gap:5px;font-weight:600;
-        padding:3px 9px;border-radius:6px;font-size:11.5px;">
-        <b style="font-weight:700;font-variant-numeric:tabular-nums;">${need}</b> Need Review
-      </span>`
-    : '';
+  if(!preview){
+    const scored = fields.filter(f=>f.type!=='textarea');
+    const total = scored.length;
+    const need  = scored.filter(f=>f.conf<80).length;
+    const overall = Math.round(scored.reduce((a,f)=>a+f.conf,0) / Math.max(1,scored.length));
+    const tone = rvConfTone(overall);
+    document.getElementById('rvConfBar').style.width = overall+'%';
+    document.getElementById('rvConfBar').style.background = tone;
+    const pctEl = document.getElementById('rvConfPct');
+    pctEl.textContent = overall+'%';
+    pctEl.style.color = tone;
+
+    const needSlot = document.getElementById('rvNeedReviewSlot');
+    needSlot.innerHTML = need > 0
+      ? `<span class="stat" style="color:var(--orange);background:var(--orange-soft);
+          display:inline-flex;align-items:center;gap:5px;font-weight:600;
+          padding:3px 9px;border-radius:6px;font-size:11.5px;">
+          <b style="font-weight:700;font-variant-numeric:tabular-nums;">${need}</b> Need Review
+        </span>`
+      : '';
+  } else {
+    /* in preview mode the Need Review chip is irrelevant — clear it */
+    const needSlot = document.getElementById('rvNeedReviewSlot');
+    if(needSlot) needSlot.innerHTML = '';
+  }
+
+  /* preview mode: show Approved / Rejected badge and (if rejected) the reason */
+  const statusSlot = document.getElementById('rvStatusSlot');
+  const rejectNote = document.getElementById('rvRejectNote');
+  if(statusSlot && rejectNote){
+    const row = rvCurrent();
+    const status = preview && row ? row.status : null;
+    if(status === 'approved'){
+      statusSlot.innerHTML = `<span class="rv-status-badge approved">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Approved
+      </span>`;
+      rejectNote.innerHTML = '';
+    } else if(status === 'rejected'){
+      statusSlot.innerHTML = `<span class="rv-status-badge rejected">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Rejected
+      </span>`;
+      const reason = (row && row.rejectReason) ? row.rejectReason : '';
+      rejectNote.innerHTML = reason
+        ? `<div class="rv-reject-note-lbl">
+             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>
+             Rejection reason
+           </div>
+           <div class="rv-reject-note-txt">${reason.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`
+        : '';
+    } else {
+      statusSlot.innerHTML = '';
+      rejectNote.innerHTML = '';
+    }
+  }
 
   rvSyncPrimaryToggle();
 
   document.getElementById('rvFlist').innerHTML = fields.map(f=>{
     const isNotes = f.type==='textarea';
-    const low = !isNotes && f.conf<80;
+    const low = !preview && !isNotes && f.conf<80;
     const tone2 = rvConfTone(f.conf);
+
+    /* preview mode: no chips, no %, no warnings, no inputs — just plain read-only values */
+    if(preview){
+      const display = isNotes
+        ? (f.value || '<span style="color:var(--ink-faint);">—</span>')
+        : (f.value || '<span style="color:var(--ink-faint);">—</span>');
+      return `<div class="rv-field rv-field-ro ${isNotes?'wide':''}" data-field-key="${f.key}">
+        <div class="rv-field-top">
+          <span class="rv-field-key">${f.key}</span>
+        </div>
+        <div class="rv-fval" title="${(''+(f.value??'')).replace(/"/g,'&quot;')}">${display}</div>
+      </div>`;
+    }
+
     const meta = isNotes ? ''
       : f.tag ? `<span class="rv-src ${f.tag}">${f.tag.charAt(0).toUpperCase()+f.tag.slice(1)}</span>`
       : `
@@ -2073,7 +2169,7 @@ function rvRenderFields(){
     </div>`;
   }).join('');
 
-  rvWireCustomDropdowns();
+  if(!preview) rvWireCustomDropdowns();
 }
 
 function rvCloseAllCustomDropdowns(){
@@ -2111,6 +2207,12 @@ function rvWireCustomDropdowns(){
 function rvRenderHeader(){
   const row = rvCurrent();
   const total = REVIEW_QUE.length;
+  const single = rvIsSingleMode();
+  /* hide notice prev/next pager and the Skip footer button when in single-row mode */
+  const pagerEl = document.querySelector('.rv-actions .rv-pager');
+  if(pagerEl) pagerEl.style.display = single ? 'none' : '';
+  const skipBtn = document.getElementById('rvSkipBtn');
+  if(skipBtn) skipBtn.style.display = single ? 'none' : '';
   if(!row){
     document.getElementById('rvTitle').textContent = 'No notices in queue';
     document.getElementById('rvSub').textContent = '';
@@ -2119,9 +2221,13 @@ function rvRenderHeader(){
   }
   document.getElementById('rvTitle').textContent = row.fn;
   document.getElementById('rvSub').innerHTML = `<span class="rv-sub-form">${row.form}</span> · ${row.date}`;
-  document.getElementById('rvCounterChip').textContent = `${rvIndex+1} of ${total}`;
-  document.getElementById('rvPrev').disabled = rvIndex <= 0;
-  document.getElementById('rvNext').disabled = rvIndex >= total-1;
+  if(single){
+    document.getElementById('rvCounterChip').textContent = '';
+  } else {
+    document.getElementById('rvCounterChip').textContent = `${rvIndex+1} of ${total}`;
+    document.getElementById('rvPrev').disabled = rvIndex <= 0;
+    document.getElementById('rvNext').disabled = rvIndex >= total-1;
+  }
 }
 
 /* ─── PDF pane render ─── */
@@ -2165,10 +2271,29 @@ function openReviewMode(startIdx){
   }
 }
 
+function openSingleReview(row, opts){
+  if(!row) return;
+  rvSingleRow = row;
+  rvPreviewMode = !!(opts && opts.preview);
+  rvPage = 1;
+  rvZoom = 100;
+  rvRoot.classList.toggle('rv-preview', rvPreviewMode);
+  rvRoot.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  rvRenderAll();
+  setTimeout(()=>rvRoot.focus(), 30);
+  if(!rvPreviewMode && !document.fullscreenElement && document.documentElement.requestFullscreen){
+    document.documentElement.requestFullscreen().catch(()=>{});
+  }
+}
+
 function closeReviewMode(){
   /* if GCM modal is open, Esc closes it first (handled in keydown) */
   rvRoot.classList.remove('open');
+  rvRoot.classList.remove('rv-preview');
   document.body.style.overflow = '';
+  rvSingleRow = null;
+  rvPreviewMode = false;
   if(document.fullscreenElement && document.exitFullscreen){
     document.exitFullscreen().catch(()=>{});
   }
@@ -2197,10 +2322,7 @@ function rvSetPage(d){
 }
 
 /* ─── Confirm / skip ─── */
-function rvConfirm(){
-  /* simulate removing the reviewed item; if any remain, advance */
-  if(REVIEW_QUE.length===0) return;
-  REVIEW_QUE.splice(rvIndex, 1);
+function rvContinueAfterArchive(){
   if(REVIEW_QUE.length===0){
     closeReviewMode();
     renderGrids();
@@ -2210,6 +2332,42 @@ function rvConfirm(){
   rvPage = 1;
   rvRenderAll();
   renderGrids();
+}
+
+function rvApprove(){
+  if(rvIsSingleMode()){ closeReviewMode(); renderGrids(); return; }
+  rvArchiveCurrent('approved');
+  rvContinueAfterArchive();
+}
+
+/* ─── Reject modal ─── */
+const rjOverlay = document.getElementById('rjOverlay');
+const rjReason  = document.getElementById('rjReason');
+const rvRejections = {}; /* keyed by row.id → reason string */
+
+function rvOpenRejectModal(){
+  const row = rvCurrent();
+  if(!row) return;
+  rjReason.value = rvRejections[row.id] || '';
+  rjOverlay.classList.add('open');
+  setTimeout(()=>rjReason.focus(), 30);
+}
+function rvCloseRejectModal(){
+  rjOverlay.classList.remove('open');
+}
+function rvSubmitReject(){
+  const row = rvCurrent();
+  if(!row) return;
+  const reason = (rjReason.value || '').trim();
+  if(!reason){
+    rjReason.focus();
+    return;
+  }
+  rvRejections[row.id] = reason;
+  rvCloseRejectModal();
+  if(rvIsSingleMode()){ closeReviewMode(); renderGrids(); return; }
+  rvArchiveCurrent('rejected', {rejectReason:reason});
+  rvContinueAfterArchive();
 }
 
 /* ─── GCM modal ─── */
@@ -2296,8 +2454,13 @@ document.getElementById('rvZoomIn').onclick  = ()=>rvSetZoom(10);
 document.getElementById('rvZoomOut').onclick = ()=>rvSetZoom(-10);
 document.getElementById('rvPagePrev').onclick = ()=>rvSetPage(-1);
 document.getElementById('rvPageNext').onclick = ()=>rvSetPage(1);
-document.getElementById('rvSkipBtn').onclick  = ()=>rvGoto(1);
-document.getElementById('rvConfirmBtn').onclick = rvConfirm;
+document.getElementById('rvSkipBtn').onclick    = ()=>rvGoto(1);
+document.getElementById('rvApproveBtn').onclick = rvApprove;
+document.getElementById('rvRejectBtn').onclick  = rvOpenRejectModal;
+document.getElementById('rjCloseBtn').onclick   = rvCloseRejectModal;
+document.getElementById('rjCancelBtn').onclick  = rvCloseRejectModal;
+document.getElementById('rjSubmitBtn').onclick  = rvSubmitReject;
+rjOverlay.addEventListener('click', (e)=>{ if(e.target===rjOverlay) rvCloseRejectModal(); });
 document.getElementById('rvPrimaryToggle').onclick = ()=>{
   const row = rvCurrent();
   if(!row) return;
@@ -2334,6 +2497,7 @@ document.addEventListener('keydown', (e)=>{
   const gcmOpen = gcmOverlay.classList.contains('open');
   if(e.key==='Escape'){
     if(gcmOpen){ closeGcm(); e.preventDefault(); return; }
+    if(rjOverlay.classList.contains('open')){ rvCloseRejectModal(); e.preventDefault(); return; }
     /* if a custom dropdown is open, just close it */
     if(rvOpen && document.querySelector('#rvFlist .rv-cs-pop.open')){
       rvCloseAllCustomDropdowns(); e.preventDefault(); return;
@@ -2342,7 +2506,7 @@ document.addEventListener('keydown', (e)=>{
     if(document.fullscreenElement){ return; }
     if(rvOpen){ closeReviewMode(); e.preventDefault(); return; }
   }
-  if(rvOpen && !gcmOpen){
+  if(rvOpen && !gcmOpen && !rvIsSingleMode()){
     if(e.key==='ArrowLeft')  { rvGoto(-1); e.preventDefault(); }
     if(e.key==='ArrowRight') { rvGoto(1);  e.preventDefault(); }
   }
@@ -2358,7 +2522,7 @@ document.addEventListener('keydown', (e)=>{
 /* ─── Upload Drawer ─── */
 /* Point this at your real ingest endpoint. The folder is sent as a form field.
    Example backend: POST /api/uploads (multipart: file, folder) → 200 OK */
-const UPLOAD_ENDPOINT = `${API}/upload`;
+const UPLOAD_ENDPOINT = '/api/uploads';
 
 const drawer = document.getElementById('uploadDrawer');
 const overlay = document.getElementById('drawerOverlay');
@@ -2566,8 +2730,6 @@ uploadStartBtn.onclick = async ()=>{
     await uploadOne(item, folder);
   }
   renderUploadList();
-  // Refresh queue so newly uploaded cases appear
-  loadQueue();
 };
 </script>
 </body>

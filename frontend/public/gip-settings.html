@@ -64,7 +64,7 @@
     text-transform:uppercase;padding:14px 10px 7px;}
   .sidebar.collapsed .nav-label{display:none;}
   .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
-    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:13.5px;
+    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:12px;
     font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;
     text-decoration:none;}
   a.nav-item,a.nav-item:hover,a.nav-item:focus{text-decoration:none;}
@@ -83,7 +83,7 @@
 
   .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
   .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
-    border:none;background:transparent;color:var(--side-text);font-size:13px;font-weight:500;
+    border:none;background:transparent;color:var(--side-text);font-size:12px;font-weight:500;
     margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;}
   .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
   .foot-item.active{background:var(--accent-soft);color:#fff;font-weight:600;}
@@ -94,8 +94,9 @@
   .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
   .sidebar.collapsed .foot-item .lbl,.sidebar.collapsed .foot-item .badge{display:none;}
   .user{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-top:6px;border-radius:10px;
-    transition:background .15s;}
-  .user:hover{background:rgba(255,255,255,.05);}
+    background:rgba(255,255,255,.04);border:1px solid var(--side-line);
+    transition:background .15s, border-color .15s;}
+  .user:hover{background:transparent;border-color:transparent;}
   .avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--orange);color:#fff;
     font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
   .user-txt{overflow:hidden;white-space:nowrap;}
@@ -103,6 +104,21 @@
   .user-role{font-size:11px;color:var(--ink-faint);}
   .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
   .sidebar.collapsed .user-txt{display:none;}
+  .user{cursor:pointer;width:100%;text-align:left;border:none;font:inherit;}
+  .user-caret{margin-left:auto;color:var(--ink-faint);display:flex;align-items:center;transition:transform .15s;}
+  .user-wrap{position:relative;}
+  .user-pop{position:absolute;left:12px;right:12px;bottom:calc(100% + 6px);
+    background:#1a2236;border:1px solid var(--side-line);border-radius:10px;
+    box-shadow:0 12px 28px rgba(0,0,0,.45);padding:5px;display:none;z-index:50;}
+  .user-pop.open{display:block;}
+  .user-pop-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+    border:none;background:transparent;color:var(--side-text);font-size:12.5px;font-weight:500;
+    border-radius:7px;cursor:pointer;text-align:left;text-decoration:none;}
+  .user-pop-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .user-pop-item .ico{display:flex;align-items:center;color:var(--ink-faint);}
+  .user-pop-sep{height:1px;background:var(--side-line);margin:4px 6px;}
+  .sidebar.collapsed .user-txt,.sidebar.collapsed .user-caret{display:none;}
+  .sidebar.collapsed .user-pop{left:auto;right:-216px;bottom:6px;width:200px;}
 
   /* ═══ MAIN ═══ */
   .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
@@ -562,24 +578,30 @@
     <nav class="nav" id="nav"></nav>
 
     <div class="side-foot">
-      <a class="foot-item active" href="gip-settings.html" data-label="Settings" title="Settings">
-        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-        <span class="lbl">Settings</span>
-      </a>
-      <button class="foot-item" data-label="Status" title="Status">
-        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg></span>
-        <span class="lbl">Status</span>
-      </button>
-      <button class="foot-item" data-label="Notifications" title="Notifications">
-        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
-        <span class="lbl">Notifications</span>
-        <span class="badge">0</span>
-      </button>
-      <div class="user" data-label="Austin" title="Austin · admin">
-        <div class="avatar">A</div>
-        <div class="user-txt">
-          <div class="user-name">Austin</div>
-          <div class="user-role">admin</div>
+      <div id="footItems"></div>
+      <div class="user-wrap">
+        <button class="user" id="userBtn" data-label="Austin" title="Austin · admin" aria-haspopup="true" aria-expanded="false">
+          <div class="avatar">A</div>
+          <div class="user-txt">
+            <div class="user-name">Austin</div>
+            <div class="user-role">admin</div>
+          </div>
+          <span class="user-caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+        </button>
+        <div class="user-pop" id="userPop" role="menu" aria-labelledby="userBtn">
+          <a class="user-pop-item" href="help.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
+            Help
+          </a>
+          <a class="user-pop-item" href="support.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+            Support
+          </a>
+          <div class="user-pop-sep"></div>
+          <a class="user-pop-item" href="gip-login.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+            Logout
+          </a>
         </div>
       </div>
     </div>
@@ -609,6 +631,14 @@
         <button class="tab-btn" data-pane="filing">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
           Automate Filing
+        </button>
+        <button class="tab-btn" data-pane="assistant">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          AI Assistant
+        </button>
+        <button class="tab-btn" data-pane="agentops">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+          Agent Ops
         </button>
       </div>
 
@@ -937,6 +967,155 @@
           </div>
         </div>
 
+        <div class="tab-pane" data-pane="assistant">
+          <div class="wip">
+            <div class="wip-orbit">
+              <div class="ring"></div>
+              <div class="ring r2"></div>
+              <div class="ring r3"></div>
+              <div class="spark s1"></div>
+              <div class="spark s2"></div>
+              <div class="spark s3"></div>
+              <div class="core">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              </div>
+            </div>
+            <span class="wip-tag"><span class="dot"></span>Copilot tuning</span>
+            <h4>AI Assistant Settings are work in progress</h4>
+            <p>The conversational copilot is being trained on <span class="hl">immigration domain context, tool routing, and reviewer-in-the-loop guardrails</span>. Persona, knowledge sources, and tool-access controls will land here once the assistant is production-ready.</p>
+            <div class="wip-dots"><span></span><span></span><span></span></div>
+            <div class="wip-stack">
+              <span class="wip-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Persona & tone controls</span>
+              <span class="wip-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>Knowledge source picker</span>
+              <span class="wip-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/></svg>Tool-access guardrails</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane="agentops">
+
+          <!-- Agent selector -->
+          <section class="s-card">
+            <div class="s-card-head">
+              <div class="ico-wrap thr">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+              </div>
+              <div>
+                <h3>Agent</h3>
+                <div class="sub">Select an agent to edit its baselines · global pricing applies to all</div>
+              </div>
+            </div>
+            <div class="s-card-body">
+              <div class="s-row">
+                <label>Agent</label>
+                <select class="s-select" id="aoAgent">
+                  <option value="assistant">AI Assistant</option>
+                  <option value="notice" selected>Notice Processing</option>
+                  <option value="paf">Compliance Doc (PAF)</option>
+                  <option value="h4">Automate Filing (H4 EAD)</option>
+                </select>
+                <span class="hint">Each agent has its own monthly volume, human/agent time baseline, and tokens-per-doc.</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Pricing & labor baseline (global) -->
+          <section class="s-card">
+            <div class="s-card-head">
+              <div class="ico-wrap llm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div>
+                <h3>Pricing &amp; Labor Baseline</h3>
+                <div class="sub">Global rates used across every agent for ROI math</div>
+              </div>
+            </div>
+            <div class="s-card-body">
+              <div class="s-grid-2">
+                <div class="s-row">
+                  <label>Blended token cost ($ / M tokens)</label>
+                  <input class="s-input" id="ao-tokrate" type="number" min="0" step="0.01" value="6.50" />
+                </div>
+                <div class="s-row">
+                  <label>Compute per doc ($)</label>
+                  <input class="s-input" id="ao-compute" type="number" min="0" step="0.01" value="0.04" />
+                </div>
+                <div class="s-row">
+                  <label>Human fully-loaded rate ($ / hr)</label>
+                  <input class="s-input" id="ao-hrate" type="number" min="0" step="1" value="42" />
+                </div>
+                <div class="s-row">
+                  <label>Reviewer (in-loop) ($ / mo)</label>
+                  <input class="s-input" id="ao-reviewer" type="number" min="0" step="50" value="3200" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Total cost of ownership (global) -->
+          <section class="s-card">
+            <div class="s-card-head">
+              <div class="ico-wrap ocr">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v6"/></svg>
+              </div>
+              <div>
+                <h3>Total Cost of Ownership</h3>
+                <div class="sub">One-time build cost and the projection window for ROI</div>
+              </div>
+            </div>
+            <div class="s-card-body">
+              <div class="s-grid-2">
+                <div class="s-row">
+                  <label>Initial cost of ownership ($ build)</label>
+                  <input class="s-input" id="ao-ico" type="number" min="0" step="500" value="24000" />
+                </div>
+                <div class="s-row">
+                  <label>Projection horizon (months)</label>
+                  <input class="s-input" id="ao-horizon" type="number" min="1" step="1" value="12" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Per-agent baselines (swaps with dropdown) -->
+          <section class="s-card">
+            <div class="s-card-head">
+              <div class="ico-wrap learn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+              </div>
+              <div>
+                <h3>Per-Agent Baselines · <span id="ao-agent-name" style="color:var(--primary);">Notice Processing</span></h3>
+                <div class="sub">Monthly volume, time-per-doc baselines, and token usage for the selected agent</div>
+              </div>
+            </div>
+            <div class="s-card-body">
+              <div class="s-grid-2">
+                <div class="s-row">
+                  <label>Monthly volume (docs / mo)</label>
+                  <input class="s-input" id="ao-vol" type="number" min="0" step="1" value="140" />
+                </div>
+                <div class="s-row">
+                  <label>Human time per doc (minutes)</label>
+                  <input class="s-input" id="ao-hm" type="number" min="0" step="0.5" value="22" />
+                </div>
+                <div class="s-row">
+                  <label>Agent time per doc (seconds)</label>
+                  <input class="s-input" id="ao-as" type="number" min="0" step="1" value="35" />
+                </div>
+                <div class="s-row">
+                  <label>Tokens per doc</label>
+                  <input class="s-input" id="ao-tk" type="number" min="0" step="100" value="9000" />
+                </div>
+              </div>
+              <div class="thr-help">
+                Editing here updates the projections on the <b>Agent Ops</b> page for the selected agent.
+                Reviewer cost and ICO are amortized across all enabled agents.
+              </div>
+            </div>
+          </section>
+
+        </div>
+
         <div class="save-bar" id="saveBar">
           <button class="btn-secondary" id="resetBtn">Reset to Defaults</button>
           <button class="btn-secondary primary" id="saveBtn">
@@ -958,20 +1137,46 @@ const ICONS = {
   filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
   agentops:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
   email:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  assistant:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
 };
 const NAV = [
-  {id:'dashboard',  label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard},
-  {id:'notice',     label:'Notice Processing',        href:'gip-notice-list.html',icon:ICONS.notice,    group:'Agents'},
-  {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents'},
-  {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents'},
-  {id:'email',      label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools'},
-  {id:'agentops',   label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights'},
+  {id:'dashboard',  label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard,                        visible:1},
+  {id:'assistant',  label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:0},
+  {id:'notice',     label:'Notice Processing',        href:'gip-notice-list.html',icon:ICONS.notice,    group:'Agents',         visible:1},
+  {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:0},
+  {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:0},
+  {id:'email',      label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:0},
+  {id:'agentops',   label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights',       visible:0},
 ];
 const ACTIVE_NAV = 'settings';
+const ACTIVE_FOOT = 'settings';
+
+const FOOT_ICONS = {
+  settings:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  status:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>',
+  notifications:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+};
+const FOOT = [
+  {id:'settings',      label:'Settings',      icon:FOOT_ICONS.settings,      href:'gip-settings.html', visible:0},
+  {id:'status',        label:'Status',        icon:FOOT_ICONS.status,                                   visible:0},
+  {id:'notifications', label:'Notifications', icon:FOOT_ICONS.notifications, badge:'0',                 visible:0},
+];
+
+function renderFoot(){
+  document.getElementById('footItems').innerHTML = FOOT.filter(f=>f.visible).map(f=>{
+    const tag = f.href ? 'a' : 'button';
+    const href = f.href ? ` href="${f.href}"` : '';
+    const active = f.id===ACTIVE_FOOT ? ' active' : '';
+    const badge = f.badge ? `<span class="badge">${f.badge}</span>` : '';
+    return `<${tag} class="foot-item${active}"${href} data-label="${f.label}" title="${f.label}">
+      <span class="ico">${f.icon}</span><span class="lbl">${f.label}</span>${badge}
+    </${tag}>`;
+  }).join('');
+}
 
 function renderNav(){
   let html = '', currentGroup = null;
-  NAV.forEach(n=>{
+  NAV.filter(n=>n.visible).forEach(n=>{
     const g = n.group || null;
     if(g !== currentGroup){
       currentGroup = g;
@@ -983,6 +1188,234 @@ function renderNav(){
   });
   document.getElementById('nav').innerHTML = html;
 }
+
+/* ─── threshold slider ─── */
+const thrSlider = document.getElementById('thrSlider');
+const thrVal = document.getElementById('thrVal');
+const thrEcho = document.getElementById('thrEcho');
+function syncThr(){
+  const v = thrSlider.value;
+  thrVal.textContent = v;
+  thrEcho.textContent = v;
+}
+thrSlider.addEventListener('input', syncThr);
+syncThr();
+
+/* ─── document path ─── */
+const docPath = document.getElementById('docPath');
+const listenBar = document.getElementById('listenBar');
+const listenPath = document.getElementById('listenPath');
+function syncPath(){
+  const v = docPath.value.trim();
+  if(v){
+    listenBar.classList.remove('idle');
+    listenPath.textContent = v;
+    listenBar.querySelector('.txt').innerHTML =
+      `<b>Listening</b> on <code id="listenPath">${v}</code> — any new file dropped here is spooled for ingestion automatically.`;
+  } else {
+    listenBar.classList.add('idle');
+    listenBar.querySelector('.txt').innerHTML =
+      `<b>Not listening</b> — set a folder path above to start watching for new notices.`;
+  }
+}
+docPath.addEventListener('input', syncPath);
+document.getElementById('browseBtn').onclick = ()=>{
+  document.getElementById('folderPicker').click();
+};
+document.getElementById('folderPicker').onchange = (e)=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  /* browsers expose only a relative folder name for security; show that */
+  const rel = f.webkitRelativePath || f.name;
+  const folder = rel.split('/')[0] || rel;
+  docPath.value = folder;
+  syncPath();
+};
+
+/* ─── chip lists (OCR providers + skill locations) ─── */
+const OCR_PROVIDERS = [
+  {label:'AWS Textract', default:true},
+  {label:'Azure Document Intelligence'},
+  {label:'NuExtract'},
+];
+const SKILL_LOCATIONS = [
+  {label:'/opt/gip/skills'},
+  {label:'s3://gip-platform/skills/'},
+];
+
+const closeX = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>';
+
+function renderChips(){
+  document.getElementById('ocrChips').innerHTML = OCR_PROVIDERS.map((p,i)=>`
+    <span class="chip ${p.default?'default':''}">
+      ${p.default?'★ ':''}${p.label}
+      <button class="x" data-list="ocr" data-i="${i}" title="Remove">${closeX}</button>
+    </span>`).join('') || '<span class="hint">No providers configured.</span>';
+
+  document.getElementById('skillChips').innerHTML = SKILL_LOCATIONS.map((s,i)=>`
+    <span class="chip location">
+      ${s.label}
+      <button class="x" data-list="skill" data-i="${i}" title="Remove">${closeX}</button>
+    </span>`).join('') || '<span class="hint">No skill locations configured.</span>';
+
+  document.querySelectorAll('.chip .x').forEach(b=>{
+    b.onclick = ()=>{
+      const list = b.dataset.list === 'ocr' ? OCR_PROVIDERS : SKILL_LOCATIONS;
+      list.splice(+b.dataset.i, 1);
+      renderChips();
+    };
+  });
+}
+renderChips();
+
+document.getElementById('ocrAdd').onclick = ()=>{
+  const inp = document.getElementById('ocrInput');
+  const v = inp.value.trim();
+  if(!v) return;
+  OCR_PROVIDERS.push({label:v});
+  inp.value = '';
+  renderChips();
+};
+document.getElementById('skillAdd').onclick = ()=>{
+  const inp = document.getElementById('skillInput');
+  const v = inp.value.trim();
+  if(!v) return;
+  SKILL_LOCATIONS.push({label:v});
+  inp.value = '';
+  renderChips();
+};
+
+/* ─── toggles ─── */
+document.querySelectorAll('.switch').forEach(sw=>{
+  sw.onclick = ()=> sw.classList.toggle('on');
+});
+
+/* ─── save/reset (stubs) ─── */
+function flash(msg){
+  const btn = document.getElementById('saveBtn');
+  const orig = btn.innerHTML;
+  btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ${msg}`;
+  setTimeout(()=>{ btn.innerHTML = orig; }, 1400);
+}
+document.getElementById('saveBtn').onclick = ()=> flash('Saved');
+document.getElementById('resetBtn').onclick = ()=>{
+  thrSlider.value = 92; syncThr();
+  document.getElementById('llmTemp').value = 0.2;
+  document.getElementById('llmTokens').value = 4096;
+  flash('Reset');
+};
+
+/* ─── settings tabs ─── */
+const PANES_WITH_SAVE = new Set(['notice','agentops']);
+document.querySelectorAll('#settingsTabs .tab-btn').forEach(b=>{
+  b.onclick = ()=>{
+    const pane = b.dataset.pane;
+    document.querySelectorAll('#settingsTabs .tab-btn').forEach(x=> x.classList.toggle('active', x===b));
+    document.querySelectorAll('.tab-pane').forEach(p=> p.classList.toggle('active', p.dataset.pane===pane));
+    document.getElementById('saveBar').style.display = PANES_WITH_SAVE.has(pane) ? '' : 'none';
+  };
+});
+
+/* ─── Agent Ops settings (per-agent baselines + globals) ─── */
+const AO_STORE_KEY = 'gip.agentops.config';
+const AO_DEFAULTS = {
+  globals: { tokRate:6.50, computePD:0.04, hRate:42, reviewerMo:3200, ico:24000, horizon:12 },
+  agents: {
+    assistant: { name:'AI Assistant',             vol:420, humanMin:6,  agentSec:8,  tokPerDoc:3500 },
+    notice:    { name:'Notice Processing',        vol:140, humanMin:22, agentSec:35, tokPerDoc:9000 },
+    paf:       { name:'Compliance Doc (PAF)',     vol:60,  humanMin:48, agentSec:70, tokPerDoc:16000 },
+    h4:        { name:'Automate Filing (H4 EAD)', vol:45,  humanMin:65, agentSec:95, tokPerDoc:22000 },
+  }
+};
+function aoLoad(){
+  try{
+    const raw = localStorage.getItem(AO_STORE_KEY);
+    if(!raw) return JSON.parse(JSON.stringify(AO_DEFAULTS));
+    const saved = JSON.parse(raw);
+    // merge in case defaults gained new keys
+    return {
+      globals: { ...AO_DEFAULTS.globals, ...(saved.globals||{}) },
+      agents: Object.fromEntries(Object.keys(AO_DEFAULTS.agents).map(k=>[
+        k, { ...AO_DEFAULTS.agents[k], ...((saved.agents||{})[k]||{}) }
+      ]))
+    };
+  }catch(e){ return JSON.parse(JSON.stringify(AO_DEFAULTS)); }
+}
+function aoSave(state){ localStorage.setItem(AO_STORE_KEY, JSON.stringify(state)); }
+
+const aoState = aoLoad();
+const aoSel = document.getElementById('aoAgent');
+const aoFields = {
+  vol: document.getElementById('ao-vol'),
+  hm:  document.getElementById('ao-hm'),
+  as:  document.getElementById('ao-as'),
+  tk:  document.getElementById('ao-tk'),
+};
+const aoGlobals = {
+  tokRate:    document.getElementById('ao-tokrate'),
+  computePD:  document.getElementById('ao-compute'),
+  hRate:      document.getElementById('ao-hrate'),
+  reviewerMo: document.getElementById('ao-reviewer'),
+  ico:        document.getElementById('ao-ico'),
+  horizon:    document.getElementById('ao-horizon'),
+};
+
+function aoRenderAgent(key){
+  const a = aoState.agents[key]; if(!a) return;
+  aoFields.vol.value = a.vol;
+  aoFields.hm.value  = a.humanMin;
+  aoFields.as.value  = a.agentSec;
+  aoFields.tk.value  = a.tokPerDoc;
+  document.getElementById('ao-agent-name').textContent = a.name;
+}
+function aoRenderGlobals(){
+  Object.entries(aoGlobals).forEach(([k,el])=> el.value = aoState.globals[k]);
+}
+
+aoRenderGlobals();
+aoRenderAgent(aoSel.value);
+
+aoSel.addEventListener('change', ()=> aoRenderAgent(aoSel.value));
+
+// Bind per-agent baseline edits to the currently-selected agent
+[['vol','vol'],['hm','humanMin'],['as','agentSec'],['tk','tokPerDoc']].forEach(([id,prop])=>{
+  aoFields[id].addEventListener('input', ()=>{
+    const key = aoSel.value;
+    const v = parseFloat(aoFields[id].value);
+    if(!isNaN(v)) aoState.agents[key][prop] = v;
+  });
+});
+// Bind global edits
+Object.entries(aoGlobals).forEach(([k,el])=>{
+  el.addEventListener('input', ()=>{
+    const v = parseFloat(el.value);
+    if(!isNaN(v)) aoState.globals[k] = v;
+  });
+});
+
+// Hook into existing Save / Reset for the agentops tab
+const _origSave = document.getElementById('saveBtn').onclick;
+document.getElementById('saveBtn').onclick = ()=>{
+  aoSave(aoState);
+  flash('Saved');
+};
+const _origReset = document.getElementById('resetBtn').onclick;
+document.getElementById('resetBtn').onclick = ()=>{
+  // notice-tab reset (preserve prior behavior)
+  thrSlider.value = 92; syncThr();
+  document.getElementById('llmTemp').value = 0.2;
+  document.getElementById('llmTokens').value = 4096;
+  // agentops reset
+  const fresh = JSON.parse(JSON.stringify(AO_DEFAULTS));
+  Object.assign(aoState.globals, fresh.globals);
+  Object.keys(fresh.agents).forEach(k=> Object.assign(aoState.agents[k], fresh.agents[k]));
+  aoRenderGlobals();
+  aoRenderAgent(aoSel.value);
+  aoSave(aoState);
+  flash('Reset');
+};
+
+
 
 /* ─── threshold slider (live, backed by /legal/settings) ─── */
 const API = '/legal';
@@ -1280,6 +1713,29 @@ document.querySelectorAll('#settingsTabs .tab-btn').forEach(b=>{
 });
 
 renderNav();
+
+
+if(!localStorage.getItem('access_token')) window.location.href = 'login.html';
+renderNav();
+renderFoot();
+
+// user popout
+(function(){
+  const btn = document.getElementById('userBtn');
+  const pop = document.getElementById('userPop');
+  if(!btn || !pop) return;
+  const close = ()=>{ pop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const open = pop.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', e=>{
+    if(!pop.classList.contains('open')) return;
+    if(!pop.contains(e.target) && !btn.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+})();
 </script>
 </body>
 </html>
