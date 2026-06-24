@@ -1218,7 +1218,7 @@ function syncPath(){
       `<b>Not listening</b> — set a folder path above to start watching for new notices.`;
   }
 }
-docPath.addEventListener('input', syncPath);
+docPath.addEventListener('input', ()=>{ syncPath(); _updateListenBar(!!_dirHandle); });
 document.getElementById('browseBtn').onclick = ()=>{
   document.getElementById('folderPicker').click();
 };
@@ -1419,9 +1419,6 @@ document.getElementById('resetBtn').onclick = ()=>{
 
 /* ─── threshold slider (live, backed by /legal/settings) ─── */
 const API = '/legal';
-const thrSlider = document.getElementById('thrSlider');
-const thrVal = document.getElementById('thrVal');
-const thrEcho = document.getElementById('thrEcho');
 function syncThr(){
   const v = thrSlider.value;
   thrVal.textContent = v;
@@ -1462,24 +1459,6 @@ async function loadSettings(){
 }
 loadSettings();
 
-/* ─── document path ─── */
-const docPath = document.getElementById('docPath');
-const listenBar = document.getElementById('listenBar');
-const listenPath = document.getElementById('listenPath');
-function syncPath(){
-  const v = docPath.value.trim();
-  if(v){
-    listenBar.classList.remove('idle');
-    listenPath.textContent = v;
-    listenBar.querySelector('.txt').innerHTML =
-      `<b>Listening</b> on <code id="listenPath">${v}</code> — any new file dropped here is spooled for ingestion automatically.`;
-  } else {
-    listenBar.classList.add('idle');
-    listenBar.querySelector('.txt').innerHTML =
-      `<b>Not listening</b> — set a folder path above to start watching for new notices.`;
-  }
-}
-docPath.addEventListener('input', ()=>{ syncPath(); _updateListenBar(!!_dirHandle); });
 
 /* ─── Folder watcher (File System Access API) ─── */
 let _dirHandle   = null;
@@ -1574,168 +1553,6 @@ document.getElementById('browseBtn').onclick = async ()=>{
   }
 };
 
-/* ─── chip lists (OCR providers + skill locations) ─── */
-const OCR_PROVIDERS = [
-  {label:'AWS Textract', default:true},
-  {label:'Azure Document Intelligence'},
-  {label:'NuExtract'},
-];
-const SKILL_LOCATIONS = [
-  {label:'/opt/gip/skills'},
-  {label:'s3://gip-platform/skills/'},
-];
-
-const closeX = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>';
-
-function renderChips(){
-  document.getElementById('ocrChips').innerHTML = OCR_PROVIDERS.map((p,i)=>`
-    <span class="chip ${p.default?'default':''}">
-      ${p.default?'★ ':''}${p.label}
-      <button class="x" data-list="ocr" data-i="${i}" title="Remove">${closeX}</button>
-    </span>`).join('') || '<span class="hint">No providers configured.</span>';
-
-  document.getElementById('skillChips').innerHTML = SKILL_LOCATIONS.map((s,i)=>`
-    <span class="chip location">
-      ${s.label}
-      <button class="x" data-list="skill" data-i="${i}" title="Remove">${closeX}</button>
-    </span>`).join('') || '<span class="hint">No skill locations configured.</span>';
-
-  document.querySelectorAll('.chip .x').forEach(b=>{
-    b.onclick = ()=>{
-      const list = b.dataset.list === 'ocr' ? OCR_PROVIDERS : SKILL_LOCATIONS;
-      list.splice(+b.dataset.i, 1);
-      renderChips();
-    };
-  });
-}
-renderChips();
-
-document.getElementById('ocrAdd').onclick = ()=>{
-  const inp = document.getElementById('ocrInput');
-  const v = inp.value.trim();
-  if(!v) return;
-  OCR_PROVIDERS.push({label:v});
-  inp.value = '';
-  renderChips();
-};
-document.getElementById('skillAdd').onclick = ()=>{
-  const inp = document.getElementById('skillInput');
-  const v = inp.value.trim();
-  if(!v) return;
-  SKILL_LOCATIONS.push({label:v});
-  inp.value = '';
-  renderChips();
-};
-
-/* ─── toggles ─── */
-document.querySelectorAll('.switch').forEach(sw=>{
-  sw.onclick = ()=> sw.classList.toggle('on');
-});
-
-/* ─── save / reset ─── */
-function flash(msg){
-  const btn = document.getElementById('saveBtn');
-  const orig = btn.dataset.orig || btn.innerHTML;
-  btn.dataset.orig = orig;
-  btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ${msg}`;
-  setTimeout(()=>{ btn.innerHTML = orig; }, 1600);
-}
-
-async function saveSettings(){
-  const pct = parseInt(thrSlider.value, 10);
-  const watchFolder = docPath.value.trim();
-  const pollLabel = document.getElementById('pathPoll').value;
-  const pollSeconds = POLL_MAP[pollLabel] ?? 60;
-  const recurseEl = document.querySelector('[data-toggle="recurse"]');
-  const moveEl    = document.querySelector('[data-toggle="moveAfter"]');
-  const recurse   = recurseEl ? recurseEl.classList.contains('on') : false;
-  const moveAfter = moveEl    ? moveEl.classList.contains('on')    : true;
-  const watchEnabled = !!watchFolder;
-
-  const fileTypesVal = document.getElementById('pathTypes').value;
-  let fileTypes = ['pdf'];
-  if(fileTypesVal.includes('PNG')) fileTypes = ['pdf','png','jpg','tiff'];
-  else if(fileTypesVal.includes('All')) fileTypes = ['pdf','png','jpg','tiff','docx'];
-
-  try{
-    const r = await fetch(`${API}/settings`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        confidence_threshold_pct: pct,
-        watch_enabled: watchEnabled,
-        watch_folder: watchFolder,
-        poll_interval_seconds: pollSeconds,
-        file_types: fileTypes,
-        recurse: recurse,
-        move_after_ingestion: moveAfter,
-      })
-    });
-    if(!r.ok) throw new Error('HTTP ' + r.status);
-    flash('Saved');
-  }catch(e){
-    console.error('[GIP] settings save failed', e);
-    flash('Save failed');
-  }
-}
-document.getElementById('saveBtn').onclick = async ()=>{
-  await saveSettings();
-  if(_dirHandle && _watchTimer) _startWatcher();
-};
-
-document.getElementById('resetBtn').onclick = async ()=>{
-  thrSlider.value = 70; syncThr();
-  const t = document.getElementById('llmTemp'); if(t) t.value = 0.2;
-  const k = document.getElementById('llmTokens'); if(k) k.value = 4096;
-  _stopWatcher(); _dirHandle = null; _seenFiles = new Set();
-  docPath.value = ''; syncPath(); _updateListenBar(false);
-  const recurseEl = document.querySelector('[data-toggle="recurse"]');
-  const moveEl    = document.querySelector('[data-toggle="moveAfter"]');
-  if(recurseEl) recurseEl.classList.remove('on');
-  if(moveEl)    moveEl.classList.add('on');
-  try{
-    await fetch(`${API}/settings`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ confidence_threshold_pct: 70, watch_enabled: false,
-        watch_folder: '', poll_interval_seconds: 60, recurse: false, move_after_ingestion: true })
-    });
-    flash('Reset');
-  }catch(e){ flash('Reset (local)'); }
-};
-
-/* ─── settings tabs ─── */
-document.querySelectorAll('#settingsTabs .tab-btn').forEach(b=>{
-  b.onclick = ()=>{
-    const pane = b.dataset.pane;
-    document.querySelectorAll('#settingsTabs .tab-btn').forEach(x=> x.classList.toggle('active', x===b));
-    document.querySelectorAll('.tab-pane').forEach(p=> p.classList.toggle('active', p.dataset.pane===pane));
-    document.getElementById('saveBar').style.display = pane==='notice' ? '' : 'none';
-  };
-});
-
-renderNav();
-
-
-if(!localStorage.getItem('access_token')) window.location.href = 'login.html';
-renderNav();
-renderFoot();
-
-// user popout
-(function(){
-  const btn = document.getElementById('userBtn');
-  const pop = document.getElementById('userPop');
-  if(!btn || !pop) return;
-  const close = ()=>{ pop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
-  btn.addEventListener('click', e=>{
-    e.stopPropagation();
-    const open = pop.classList.toggle('open');
-    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
-  document.addEventListener('click', e=>{
-    if(!pop.classList.contains('open')) return;
-    if(!pop.contains(e.target) && !btn.contains(e.target)) close();
-  });
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
-})();
 </script>
 </body>
 </html>
