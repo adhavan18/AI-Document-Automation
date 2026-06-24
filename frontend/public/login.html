@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign in · GIP Reviewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
+    --bg:#f3f5fa; --card:#ffffff;
+    --ink:#1a1f2e; --ink-soft:#5b6376; --ink-faint:#9aa1b2;
+    --line:#e6e9f0; --line-soft:#eef1f7;
+    --green:#1f8a52; --orange:#e14a28;
+    --side-bg:#0e1326; --side-bg-2:#111733;
+    --accent:#4d82f0;
+    --font:'Inter',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+    -webkit-font-smoothing:antialiased;overflow:hidden;}
+  button{font-family:var(--font);cursor:pointer;}
+  a{color:var(--primary);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  .shell{display:flex;height:100vh;}
+
+  /* ═══ LEFT — BRAND PANEL ═══ */
+  .brand-pane{
+    flex:1;min-width:0;position:relative;overflow:hidden;
+    background:
+      radial-gradient(1100px 700px at 12% -10%, rgba(77,130,240,.28), transparent 60%),
+      radial-gradient(900px 600px at 105% 110%, rgba(46,87,184,.32), transparent 55%),
+      linear-gradient(160deg,var(--side-bg) 0%, var(--side-bg-2) 55%, #182148 100%);
+    color:#fff;
+    display:flex;flex-direction:column;justify-content:space-between;
+    padding:42px 56px 44px;
+  }
+  /* subtle grid overlay */
+  .brand-pane::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:
+      linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size:44px 44px;
+    mask-image: radial-gradient(circle at 50% 50%, #000 0%, transparent 78%);
+  }
+  /* floating orbs */
+  .orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;pointer-events:none;}
+  .orb.a{width:340px;height:340px;background:#4d82f0;top:-80px;right:-60px;}
+  .orb.b{width:260px;height:260px;background:#7aa6ff;bottom:-60px;left:-40px;opacity:.35;}
+
+  .brand-head{position:relative;display:flex;align-items:center;gap:12px;}
+  .brand-head img{height:44px;width:auto;display:block;}
+  .brand-pill{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    padding:5px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.18);
+    color:rgba(255,255,255,.78);background:rgba(255,255,255,.04);}
+
+  .brand-body{position:relative;max-width:520px;}
+  .brand-eyebrow{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:18px;}
+  .brand-title{font-size:42px;line-height:1.08;font-weight:800;letter-spacing:-.025em;margin:0 0 16px;}
+  .brand-title span{background:linear-gradient(90deg,#fff,#a9c3ff);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .brand-sub{font-size:15px;line-height:1.6;color:rgba(255,255,255,.72);margin:0 0 28px;}
+
+  .feature-list{display:flex;flex-direction:column;gap:14px;}
+  .feature{display:flex;align-items:flex-start;gap:13px;}
+  .feature-ico{width:34px;height:34px;border-radius:9px;flex-shrink:0;
+    background:rgba(77,130,240,.18);color:#a9c3ff;
+    display:flex;align-items:center;justify-content:center;
+    border:1px solid rgba(77,130,240,.28);}
+  .feature-txt{font-size:13.5px;color:rgba(255,255,255,.85);line-height:1.5;}
+  .feature-txt b{color:#fff;font-weight:600;}
+
+  .brand-foot{position:relative;display:flex;align-items:center;justify-content:space-between;
+    font-size:12px;color:rgba(255,255,255,.5);}
+  .brand-foot a{color:rgba(255,255,255,.7);}
+  .brand-foot a:hover{color:#fff;text-decoration:none;}
+
+  /* ═══ RIGHT — LOGIN PANEL ═══ */
+  .login-pane{
+    width:520px;flex-shrink:0;background:var(--card);
+    display:flex;flex-direction:column;justify-content:center;
+    padding:48px 64px;overflow-y:auto;
+  }
+  .login-card{width:100%;max-width:380px;margin:0 auto;}
+
+  .mobile-brand{display:none;margin-bottom:30px;}
+  .mobile-brand img{height:38px;}
+
+  .login-head h2{font-size:26px;font-weight:700;letter-spacing:-.018em;margin:0 0 8px;}
+  .login-head p{font-size:13.5px;color:var(--ink-soft);margin:0 0 32px;line-height:1.55;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);
+    margin-bottom:7px;letter-spacing:.01em;}
+  .input-wrap{position:relative;}
+  .input-wrap svg.lead{position:absolute;left:13px;top:50%;transform:translateY(-50%);
+    color:var(--ink-faint);pointer-events:none;}
+  .input-wrap input{
+    width:100%;padding:12px 14px 12px 40px;border-radius:10px;
+    border:1px solid var(--line);background:var(--bg);
+    font-family:var(--font);font-size:14px;color:var(--ink);
+    outline:none;transition:border-color .15s, background .15s, box-shadow .15s;
+  }
+  .input-wrap input:hover{border-color:#d8dde9;}
+  .input-wrap input:focus{border-color:var(--primary);background:#fff;
+    box-shadow:0 0 0 4px rgba(32,68,150,.10);}
+  .input-wrap input::placeholder{color:var(--ink-faint);}
+  .toggle-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+    width:32px;height:32px;border-radius:7px;border:none;background:transparent;
+    color:var(--ink-faint);display:flex;align-items:center;justify-content:center;
+    transition:background .15s,color .15s;}
+  .toggle-eye:hover{background:var(--line-soft);color:var(--ink-soft);}
+
+  .row{display:flex;align-items:center;justify-content:space-between;margin:6px 0 22px;}
+  .check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft);
+    cursor:pointer;user-select:none;}
+  .check input{appearance:none;width:16px;height:16px;border:1.5px solid #cfd5e3;
+    border-radius:5px;background:#fff;cursor:pointer;position:relative;flex-shrink:0;
+    transition:all .15s;}
+  .check input:checked{background:var(--primary);border-color:var(--primary);}
+  .check input:checked::after{content:"";position:absolute;left:4px;top:1px;
+    width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;
+    transform:rotate(45deg);}
+  .forgot{font-size:13px;font-weight:600;}
+
+  .submit{
+    width:100%;padding:13px 18px;border-radius:10px;border:none;
+    background:linear-gradient(180deg,var(--primary-2),var(--primary));
+    color:#fff;font-size:14px;font-weight:600;letter-spacing:.005em;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 6px 18px rgba(32,68,150,.28), inset 0 1px 0 rgba(255,255,255,.18);
+    transition:transform .12s, box-shadow .15s, filter .15s;
+  }
+  .submit:hover{filter:brightness(1.05);box-shadow:0 8px 22px rgba(32,68,150,.34);}
+  .submit:active{transform:translateY(1px);}
+  .submit:disabled{filter:saturate(.4) brightness(.95);cursor:not-allowed;
+    box-shadow:none;}
+
+  .alert{display:none;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:9px;
+    background:#fbe8e2;color:#9a3115;font-size:12.5px;font-weight:500;margin-bottom:16px;
+    border:1px solid #f4cbbd;line-height:1.4;}
+  .alert.show{display:flex;}
+  .alert svg{flex-shrink:0;margin-top:1px;}
+
+  .login-foot{margin-top:34px;padding-top:22px;border-top:1px solid var(--line-soft);
+    font-size:12.5px;color:var(--ink-faint);text-align:center;line-height:1.6;}
+
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .spin{animation:spin .8s linear infinite;}
+
+  /* ═══ RESPONSIVE ═══ */
+  @media (max-width: 960px){
+    body{overflow:auto;}
+    .shell{flex-direction:column;height:auto;min-height:100vh;}
+    .brand-pane{display:none;}
+    .login-pane{width:100%;padding:40px 24px;min-height:100vh;}
+    .mobile-brand{display:block;text-align:center;}
+    .mobile-brand img{filter:brightness(0) saturate(100%) invert(15%) sepia(40%) saturate(2400%) hue-rotate(210deg) brightness(90%) contrast(95%);}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══ LEFT — BRAND ═══ -->
+  <aside class="brand-pane">
+    <span class="orb a"></span>
+    <span class="orb b"></span>
+
+    <div class="brand-head">
+      <img src="assets/logo_white.png" alt="GIP" />
+      <span class="brand-pill">Reviewer</span>
+    </div>
+
+    <div class="brand-body">
+      <div class="brand-eyebrow">Immigration Workflow Suite</div>
+      <h1 class="brand-title">Process every notice with <span>confidence and clarity.</span></h1>
+      <p class="brand-sub">
+        Sign in to your workspace to review filings, manage compliance documents,
+        and orchestrate AI agents across your immigration caseload.
+      </p>
+
+      <div class="feature-list">
+        <div class="feature">
+          <div class="feature-ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>
+          </div>
+          <div class="feature-txt"><b>Compliance-grade review</b> — PAF, N-400, I-130, H4-EAD and more, fully auditable.</div>
+        </div>
+        <div class="feature">
+          <div class="feature-ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          </div>
+          <div class="feature-txt"><b>AI assistant on every case</b> — answer questions, draft responses, surface risks instantly.</div>
+        </div>
+        <div class="feature">
+          <div class="feature-ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+          </div>
+          <div class="feature-txt"><b>Operational visibility</b> — track agent performance and deadlines from a single dashboard.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-foot">
+      <div>© 2026 GIP · All rights reserved</div>
+      <div><a href="#">Privacy</a> &nbsp;·&nbsp; <a href="#">Terms</a> &nbsp;·&nbsp; <a href="#">Support</a></div>
+    </div>
+  </aside>
+
+  <!-- ═══ RIGHT — LOGIN ═══ -->
+  <section class="login-pane">
+    <div class="login-card">
+
+      <div class="mobile-brand">
+        <img src="assets/logo_white.png" alt="GIP" />
+      </div>
+
+      <div class="login-head">
+        <h2>Welcome back</h2>
+        <p>Sign in to access your GIP Reviewer workspace.</p>
+      </div>
+
+      <div class="alert" id="alert">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="alertMsg">Invalid username or password. Please try again.</span>
+      </div>
+
+      <form id="loginForm" autocomplete="on" novalidate>
+        <div class="field">
+          <label for="username">Username</label>
+          <div class="input-wrap">
+            <svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input id="username" name="username" type="text" placeholder="Enter your username" autocomplete="username" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input id="password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+            <button type="button" class="toggle-eye" id="togglePw" aria-label="Show password" title="Show password">
+              <svg id="eyeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="row">
+          <label class="check">
+            <input type="checkbox" id="remember" />
+            <span>Remember me</span>
+          </label>
+          <a class="forgot" href="#">Forgot password?</a>
+        </div>
+
+        <button class="submit" type="submit" id="submitBtn">
+          <span id="btnLabel">Sign in</span>
+          <svg id="btnArrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </form>
+
+      <div class="login-foot">
+        Need an account? <a href="#">Contact your administrator</a>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const pw = document.getElementById('password');
+  const toggle = document.getElementById('togglePw');
+  const eye = document.getElementById('eyeIcon');
+  const form = document.getElementById('loginForm');
+  const alertEl = document.getElementById('alert');
+  const alertMsg = document.getElementById('alertMsg');
+  const btn = document.getElementById('submitBtn');
+  const btnLabel = document.getElementById('btnLabel');
+  const btnArrow = document.getElementById('btnArrow');
+
+  const EYE_OPEN = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  const EYE_OFF  = '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.6 19.6 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a19.5 19.5 0 0 1-3.17 4.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M9.88 9.88a3 3 0 0 0 4.24 4.24"/>';
+
+  toggle.addEventListener('click', () => {
+    const showing = pw.type === 'text';
+    pw.type = showing ? 'password' : 'text';
+    eye.innerHTML = showing ? EYE_OPEN : EYE_OFF;
+    toggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+    toggle.setAttribute('title', showing ? 'Show password' : 'Hide password');
+  });
+
+  const BASE = 'http://20.102.105.142:8000';
+
+  const ARROW_SVG = '<svg id="btnArrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+  const SPIN_SVG  = '<svg id="btnArrow" class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertEl.classList.remove('show');
+
+    const u = document.getElementById('username').value.trim();
+    const p = pw.value;
+
+    if(!u || !p){
+      alertMsg.textContent = 'Please enter both your username and password.';
+      alertEl.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btnLabel.textContent = 'Signing in…';
+    document.getElementById('btnArrow').outerHTML = SPIN_SVG;
+
+    try {
+      // Step 1: Exchange credentials for an access token
+      const tokenRes = await fetch(`${BASE}/api/auth/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ username: u, password: p })
+      });
+
+      if (!tokenRes.ok) {
+        const err = await tokenRes.json().catch(() => ({}));
+        throw new Error(err.detail || 'Invalid username or password.');
+      }
+
+      const { access_token } = await tokenRes.json();
+
+      // Step 2: Confirm user access via /api/auth/me
+      const meRes = await fetch(`${BASE}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
+
+      if (!meRes.ok) {
+        throw new Error('Your account does not have access to this application.');
+      }
+
+      const user = await meRes.json();
+
+      // Step 3: Persist session and navigate
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('gip_user', JSON.stringify(user));
+      window.location.href = 'dashboard.html';
+
+    } catch (err) {
+      btn.disabled = false;
+      btnLabel.textContent = 'Sign in';
+      document.getElementById('btnArrow').outerHTML = ARROW_SVG;
+      alertMsg.textContent = err.message || 'Something went wrong. Please try again.';
+      alertEl.classList.add('show');
+    }
+  });
+</script>
+</body>
+</html>
