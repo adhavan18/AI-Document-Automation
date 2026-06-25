@@ -1185,6 +1185,7 @@
   <div class="pa-body" id="paBody"></div>
 </div>
 
+<script src="/env-config.js"></script>
 <script>
 /* ─── shared nav model (matches dashboard) ─── */
 const ICONS = {
@@ -1245,9 +1246,9 @@ function renderNav(){
 }
 
 /* ─── grid data — populated live from the Azure Notice Processing API ─── */
-const API_BASE = 'http://20.102.105.142:8000';
-const CLIENT_CODE = 'GCMNOTICEAI';
-const AGENT_KEY = 'ps_ucwwlgNVHBP7-BbOy1w34Nze-CysWLaREP8ZehhHu8I';
+const API_BASE    = window.GIP_CONFIG.API_BASE;
+const CLIENT_CODE = window.GIP_CONFIG.CLIENT_CODE;
+const AGENT_KEY   = window.GIP_CONFIG.AGENT_KEY;
 let AUTO_QUE = [];       // Processed Notices  (POSTED / FAILED)
 let REVIEW_QUE = [];     // Review Que         (REVIEW_NEEDED / READY_TO_POST)
 let PROCESSING_QUE = []; // Currently processing — used by agent widget

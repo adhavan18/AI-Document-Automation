@@ -1,13 +1,18 @@
-export const API_BASE = 'http://20.102.105.142:8000';
-export const CLIENT_CODE = 'GCMNOTICEAI';
-export const AGENT_KEY = 'ps_ucwwlgNVHBP7-BbOy1w34Nze-CysWLaREP8ZehhHu8I';
+function _cfg(key) {
+  const c = window.GIP_CONFIG;
+  if (!c || !c[key]) throw new Error(`GIP_CONFIG.${key} is not set — check env-config.js`);
+  return c[key];
+}
+
+export function getApiBase()    { return _cfg('API_BASE'); }
+export function getClientCode() { return _cfg('CLIENT_CODE'); }
+export function getAgentKey()   { return _cfg('AGENT_KEY'); }
 
 function getToken() {
   return localStorage.getItem('azure_access_token') || '';
 }
 
 function loginRedirect() {
-  const inPublic = window.location.pathname !== '/' && window.location.pathname !== '/index.html';
   window.location.href = 'login.html';
 }
 
@@ -18,7 +23,7 @@ export async function apiCall(endpoint, options = {}) {
   if (options.body && !(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
   }
-  const resp = await fetch(API_BASE + endpoint, { ...options, headers });
+  const resp = await fetch(getApiBase() + endpoint, { ...options, headers });
   if (resp.status === 401) {
     localStorage.removeItem('azure_access_token');
     localStorage.removeItem('azure_token_expiry');

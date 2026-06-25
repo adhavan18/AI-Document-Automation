@@ -3,6 +3,7 @@
 .env.local
 .env.*.local
 *.env
+frontend/public/env-config.js
 
 # Dependencies
 node_modules/

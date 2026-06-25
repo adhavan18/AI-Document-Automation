@@ -1,23 +1,29 @@
-const MSAL_CONFIG = {
-  auth: {
-    clientId: '7bba318f-5cbe-422f-924c-4fe464585950',
-    authority: 'https://login.microsoftonline.com/656818f9-40ee-4f41-9857-72df40fc198b',
-    redirectUri: window.location.origin + (window.location.pathname.includes('/public/') ? '/public/' : '/'),
-  },
-  cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: false },
-};
+function _cfg(key) {
+  const c = window.GIP_CONFIG;
+  if (!c || !c[key]) throw new Error(`GIP_CONFIG.${key} is not set — check env-config.js`);
+  return c[key];
+}
+
+function getMsalConfig() {
+  return {
+    auth: {
+      clientId: _cfg('CLIENT_ID'),
+      authority: `https://login.microsoftonline.com/${_cfg('TENANT_ID')}`,
+      redirectUri: window.location.origin + (window.location.pathname.includes('/public/') ? '/public/' : '/'),
+    },
+    cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: false },
+  };
+}
 
 const TOKEN_KEY = 'azure_access_token';
 const TOKEN_EXPIRY_KEY = 'azure_token_expiry';
 const USER_KEY = 'gip_user';
-const API_BASE = 'http://20.102.105.142:8000';
-const API_SCOPE = 'api://7bba318f-5cbe-422f-924c-4fe464585950/.default';
 
 let _msalInstance = null;
 
 function getMsal() {
   if (!_msalInstance) {
-    _msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
+    _msalInstance = new msal.PublicClientApplication(getMsalConfig());
   }
   return _msalInstance;
 }
@@ -40,7 +46,7 @@ export async function handleRedirect() {
 export async function signIn() {
   const msalApp = getMsal();
   try {
-    const result = await msalApp.loginPopup({ scopes: [API_SCOPE] });
+    const result = await msalApp.loginPopup({ scopes: [_cfg('API_SCOPE')] });
     if (result && result.accessToken) {
       _storeToken(result.accessToken, result.expiresOn);
       await _fetchAndStoreUser(result.accessToken);
@@ -77,7 +83,7 @@ export async function getAccessToken() {
     return null;
   }
   try {
-    const result = await msalApp.acquireTokenSilent({ scopes: [API_SCOPE], account: accounts[0] });
+    const result = await msalApp.acquireTokenSilent({ scopes: [_cfg('API_SCOPE')], account: accounts[0] });
     _storeToken(result.accessToken, result.expiresOn);
     return result.accessToken;
   } catch (e) {
@@ -105,7 +111,7 @@ function _storeToken(token, expiresOn) {
 
 async function _fetchAndStoreUser(token) {
   try {
-    const r = await fetch(`${API_BASE}/api/auth/me`, {
+    const r = await fetch(`${_cfg('API_BASE')}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (r.ok) {

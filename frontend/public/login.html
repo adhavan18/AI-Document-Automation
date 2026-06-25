@@ -263,18 +263,19 @@
 
 </div>
 
+<script src="/env-config.js"></script>
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
 <script>
   const MSAL_CONFIG = {
     auth: {
-      clientId: '7bba318f-5cbe-422f-924c-4fe464585950',
-      authority: 'https://login.microsoftonline.com/656818f9-40ee-4f41-9857-72df40fc198b',
+      clientId: window.GIP_CONFIG.CLIENT_ID,
+      authority: `https://login.microsoftonline.com/${window.GIP_CONFIG.TENANT_ID}`,
       redirectUri: window.location.origin + '/',
     },
     cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: false },
   };
-  const API_SCOPE = 'api://7bba318f-5cbe-422f-924c-4fe464585950/.default';
-  const API_BASE  = 'http://20.102.105.142:8000';
+  const API_SCOPE = window.GIP_CONFIG.API_SCOPE;
+  const API_BASE  = window.GIP_CONFIG.API_BASE;
 
   const msalApp = new msal.PublicClientApplication(MSAL_CONFIG);
   const alertEl  = document.getElementById('alert');

@@ -1128,6 +1128,7 @@
   </main>
 </div>
 
+<script src="/env-config.js"></script>
 <script>
 /* ─── shared nav model (matches dashboard) ─── */
 const ICONS = {
@@ -1488,11 +1489,11 @@ async function _scanAndUpload(){
       const file = await entry.getFile();
       const fd = new FormData();
       fd.append('file', file, name);
-      fd.append('client_code', 'GCMNOTICEAI');
-      fd.append('agent_key', 'ps_ucwwlgNVHBP7-BbOy1w34Nze-CysWLaREP8ZehhHu8I');
+      fd.append('client_code', window.GIP_CONFIG.CLIENT_CODE);
+      fd.append('agent_key', window.GIP_CONFIG.AGENT_KEY);
       fd.append('notice_source_id', '');
       const token = localStorage.getItem('azure_access_token') || '';
-      const r = await fetch('http://20.102.105.142:8000/api/notice-agent/upload-document', {
+      const r = await fetch(`${window.GIP_CONFIG.API_BASE}/api/notice-agent/upload-document`, {
         method:'POST', body:fd,
         headers: token ? { Authorization: 'Bearer ' + token } : {}
       });
