@@ -1014,6 +1014,19 @@
           </div>
         </section>
 
+        <section class="s-card" id="noticeSourcesCard">
+          <div class="s-card-head">
+            <div class="ico-wrap" style="background:var(--blue-soft);color:var(--blue);"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></svg></div>
+            <div>
+              <h3>Notice Sources</h3>
+              <div class="sub">Active document sources and connectivity status</div>
+            </div>
+          </div>
+          <div class="s-card-body">
+            <div id="noticeSourcesList"><span style="color:var(--ink-faint);font-size:13px;">Loading…</span></div>
+          </div>
+        </section>
+
         </div><!-- /notice pane -->
 
         <div class="tab-pane" data-pane="compliance">
@@ -1737,6 +1750,39 @@ document.getElementById('browseBtn').onclick = async ()=>{
 
 /* ─── auth guard ─── */
 if(!localStorage.getItem('azure_access_token')) window.location.href = 'login.html';
+
+/* ─── Notice Sources ─── */
+(function(){
+  const _SB = window.GIP_CONFIG ? window.GIP_CONFIG.API_BASE : '';
+  const _SA = ()=>{ const t=localStorage.getItem('azure_access_token'); return t?{Authorization:'Bearer '+t}:{}; };
+
+  function renderNoticeSources(sources){
+    const el = document.getElementById('noticeSourcesList');
+    if(!el) return;
+    el.innerHTML = sources.length ? sources.map(s=>{
+      const ok = s.api_ok && s.blob_ok;
+      const color = ok ? '#22c55e' : '#f59e0b';
+      const last = s.last_scan_at ? new Date(s.last_scan_at).toLocaleString() : '—';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line-soft);">
+        <span style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;"></span>
+        <span style="font-size:13px;font-weight:600;">${s.source_name}</span>
+        <span style="font-size:12px;color:var(--ink-faint);margin-left:auto;">Last scan: ${last}</span>
+      </div>`;
+    }).join('') : '<span style="color:var(--ink-faint);font-size:13px;">No sources configured.</span>';
+  }
+
+  async function loadNoticeSources(){
+    if(!_SB) return;
+    try{
+      const r = await fetch(`${_SB}/api/notice-sources`, { headers:_SA() });
+      if(!r.ok) return;
+      const d = await r.json();
+      renderNoticeSources(d.notice_sources||[]);
+    }catch(e){ /* keep UI on error */ }
+  }
+
+  loadNoticeSources();
+})();
 
 renderNav();
 renderFoot();
