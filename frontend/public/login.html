@@ -153,6 +153,19 @@
   @keyframes spin{to{transform:rotate(360deg);}}
   .spin{animation:spin .8s linear infinite;}
 
+  .ms-btn{
+    width:100%;padding:13px 18px;border-radius:10px;
+    border:1px solid var(--line);background:#fff;
+    color:var(--ink);font-size:14px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.07);
+    transition:transform .12s, box-shadow .15s, background .15s;
+    cursor:pointer;
+  }
+  .ms-btn:hover{background:var(--bg);box-shadow:0 4px 14px rgba(0,0,0,.10);}
+  .ms-btn:active{transform:translateY(1px);}
+  .ms-btn:disabled{filter:saturate(.4) brightness(.95);cursor:not-allowed;}
+
   /* ═══ RESPONSIVE ═══ */
   @media (max-width: 960px){
     body{overflow:auto;}
@@ -223,47 +236,23 @@
 
       <div class="login-head">
         <h2>Welcome back</h2>
-        <p>Sign in to access your GIP Reviewer workspace.</p>
+        <p>Sign in with your Microsoft account to access your GIP Reviewer workspace.</p>
       </div>
 
       <div class="alert" id="alert">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span id="alertMsg">Invalid username or password. Please try again.</span>
+        <span id="alertMsg">Sign-in failed. Please try again.</span>
       </div>
 
-      <form id="loginForm" autocomplete="on" novalidate>
-        <div class="field">
-          <label for="username">Username</label>
-          <div class="input-wrap">
-            <svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <input id="username" name="username" type="text" placeholder="Enter your username" autocomplete="username" required />
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="password">Password</label>
-          <div class="input-wrap">
-            <svg class="lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <input id="password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
-            <button type="button" class="toggle-eye" id="togglePw" aria-label="Show password" title="Show password">
-              <svg id="eyeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-          </div>
-        </div>
-
-        <div class="row">
-          <label class="check">
-            <input type="checkbox" id="remember" />
-            <span>Remember me</span>
-          </label>
-          <a class="forgot" href="#">Forgot password?</a>
-        </div>
-
-        <button class="submit" type="submit" id="submitBtn">
-          <span id="btnLabel">Sign in</span>
-          <svg id="btnArrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </button>
-      </form>
+      <button class="ms-btn" id="msalBtn" type="button">
+        <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
+          <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
+          <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
+          <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
+        </svg>
+        <span id="msalLabel">Sign in with Microsoft</span>
+      </button>
 
       <div class="login-foot">
         Need an account? <a href="#">Contact your administrator</a>
@@ -274,87 +263,64 @@
 
 </div>
 
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
 <script>
-  const pw = document.getElementById('password');
-  const toggle = document.getElementById('togglePw');
-  const eye = document.getElementById('eyeIcon');
-  const form = document.getElementById('loginForm');
-  const alertEl = document.getElementById('alert');
+  const MSAL_CONFIG = {
+    auth: {
+      clientId: '7bba318f-5cbe-422f-924c-4fe464585950',
+      authority: 'https://login.microsoftonline.com/656818f9-40ee-4f41-9857-72df40fc198b',
+      redirectUri: window.location.origin + '/',
+    },
+    cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: false },
+  };
+  const API_SCOPE = 'api://7bba318f-5cbe-422f-924c-4fe464585950/.default';
+  const API_BASE  = 'http://20.102.105.142:8000';
+
+  const msalApp = new msal.PublicClientApplication(MSAL_CONFIG);
+  const alertEl  = document.getElementById('alert');
   const alertMsg = document.getElementById('alertMsg');
-  const btn = document.getElementById('submitBtn');
-  const btnLabel = document.getElementById('btnLabel');
-  const btnArrow = document.getElementById('btnArrow');
+  const msalBtn  = document.getElementById('msalBtn');
+  const msalLabel = document.getElementById('msalLabel');
+  const SPIN = '<svg class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
 
-  const EYE_OPEN = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-  const EYE_OFF  = '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.6 19.6 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a19.5 19.5 0 0 1-3.17 4.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M9.88 9.88a3 3 0 0 0 4.24 4.24"/>';
+  // If already authenticated, go straight to the queue
+  if (localStorage.getItem('azure_access_token')) {
+    const exp = parseInt(localStorage.getItem('azure_token_expiry') || '0', 10);
+    if (Date.now() < exp) window.location.href = 'gip-notice-list.html';
+  }
 
-  toggle.addEventListener('click', () => {
-    const showing = pw.type === 'text';
-    pw.type = showing ? 'password' : 'text';
-    eye.innerHTML = showing ? EYE_OPEN : EYE_OFF;
-    toggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
-    toggle.setAttribute('title', showing ? 'Show password' : 'Hide password');
-  });
-
-  const BASE = 'http://20.102.105.142:8000';
-
-  const ARROW_SVG = '<svg id="btnArrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
-  const SPIN_SVG  = '<svg id="btnArrow" class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  msalBtn.addEventListener('click', async () => {
     alertEl.classList.remove('show');
-
-    const u = document.getElementById('username').value.trim();
-    const p = pw.value;
-
-    if(!u || !p){
-      alertMsg.textContent = 'Please enter both your username and password.';
-      alertEl.classList.add('show');
-      return;
-    }
-
-    btn.disabled = true;
-    btnLabel.textContent = 'Signing in…';
-    document.getElementById('btnArrow').outerHTML = SPIN_SVG;
-
+    msalBtn.disabled = true;
+    msalLabel.innerHTML = SPIN + ' Signing in…';
     try {
-      // Step 1: Exchange credentials for an access token
-      const tokenRes = await fetch(`${BASE}/api/auth/token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ username: u, password: p })
-      });
+      const result = await msalApp.loginPopup({ scopes: [API_SCOPE] });
+      if (!result || !result.accessToken) throw new Error('No token returned.');
 
-      if (!tokenRes.ok) {
-        const err = await tokenRes.json().catch(() => ({}));
-        throw new Error(err.detail || 'Invalid username or password.');
-      }
+      const token = result.accessToken;
+      const expiry = result.expiresOn ? new Date(result.expiresOn).getTime() : Date.now() + 3600000;
+      localStorage.setItem('azure_access_token', token);
+      localStorage.setItem('azure_token_expiry', String(expiry));
 
-      const { access_token } = await tokenRes.json();
+      // Fetch user info
+      try {
+        const meRes = await fetch(`${API_BASE}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (meRes.ok) {
+          const user = await meRes.json();
+          localStorage.setItem('gip_user', JSON.stringify(user));
+        }
+      } catch (_) {}
 
-      // Step 2: Confirm user access via /api/auth/me
-      const meRes = await fetch(`${BASE}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${access_token}` }
-      });
-
-      if (!meRes.ok) {
-        throw new Error('Your account does not have access to this application.');
-      }
-
-      const user = await meRes.json();
-
-      // Step 3: Persist session and navigate
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('gip_user', JSON.stringify(user));
-      window.location.href = 'dashboard.html';
-
+      window.location.href = 'gip-notice-list.html';
     } catch (err) {
-      btn.disabled = false;
-      btnLabel.textContent = 'Sign in';
-      document.getElementById('btnArrow').outerHTML = ARROW_SVG;
-      alertMsg.textContent = err.message || 'Something went wrong. Please try again.';
-      alertEl.classList.add('show');
+      msalBtn.disabled = false;
+      msalLabel.textContent = 'Sign in with Microsoft';
+      if (err.errorCode !== 'user_cancelled') {
+        alertMsg.textContent = err.message || 'Sign-in failed. Please try again.';
+        alertEl.classList.add('show');
+      }
     }
   });
 </script>

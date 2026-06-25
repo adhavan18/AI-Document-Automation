@@ -1417,8 +1417,11 @@ document.getElementById('resetBtn').onclick = ()=>{
 
 
 
-/* ─── threshold slider (live, backed by /legal/settings) ─── */
-const API = '/legal';
+/* ─── threshold slider (backed by localStorage) ─── */
+function saveSettings(){
+  localStorage.setItem('gip_threshold', thrSlider.value);
+  localStorage.setItem('gip_watch_path', docPath ? docPath.value : '');
+}
 function syncThr(){
   const v = thrSlider.value;
   thrVal.textContent = v;
@@ -1433,29 +1436,14 @@ syncThr();
 const POLL_MAP = { 'Real-time (filesystem watcher)': 0, 'Every 30 seconds': 30, 'Every 1 minute': 60, 'Every 5 minutes': 300 };
 const POLL_MAP_REV = Object.fromEntries(Object.entries(POLL_MAP).map(([k,v])=>[v,k]));
 
-async function loadSettings(){
-  try{
-    const s = await fetch(`${API}/settings`).then(r=>r.json());
-    const pct = s.confidence_threshold_pct
-      ?? Math.round((s.confidence_threshold ?? 0.7) * 100);
-    thrSlider.value = pct;
-    syncThr();
-
-    if(s.watch_folder){ docPath.value = s.watch_folder; }
-    if(s.poll_interval_seconds != null){
-      const label = POLL_MAP_REV[s.poll_interval_seconds];
-      if(label){
-        const opt = [...document.getElementById('pathPoll').options].find(o=>o.text===label);
-        if(opt) opt.selected = true;
-      }
-    }
-    const recurseEl = document.querySelector('[data-toggle="recurse"]');
-    const moveEl    = document.querySelector('[data-toggle="moveAfter"]');
-    if(recurseEl) recurseEl.classList.toggle('on', !!s.recurse);
-    if(moveEl)    moveEl.classList.toggle('on', !!s.move_after_ingestion);
-    syncPath();
-    _updateListenBar(false);
-  }catch(e){ console.error('[GIP] settings load failed', e); }
+function loadSettings(){
+  const pct = parseInt(localStorage.getItem('gip_threshold') || '80', 10);
+  thrSlider.value = pct;
+  syncThr();
+  const watchPath = localStorage.getItem('gip_watch_path') || '';
+  if(watchPath && docPath) docPath.value = watchPath;
+  syncPath();
+  _updateListenBar(false);
 }
 loadSettings();
 
@@ -1500,7 +1488,14 @@ async function _scanAndUpload(){
       const file = await entry.getFile();
       const fd = new FormData();
       fd.append('file', file, name);
-      const r = await fetch(`${API}/upload`, { method:'POST', body:fd });
+      fd.append('client_code', 'GCMNOTICEAI');
+      fd.append('agent_key', 'ps_ucwwlgNVHBP7-BbOy1w34Nze-CysWLaREP8ZehhHu8I');
+      fd.append('notice_source_id', '');
+      const token = localStorage.getItem('azure_access_token') || '';
+      const r = await fetch('http://20.102.105.142:8000/api/notice-agent/upload-document', {
+        method:'POST', body:fd,
+        headers: token ? { Authorization: 'Bearer ' + token } : {}
+      });
       if(r.ok) _seenFiles.add(name);
     }catch(err){ console.error('[GIP] upload failed', name, err); }
     done++;
@@ -1553,6 +1548,11 @@ document.getElementById('browseBtn').onclick = async ()=>{
   }
 };
 
+/* ─── auth guard ─── */
+if(!localStorage.getItem('azure_access_token')) window.location.href = 'login.html';
+
+renderNav();
+renderFoot();
 </script>
 </body>
 </html>

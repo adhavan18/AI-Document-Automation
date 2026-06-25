@@ -440,7 +440,7 @@ document.getElementById('brandIcon').onclick = ()=>{
   document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
 })();
 
-if(!localStorage.getItem('access_token')) window.location.href = 'login.html';
+if(!localStorage.getItem('azure_access_token')) window.location.href = 'login.html';
 renderNav();
 renderFoot();
 renderPage();
