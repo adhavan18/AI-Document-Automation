@@ -322,6 +322,9 @@
 
   <div class="content">
 
+  <!-- AGENT STATUS BAR -->
+  <div id="agentStatusBar" style="margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;min-height:44px;"></div>
+
   <!-- KPI STRIP -->
   <div class="kpis">
     <div class="kpi">
@@ -494,6 +497,43 @@ function renderNav(){
   document.getElementById('nav').innerHTML = html;
 }
 if(!localStorage.getItem('azure_access_token')) window.location.href = 'login.html';
+
+/* ─── Agent Status ─── */
+(function(){
+  const _AB = window.GIP_CONFIG ? window.GIP_CONFIG.API_BASE : '';
+  const _AA = ()=>{ const t=localStorage.getItem('azure_access_token'); return t?{Authorization:'Bearer '+t}:{}; };
+
+  function renderAgentStatus(agents){
+    const bar = document.getElementById('agentStatusBar');
+    if(!bar) return;
+    bar.innerHTML = agents.length ? agents.map(a=>{
+      const ok = a.connection_status==='CONNECTED';
+      const color = ok ? '#22c55e' : '#ef4444';
+      const last = a.last_heartbeat_at ? new Date(a.last_heartbeat_at).toLocaleTimeString() : '—';
+      return `<div style="background:#1e293b;border-radius:8px;padding:10px 16px;display:flex;align-items:center;gap:10px;min-width:220px;">
+        <span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;"></span>
+        <span style="font-size:13px;color:#e2e8f0;font-weight:500;">${a.agent_name||a.machine_name||'Agent'}</span>
+        <span style="font-size:11px;color:#94a3b8;">${a.service_status||''}</span>
+        <span style="font-size:11px;color:#64748b;margin-left:auto;">Last: ${last}</span>
+      </div>`;
+    }).join('') : '<span style="color:#64748b;font-size:13px;padding:10px 0;display:inline-block;">No agents connected</span>';
+  }
+
+  async function loadAgentStatus(){
+    if(!_AB) return;
+    try{
+      const r = await fetch(`${_AB}/api/notice-agent/status`, { headers:_AA() });
+      if(r.status===401){ window.location.href='login.html'; return; }
+      if(!r.ok) return;
+      const d = await r.json();
+      renderAgentStatus(d.agents||[]);
+    }catch(e){ /* keep existing UI on error */ }
+  }
+
+  loadAgentStatus();
+  setInterval(loadAgentStatus, 30000);
+})();
+
 renderNav();
 renderFoot();
 
