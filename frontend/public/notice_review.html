@@ -1759,6 +1759,41 @@ const TAB_META = {
 
 const REVIEWED_QUE = [];
 
+/* ─── Reviewer Activity: populate REVIEWED_QUE from API ─── */
+const _NR_BASE = window.GIP_CONFIG ? window.GIP_CONFIG.API_BASE : '';
+function _nrAuth(){ const t=localStorage.getItem('azure_access_token'); return t?{Authorization:'Bearer '+t}:{}; }
+
+function _mapReviewedRow(q){
+  const s = (q.reviewer_status||'').toLowerCase().replace('_for_post','').replace('approved','approved').replace('rejected','rejected') || 'reviewed';
+  return {
+    id:   q.notice_flat_id,
+    file: q.file_name || '—',
+    form: q.form_type  || '—',
+    size: '—',
+    date: q.display_date || '—',
+    fn:   q.display_name || '—',
+    accuracy: q.match_confidence ?? 0,
+    status: s,
+    reviewer_notes: q.gcm_reviewer_notes || q.reviewer_notes || '',
+    _sel: false,
+  };
+}
+
+async function loadReviewedQueue(){
+  if(!_NR_BASE) return;
+  try{
+    const r = await fetch(`${_NR_BASE}/api/notice-ui/queue?limit=200`, { headers:_nrAuth() });
+    if(r.status===401){ window.location.href='login.html'; return; }
+    if(!r.ok) return;
+    const d = await r.json();
+    const all = [...(d.review_queue||[]), ...(d.processed_notices||[])];
+    const reviewed = all.filter(q => q.reviewer_status && q.reviewer_status !== 'PENDING_REVIEW');
+    REVIEWED_QUE.splice(0, REVIEWED_QUE.length, ...reviewed.map(_mapReviewedRow));
+    renderTabs();
+    if(activeTab==='reviewed') renderGrids();
+  }catch(e){ /* keep static UI on error */ }
+}
+
 function activeData(){
   if(activeTab==='review') return REVIEW_QUE;
   if(activeTab==='reviewed') return REVIEWED_QUE;
@@ -2148,6 +2183,7 @@ if(!localStorage.getItem('azure_access_token')) window.location.href = 'login.ht
 renderNav();
 renderFoot();
 renderGrids();
+loadReviewedQueue();
 
 /* ═══════════════════════════════════════════════════════════════ */
 /*  REVIEW MODE — fullscreen workspace                             */
