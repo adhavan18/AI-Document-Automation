@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GIP Reviewer — Help</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* GIP palette */
+    --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
+    --bg:#f3f5fa; --card:#ffffff;
+    --ink:#1a1f2e; --ink-soft:#5b6376; --ink-faint:#9aa1b2;
+    --line:#e6e9f0; --line-soft:#eef1f7;
+    --green:#1f8a52; --green-soft:#e4f3ea;
+    --amber:#b8791a; --amber-soft:#fbf0db;
+    --orange:#e14a28; --orange-soft:#fbe8e2;
+    /* dark sidebar (mosaic structure, GIP-tinted navy) */
+    --side-bg:#0e1326; --side-bg-2:#111733;
+    --side-text:#aab2c6; --side-text-hi:#ffffff;
+    --side-line:#222a45;
+    --accent:#4d82f0; --accent-soft:rgba(77,130,240,.14);
+    --font:'Inter',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .spin{animation:spin 1s linear infinite;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#d3d8e4;border-radius:9px;}
+  button{font-family:var(--font);cursor:pointer;}
+  .shell{display:flex;height:100vh;}
+
+  /* ═══ SIDEBAR ═══ */
+  .sidebar{width:252px;flex-shrink:0;background:linear-gradient(180deg,var(--side-bg),var(--side-bg-2));
+    display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);}
+  .sidebar.collapsed{width:74px;}
+
+  .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
+  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
+    background:transparent;border:none;padding:0;cursor:pointer;
+    color:var(--side-text);display:none;align-items:center;justify-content:center;
+    transition:background .15s, color .15s;}
+  .brand-icon:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .brand-logo{display:none;}
+  .sidebar.collapsed .brand-icon{display:flex;margin:0 auto;}
+  .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
+    background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;
+    transition:background .15s;}
+  .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
+  .sidebar.collapsed .collapse-btn{display:none;}
+
+  .nav{flex:1;overflow-y:auto;padding:6px 12px;}
+  .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
+    text-transform:uppercase;padding:14px 10px 7px;}
+  .sidebar.collapsed .nav-label{display:none;}
+  .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
+    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:12px;
+    font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;
+    text-decoration:none;}
+  a.nav-item,a.nav-item:hover,a.nav-item:focus{text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:var(--side-text-hi);}
+  .nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600;}
+  .nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--accent);box-shadow:0 0 10px var(--accent);}
+  .nav-item .ico{flex-shrink:0;display:flex;}
+  .nav-item.active .ico{color:var(--accent);}
+  .nav-item .lbl{overflow:hidden;text-overflow:ellipsis;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding:11px 0;}
+  .sidebar.collapsed .nav-item .lbl{display:none;}
+  /* collapsed tooltip */
+  .sidebar.collapsed .nav-item:hover::after{content:attr(data-label);position:absolute;left:calc(100% + 10px);
+    top:50%;transform:translateY(-50%);background:#1c2340;color:#fff;font-size:12px;font-weight:500;
+    padding:6px 10px;border-radius:7px;white-space:nowrap;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+
+  .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
+  .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
+    border:none;background:transparent;color:var(--side-text);font-size:12px;font-weight:500;
+    margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;}
+  .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+  a.foot-item{text-decoration:none;}
+  .foot-item .badge{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:700;
+    min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+  .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
+  .sidebar.collapsed .foot-item .lbl,.sidebar.collapsed .foot-item .badge{display:none;}
+  .user{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-top:6px;border-radius:10px;
+    background:rgba(255,255,255,.04);border:1px solid var(--side-line);
+    transition:background .15s, border-color .15s;}
+  .user:hover{background:transparent;border-color:transparent;}
+  .avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--orange);color:#fff;
+    font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .user-txt{overflow:hidden;white-space:nowrap;}
+  .user-name{font-size:13px;font-weight:600;color:#fff;line-height:1.1;}
+  .user-role{font-size:11px;color:var(--ink-faint);}
+  .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
+  .sidebar.collapsed .user-txt,.sidebar.collapsed .user-caret{display:none;}
+  .user{cursor:pointer;width:100%;text-align:left;border:none;font:inherit;}
+  .user-caret{margin-left:auto;color:var(--ink-faint);display:flex;align-items:center;transition:transform .15s;}
+  .user-wrap{position:relative;}
+  .user-pop{position:absolute;left:12px;right:12px;bottom:calc(100% + 6px);
+    background:#1a2236;border:1px solid var(--side-line);border-radius:10px;
+    box-shadow:0 12px 28px rgba(0,0,0,.45);padding:5px;display:none;z-index:50;}
+  .user-pop.open{display:block;}
+  .user-pop-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+    border:none;background:transparent;color:var(--side-text);font-size:12.5px;font-weight:500;
+    border-radius:7px;cursor:pointer;text-align:left;text-decoration:none;}
+  .user-pop-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .user-pop-item .ico{display:flex;align-items:center;color:var(--ink-faint);}
+  .user-pop-sep{height:1px;background:var(--side-line);margin:4px 6px;}
+  .sidebar.collapsed .user-pop{left:auto;right:-216px;bottom:6px;width:200px;}
+
+  /* ═══ MAIN ═══ */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 30px;
+    background:var(--card);border-bottom:1px solid var(--line);}
+  .topbar h1{font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em;}
+  .topbar .date{font-size:12.5px;color:var(--ink-faint);margin-top:2px;}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .top-search{position:relative;}
+  .top-search input{width:230px;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13px;outline:none;}
+  .top-search input:focus{border-color:var(--primary);background:#fff;}
+  .top-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
+  .btn-primary{padding:9px 16px;border-radius:9px;border:none;background:var(--primary);color:#fff;
+    font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 2px 10px rgba(32,68,150,.22);}
+  .icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);position:relative;}
+  .icon-btn .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;
+    background:var(--orange);border:1.5px solid #fff;}
+
+  .content{flex:1;overflow-y:auto;padding:26px 30px 40px;}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;
+    position:relative;overflow:hidden;}
+  .kpi .k-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:13px;}
+  .kpi .k-val{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1;}
+  .kpi .k-lbl{font-size:12.5px;color:var(--ink-soft);font-weight:500;margin-top:6px;}
+  .kpi .k-delta{font-size:11.5px;font-weight:600;margin-top:9px;display:inline-flex;align-items:center;gap:4px;}
+
+  /* layout grid */
+  .grid{display:grid;grid-template-columns:1.7fr 1fr;gap:18px;margin-top:18px;}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+    border-bottom:1px solid var(--line-soft);}
+  .panel-head h3{font-size:15px;font-weight:700;margin:0;}
+  .panel-head a{font-size:12.5px;color:var(--primary);font-weight:600;text-decoration:none;}
+  .panel-body{padding:8px 12px 12px;}
+
+  /* doc row */
+  .doc-row{display:flex;align-items:center;gap:14px;padding:12px 12px;border-radius:10px;transition:background .15s;}
+  .doc-row:hover{background:var(--bg);}
+  .doc-ico{width:36px;height:36px;border-radius:9px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .doc-main{flex:1;min-width:0;}
+  .doc-title{font-size:13.5px;font-weight:600;}
+  .doc-sub{font-size:12px;color:var(--ink-faint);margin-top:1px;}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 7px;border-radius:999px;
+    font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
+  .pill.ready{background:var(--primary-soft);color:var(--primary);}
+  .pill.processing{background:var(--amber-soft);color:var(--amber);}
+  .pill.completed{background:var(--green-soft);color:var(--green);}
+  .conf{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;width:42px;text-align:right;}
+
+  /* deadlines */
+  .dl{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;transition:background .15s;}
+  .dl:hover{background:var(--bg);}
+  .dl-bar{width:3px;align-self:stretch;border-radius:3px;}
+  .dl-main{flex:1;min-width:0;}
+  .dl-title{font-size:13px;font-weight:600;}
+  .dl-sub{font-size:11.5px;color:var(--ink-faint);margin-top:1px;}
+  .dl-date{font-size:12px;font-weight:600;text-align:right;white-space:nowrap;}
+
+  /* mini chart */
+  .chart{display:flex;align-items:flex-end;gap:12px;height:120px;padding:14px 18px 6px;}
+  .bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end;}
+  .bar{width:100%;max-width:34px;border-radius:7px 7px 0 0;background:linear-gradient(180deg,var(--accent),var(--primary));
+    transition:height .4s ease;}
+  .bar-lbl{font-size:11px;color:var(--ink-faint);font-weight:600;}
+
+  .section-label{font-size:13px;font-weight:700;color:var(--ink-soft);margin:24px 4px 12px;}
+
+  /* help page */
+  .help-hero{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:22px 24px;display:flex;align-items:center;gap:18px;}
+  .help-hero-ico{width:48px;height:48px;border-radius:12px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .help-hero h2{font-size:18px;font-weight:700;margin:0 0 4px;letter-spacing:-.01em;}
+  .help-hero p{font-size:13px;color:var(--ink-soft);margin:0;line-height:1.55;}
+
+  .help-toc{margin-top:18px;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+  .help-toc a{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px;display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);
+    transition:border-color .15s, transform .15s;}
+  .help-toc a:hover{border-color:var(--primary);transform:translateY(-1px);}
+  .help-toc-ico{width:32px;height:32px;border-radius:9px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .help-toc-txt{font-size:13px;font-weight:600;line-height:1.3;}
+  .help-toc-sub{font-size:11.5px;color:var(--ink-faint);font-weight:500;margin-top:1px;}
+
+  .help-sec{margin-top:22px;}
+  .help-body{padding:6px 22px 22px;}
+  .help-body p{font-size:13.5px;color:var(--ink-soft);line-height:1.65;margin:14px 0;}
+  .help-body p strong{color:var(--ink);font-weight:600;}
+  .help-body h4{font-size:14px;font-weight:700;color:var(--ink);margin:22px 0 6px;}
+
+  .help-steps{list-style:none;padding:0;margin:14px 0 0;counter-reset:hstep;}
+  .help-steps li{position:relative;padding:14px 14px 14px 50px;border-radius:10px;
+    background:var(--bg);margin-bottom:10px;counter-increment:hstep;}
+  .help-steps li::before{content:counter(hstep);position:absolute;left:14px;top:14px;
+    width:26px;height:26px;border-radius:8px;background:var(--primary);color:#fff;
+    font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .help-steps .s-title{font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+  .help-steps .s-body{font-size:13px;color:var(--ink-soft);line-height:1.55;}
+
+  .help-agents{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+  .help-agent{background:var(--bg);border-radius:10px;padding:14px;}
+  .help-agent-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .help-agent-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .help-agent-name{font-size:13px;font-weight:700;color:var(--ink);}
+  .help-agent-desc{font-size:12.5px;color:var(--ink-soft);line-height:1.5;}
+
+  .help-pills{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px;}
+  .help-pill{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:999px;
+    background:var(--primary-soft);color:var(--primary);}
+
+  .help-callout{display:flex;gap:12px;padding:14px 16px;border-radius:10px;
+    background:var(--amber-soft);border-left:3px solid var(--amber);margin:14px 0;}
+  .help-callout .ico{color:var(--amber);flex-shrink:0;margin-top:1px;}
+  .help-callout-txt{font-size:13px;color:var(--ink);line-height:1.55;}
+  .help-callout-txt strong{font-weight:700;}
+
+  .help-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+  .help-legend-row{display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:10px;background:var(--bg);}
+  .help-legend-pill{flex-shrink:0;}
+  .help-legend-txt{font-size:12.5px;color:var(--ink-soft);line-height:1.5;}
+  .help-legend-txt strong{display:block;color:var(--ink);font-weight:700;margin-bottom:2px;}
+
+  @media (max-width:980px){
+    .help-toc{grid-template-columns:repeat(2,1fr);}
+    .help-agents,.help-legend{grid-template-columns:1fr;}
+  }
+  @media (max-width:620px){
+    .help-toc{grid-template-columns:1fr;}
+  }
+
+  /* error catalog table */
+  .err-tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin-top:14px;}
+  .err-tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .err-tbl th{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);
+    text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--bg);white-space:nowrap;}
+  .err-tbl td{padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--ink);}
+  .err-tbl tr:last-child td{border-bottom:none;}
+  .err-tbl tr:hover td{background:var(--bg);}
+  .err-code{font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;font-weight:700;color:var(--primary);
+    background:var(--primary-soft);padding:3px 8px;border-radius:6px;letter-spacing:.02em;white-space:nowrap;}
+  .err-name{font-weight:600;color:var(--ink);}
+  .err-sev{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;white-space:nowrap;}
+  .err-sev.critical{background:var(--orange-soft);color:var(--orange);}
+  .err-sev.high{background:var(--amber-soft);color:var(--amber);}
+  .err-sev.minor{background:var(--primary-soft);color:var(--primary);}
+  .err-sev.unknown{background:var(--bg);color:var(--ink-soft);border:1px solid var(--line);}
+  .err-stage{font-size:11.5px;font-weight:600;color:var(--ink-soft);}
+  .err-hc{font-size:14px;font-weight:700;color:var(--green);text-align:center;}
+  .err-hc.no{color:var(--ink-faint);font-weight:400;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <img class="brand-logo" src="assets/logo_white.png" alt="GIP" />
+      <button class="brand-icon" id="brandIcon" title="Expand menu" aria-label="Expand menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <button class="collapse-btn" id="collapseBtn" title="Collapse">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+    </div>
+
+    <nav class="nav" id="nav"></nav>
+
+    <div class="side-foot">
+      <div id="footItems"></div>
+      <div class="user-wrap">
+        <button class="user" id="userBtn" data-label="Austin" title="Austin · admin" aria-haspopup="true" aria-expanded="false">
+          <div class="avatar">A</div>
+          <div class="user-txt">
+            <div class="user-name">Austin</div>
+            <div class="user-role">admin</div>
+          </div>
+          <span class="user-caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+        </button>
+        <div class="user-pop" id="userPop" role="menu" aria-labelledby="userBtn">
+          <a class="user-pop-item" href="help.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
+            Help
+          </a>
+          <a class="user-pop-item" href="support.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+            Support
+          </a>
+          <div class="user-pop-sep"></div>
+          <a class="user-pop-item" href="gip-login.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+            Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle">Help</h1>
+        <div class="date" id="pageDate">Documentation and quick answers</div>
+      </div>
+      <div class="top-actions">
+        <div class="top-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Search cases, notices…" />
+        </div>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<script>
+const ICONS = {
+  dashboard:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>',
+  notice:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>',
+  compliance:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>',
+  filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  agentops:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
+  email:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  assistant:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+  file:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  spin:'<svg class="spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
+  dot:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
+  check:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+};
+
+const NAV = [
+  {id:'dashboard',   label:'Dashboard',                icon:ICONS.dashboard, href:'dashboard.html',                          visible:1},
+  {id:'assistant',   label:'AI Assistant',             icon:ICONS.assistant, href:'gip-ai-assistant.html', group:'Agents',       visible:0},
+  {id:'notice',      label:'Notice Processing',        icon:ICONS.notice,    href:'notice_review.html',  group:'Agents',       visible:1},
+  {id:'compliance',  label:'Compliance Doc (PAF)',     icon:ICONS.compliance,href:'gip-compliance.html',   group:'Agents',       visible:0},
+  {id:'filing',      label:'Automate Filing (H4 EAD)', icon:ICONS.filing,    href:'gip-autofiling.html',   group:'Agents',       visible:0},
+  {id:'email',       label:'Email Templates',          icon:ICONS.email,     href:'#',                     group:'Tools',        visible:0},
+  {id:'agentops',    label:'Agent Ops',                icon:ICONS.agentops,  href:'gip-agent-ops.html',    group:'Insights',     visible:0},
+];
+
+const ACTIVE_NAV = null;
+
+const FOOT_ICONS = {
+  settings:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  status:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>',
+  notifications:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+};
+/* TODO: replace with auth-derived role (e.g. from session/JWT). Reviewers see no Settings entry. */
+const CURRENT_USER_ROLE = 'admin';
+const FOOT = [
+  {id:'settings',      label:'Settings',      icon:FOOT_ICONS.settings,      href:'gip-settings.html', visible:(CURRENT_USER_ROLE==='admin'?1:0)},
+  {id:'status',        label:'Status',        icon:FOOT_ICONS.status,                                   visible:0},
+  {id:'notifications', label:'Notifications', icon:FOOT_ICONS.notifications, badge:'0',                 visible:0},
+];
+
+function renderFoot(){
+  document.getElementById('footItems').innerHTML = FOOT.filter(f=>f.visible).map(f=>{
+    const tag = f.href ? 'a' : 'button';
+    const href = f.href ? ` href="${f.href}"` : '';
+    const badge = f.badge ? `<span class="badge">${f.badge}</span>` : '';
+    return `<${tag} class="foot-item"${href} data-label="${f.label}" title="${f.label}">
+      <span class="ico">${f.icon}</span><span class="lbl">${f.label}</span>${badge}
+    </${tag}>`;
+  }).join('');
+}
+
+const DOCS = [
+  {type:'N-400',  applicant:'Elena Rodriguez', status:'ready',      conf:97, time:'10 min ago'},
+  {type:'I-130',  applicant:'Marcus Chen',     status:'processing', conf:null,time:'now'},
+  {type:'H4-EAD', applicant:'Priya Nair',      status:'ready',      conf:91, time:'1 hr ago'},
+  {type:'I-485',  applicant:'Ahmed Hassan',    status:'processing', conf:null,time:'now'},
+  {type:'I-765',  applicant:'David Okafor',    status:'completed',  conf:99, time:'Yesterday'},
+];
+const STATUS_LABEL = {ready:['ready','Ready',ICONS.dot], processing:['processing','Processing',ICONS.spin], completed:['completed','Completed',ICONS.check]};
+
+const DEADLINES = [
+  {title:'RFE Response Due', sub:'Marcus Chen · I-130',     date:'Jun 8',  level:'high'},
+  {title:'Biometrics Appt',  sub:'Elena Rodriguez · N-400',  date:'Jun 14', level:'med'},
+  {title:'EAD Expiry',       sub:'Priya Nair · H4-EAD',      date:'Jun 21', level:'med'},
+  {title:'Status Check',     sub:'Ahmed Hassan · I-485',     date:'Jun 30', level:'low'},
+];
+const LEVEL_COLOR = {high:'var(--orange)', med:'var(--amber)', low:'var(--ink-faint)'};
+
+const VOLUME = [['Mon',8],['Tue',12],['Wed',15],['Thu',9],['Fri',14]];
+
+function renderNav(){
+  let html = '', currentGroup = null;
+  NAV.filter(n=>n.visible).forEach(n=>{
+    const g = n.group || null;
+    if(g !== currentGroup){
+      currentGroup = g;
+      if(g) html += `<div class="nav-label lbl">${g}</div>`;
+    }
+    html += `<a class="nav-item ${n.id===ACTIVE_NAV?'active':''}" href="${n.href}" data-label="${n.label}" title="${n.label}">
+      <span class="ico">${n.icon}</span><span class="lbl">${n.label}</span>
+    </a>`;
+  });
+  document.getElementById('nav').innerHTML = html;
+}
+
+function pill(status){
+  const [cls,label,ic] = STATUS_LABEL[status];
+  return `<span class="pill ${cls}">${ic}${label}</span>`;
+}
+function confTone(c){ return c>=95?'var(--green)':c>=85?'var(--amber)':'var(--orange)'; }
+
+function dashboard(){
+  const kpis = [
+    {val:6,  lbl:'In Queue',         delta:'+2 today',   dc:'var(--ink-faint)', ic:ICONS.file,   bg:'var(--primary-soft)', icol:'var(--primary)'},
+    {val:3,  lbl:'Ready for Review', delta:'Needs action',dc:'var(--primary)',  ic:ICONS.dot,    bg:'var(--primary-soft)', icol:'var(--primary)'},
+    {val:2,  lbl:'Processing',       delta:'Live',        dc:'var(--amber)',     ic:ICONS.spin,   bg:'var(--amber-soft)',   icol:'var(--amber)'},
+    {val:12, lbl:'Completed Today',  delta:'+18% vs avg', dc:'var(--green)',     ic:ICONS.check,  bg:'var(--green-soft)',   icol:'var(--green)'},
+  ];
+  const max = Math.max(...VOLUME.map(v=>v[1]));
+  return `
+  <div class="kpis">
+    ${kpis.map(k=>`<div class="kpi">
+      <div class="k-ico" style="background:${k.bg};color:${k.icol};">${k.ic}</div>
+      <div class="k-val">${k.val}</div>
+      <div class="k-lbl">${k.lbl}</div>
+      <div class="k-delta" style="color:${k.dc};">${k.delta}</div>
+    </div>`).join('')}
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-head"><h3>Recent Documents</h3><a href="gip-notice-list.html">View queue →</a></div>
+      <div class="panel-body">
+        ${DOCS.map(d=>`<div class="doc-row">
+          <div class="doc-ico">${ICONS.file}</div>
+          <div class="doc-main">
+            <div class="doc-title">${d.type} — ${d.applicant}</div>
+            <div class="doc-sub">${d.time}</div>
+          </div>
+          ${pill(d.status)}
+          <div class="conf" style="color:${d.conf?confTone(d.conf):'var(--ink-faint)'};">${d.conf?d.conf+'%':'—'}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      <div class="panel">
+        <div class="panel-head"><h3>Upcoming Deadlines</h3></div>
+        <div class="panel-body">
+          ${DEADLINES.map(d=>`<div class="dl">
+            <span class="dl-bar" style="background:${LEVEL_COLOR[d.level]};"></span>
+            <div class="dl-main"><div class="dl-title">${d.title}</div><div class="dl-sub">${d.sub}</div></div>
+            <div class="dl-date" style="color:${LEVEL_COLOR[d.level]};">${d.date}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>Documents Processed</h3><span style="font-size:12px;color:var(--ink-faint);">This week</span></div>
+        <div class="chart">
+          ${VOLUME.map(([lbl,v])=>`<div class="bar-wrap">
+            <div class="bar" style="height:${Math.round(v/max*100)}%;"></div>
+            <div class="bar-lbl">${lbl}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+const HELP_ICONS = {
+  book:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+  gears:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  steps:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  flags:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  bulb:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2v.3h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/></svg>',
+  upload:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 3h10v9a2 2 0 0 1-2 2H3z"/></svg>',
+  scan:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>',
+  gate:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/><circle cx="8" cy="6" r="1.6" fill="currentColor"/><circle cx="16" cy="12" r="1.6" fill="currentColor"/><circle cx="9" cy="18" r="1.6" fill="currentColor"/></svg>',
+  alert:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17"/></svg>',
+  users:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  tabs:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M9 6V4"/><path d="M15 6V4"/></svg>',
+  chat:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  assign:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>',
+  flagx:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  expand:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>',
+};
+
+const NOTICE_TYPES = ['N-400','I-130','I-485','I-765','I-797','H4-EAD','RFE','NOID'];
+
+/* Reviewer error catalog — codes assigned sequentially at render time */
+const REVIEW_ERRORS = [
+  {desc:"This isn't a notice (wrong document)",                       sev:'minor',    stage:'Ingestion',       hc:false},
+  {desc:'Document is unreadable / bad scan',                          sev:'high',     stage:'Ingestion',       hc:false},
+  {desc:'Pages are missing or cut off',                               sev:'high',     stage:'Ingestion',       hc:false},
+  {desc:'Two notices got combined (or one got split)',                sev:'high',     stage:'Ingestion',       hc:false},
+  {desc:"Wrong notice type (e.g. it's an RFE, not a receipt)",        sev:'critical', stage:'Classification',  hc:true},
+  {desc:'Wrong form (e.g. I-130 vs I-485)',                           sev:'high',     stage:'Classification',  hc:true},
+  {desc:'Wrong outcome (approval / denial / RFE mixed up)',           sev:'critical', stage:'Classification',  hc:true},
+  {desc:"Couldn't figure out the type",                               sev:'high',     stage:'Classification',  hc:false},
+  {desc:'Wrong receipt number',                                       sev:'high',     stage:'Extraction',      hc:true},
+  {desc:'Wrong or missing A-number',                                  sev:'high',     stage:'Extraction',      hc:true},
+  {desc:'Wrong response deadline',                                    sev:'critical', stage:'Extraction',      hc:true},
+  {desc:'Wrong notice date',                                          sev:'high',     stage:'Extraction',      hc:true},
+  {desc:'Wrong priority date',                                        sev:'high',     stage:'Extraction',      hc:true},
+  {desc:'Wrong person (beneficiary / petitioner)',                    sev:'critical', stage:'Extraction',      hc:true},
+  {desc:'Name spelled wrong',                                         sev:'minor',    stage:'Extraction',      hc:false},
+  {desc:'Wrong address',                                              sev:'minor',    stage:'Extraction',      hc:false},
+  {desc:'Linked to the wrong case',                                   sev:'critical', stage:'Write-back',      hc:true},
+  {desc:'This is a duplicate',                                        sev:'high',     stage:'Write-back',      hc:false},
+  {desc:'Information saved in the wrong field',                       sev:'high',     stage:'Write-back',      hc:false},
+  {desc:'Case status set incorrectly',                                sev:'critical', stage:'Write-back',      hc:true},
+  {desc:"Didn't save to GCM",                                         sev:'critical', stage:'Write-back',      hc:false},
+  {desc:"Deadline wasn't flagged in time",                            sev:'critical', stage:'Cross-cutting',   hc:false},
+  {desc:'Privacy / compliance concern',                               sev:'critical', stage:'Cross-cutting',   hc:false},
+  {desc:'Something else (add a note)',                                sev:'unknown',  stage:'Unknown',         hc:false},
+];
+const SEV_LABEL = {critical:'Critical', high:'High', minor:'Minor', unknown:'Reviewer-set'};
+function errCode(i){ return 'NP' + String(i + 1).padStart(3, '0'); }
+
+function renderPage(){
+  document.getElementById('content').innerHTML = `
+    <div class="help-hero">
+      <div class="help-hero-ico">${HELP_ICONS.book}</div>
+      <div>
+        <h2>Welcome to the GIP Reviewer Help Center</h2>
+        <p>Learn how Notice Processing works behind the scenes and how to use the app day-to-day. No technical background needed.</p>
+      </div>
+    </div>
+
+    <div class="help-toc">
+      <a href="#how-it-works">
+        <div class="help-toc-ico">${HELP_ICONS.gears}</div>
+        <div><div class="help-toc-txt">How Notice Processing works</div><div class="help-toc-sub">The logic, in plain English</div></div>
+      </a>
+      <a href="#how-to-use">
+        <div class="help-toc-ico">${HELP_ICONS.steps}</div>
+        <div><div class="help-toc-txt">How to use the app</div><div class="help-toc-sub">Step-by-step walkthrough</div></div>
+      </a>
+      <a href="#confidence">
+        <div class="help-toc-ico">${HELP_ICONS.flags}</div>
+        <div><div class="help-toc-txt">Status &amp; confidence</div><div class="help-toc-sub">What the colors mean</div></div>
+      </a>
+      <a href="#reviewers">
+        <div class="help-toc-ico">${HELP_ICONS.users}</div>
+        <div><div class="help-toc-txt">Reviewers &amp; roles</div><div class="help-toc-sub">Admins vs reviewers, inviting users</div></div>
+      </a>
+      <a href="#review-errors">
+        <div class="help-toc-ico">${HELP_ICONS.alert}</div>
+        <div><div class="help-toc-txt">Reviewer error catalog</div><div class="help-toc-sub">NP001 – NP0XX with severity &amp; stage</div></div>
+      </a>
+    </div>
+
+    <!-- ── HOW IT WORKS ── -->
+    <div id="how-it-works" class="help-sec panel">
+      <div class="panel-head"><h3>How Notice Processing works</h3><span style="font-size:12px;color:var(--ink-faint);">The logic, in plain English</span></div>
+      <div class="help-body">
+        <p>Every USCIS notice that arrives goes through the same three-stage pipeline before it ever reaches your screen.
+        Think of it as an assistant team that opens the mail, reads it, and pre-fills a form for you to check.</p>
+
+        <h4>The three helpers working behind the scenes</h4>
+        <div class="help-agents">
+          <div class="help-agent">
+            <div class="help-agent-head">
+              <div class="help-agent-ico" style="background:var(--primary-soft);color:var(--primary);">${HELP_ICONS.upload}</div>
+              <div class="help-agent-name">File Dispatcher</div>
+            </div>
+            <div class="help-agent-desc">Picks up every incoming notice and drops it into the right queue, so the system knows what kind of document it is dealing with.</div>
+          </div>
+          <div class="help-agent">
+            <div class="help-agent-head">
+              <div class="help-agent-ico" style="background:var(--green-soft);color:var(--green);">${HELP_ICONS.scan}</div>
+              <div class="help-agent-name">Smart Ingest</div>
+            </div>
+            <div class="help-agent-desc">Reads the notice (like OCR but smarter), figures out the form type, and pulls out the important fields — names, dates, receipt numbers, deadlines.</div>
+          </div>
+          <div class="help-agent">
+            <div class="help-agent-head">
+              <div class="help-agent-ico" style="background:#fbe8e2;color:var(--orange);">${HELP_ICONS.gate}</div>
+              <div class="help-agent-name">Gateway Agent</div>
+            </div>
+            <div class="help-agent-desc">Keeps the app connected to your other systems. It is the bridge that moves confirmed notices into your case files.</div>
+          </div>
+        </div>
+
+        <h4>How the app reads a notice</h4>
+        <p>The app uses <strong>two different reading methods at the same time</strong> and combines the results:</p>
+        <p><strong>1. Native reading</strong> — for standard USCIS forms, the app reads structured fields directly from the document. This is fast and very accurate.<br>
+        <strong>2. AI reading</strong> — for handwritten notes, scanned pages, or sections that vary in layout, an AI model interprets the text the way a person would.</p>
+        <p>Every extracted value gets a <strong>confidence score</strong> — a number from 0 to 100 that tells you how sure the system is. Higher is better. The app flags anything below 80 so a human can double-check it.</p>
+
+        <h4>Notice types the app understands</h4>
+        <p>The system is trained on the USCIS forms and notices you see every day:</p>
+        <div class="help-pills">
+          ${NOTICE_TYPES.map(t=>`<span class="help-pill">${t}</span>`).join('')}
+        </div>
+
+        <div class="help-callout">
+          <span class="ico">${HELP_ICONS.bulb}</span>
+          <div class="help-callout-txt"><strong>Why a human still reviews everything:</strong> The AI does the heavy lifting, but you stay in control. Nothing moves into the case file until you click <strong>Confirm All Fields</strong>. The app's job is to save you time on data entry — not to replace your judgment.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HOW TO USE ── -->
+    <div id="how-to-use" class="help-sec panel">
+      <div class="panel-head"><h3>How to use the app</h3><span style="font-size:12px;color:var(--ink-faint);">Step-by-step</span></div>
+      <div class="help-body">
+        <p>Here is the typical day-to-day flow, from opening the app to finishing a notice.</p>
+        <ol class="help-steps">
+          <li>
+            <div class="s-title">Open the Dashboard</div>
+            <div class="s-body">After signing in you land on the Dashboard. Four cards at the top show today's volume: <strong>Notices Processed</strong>, <strong>Automated Processing</strong>, <strong>Review Queue</strong>, and <strong>Reviewed Notices</strong> — each with a lifetime total in the corner. Below them, the <em>Autonomy &amp; Quality</em> panel shows the STP rate and six trust metrics with sparklines. On the right, <em>Agent Status</em> shows the three live agents and <em>Notice Mix</em> shows volume by form type — toggle between <strong>DAY</strong>, <strong>MTD</strong>, and <strong>YTD</strong> at the top of that panel.</div>
+          </li>
+          <li>
+            <div class="s-title">Go to Notice Processing</div>
+            <div class="s-body">Click <strong>Notice Processing</strong> in the left sidebar (under <em>Agents</em>). The screen has three tabs at the top:
+              <ul style="margin:6px 0 0 18px;padding:0;">
+                <li><strong>Processed Notices</strong> — notices the system auto-extracted with high confidence; ready for filing.</li>
+                <li><strong>Review Que</strong> — notices that need human eyes before they're saved.</li>
+                <li><strong>Reviewed Notices</strong> — what's already been approved or rejected.</li>
+              </ul>
+            </div>
+          </li>
+          <li>
+            <div class="s-title">Find a notice fast</div>
+            <div class="s-body">Each tab has a <strong>search box</strong> on the right side of its header for filtering by file name or applicant. The Processed Notices and Review Que tabs also let you tick checkboxes next to multiple rows so you can act on them in bulk.</div>
+          </li>
+          <li>
+            <div class="s-title">Open a notice for review</div>
+            <div class="s-body">Click the eye icon on any row to open it. <strong>Review Mode</strong> takes over the whole screen — the PDF on the left, every extracted field on the right with its confidence score and whether it was read by Native or AI. Press <strong>F</strong> at any time on the Review Que tab to launch Review Mode for the queue.</div>
+          </li>
+          <li>
+            <div class="s-title">Review or process several at once (the ⋯ menu)</div>
+            <div class="s-body">Click the three-dot button in the panel header for bulk actions:
+              <ul style="margin:6px 0 0 18px;padding:0;">
+                <li><strong>Review All</strong> — walks through every notice in the current tab one after another.</li>
+                <li><strong>Review Selected</strong> — same, but only the rows you ticked.</li>
+                <li><strong>Assign All / Assign Selected</strong> — opens a reviewer picker (more on this below).</li>
+              </ul>
+              In Review Mode, <em>Previous</em> and <em>Next</em> walk through whatever set you opened.</div>
+          </li>
+          <li>
+            <div class="s-title">Fix anything that looks off</div>
+            <div class="s-body">Fields under 80% confidence have a red border and a "Manual Review" flag — these are the ones to check first. Click into any field to edit it. Your changes are kept until you confirm.</div>
+          </li>
+          <li>
+            <div class="s-title">Approve or reject</div>
+            <div class="s-body">When everything looks correct, click <strong>Approve</strong> at the bottom. The notice moves to <em>Reviewed Notices</em> as <em>Approved</em> and the app loads the next one automatically. If something is wrong, click <strong>Reject</strong> instead — a window pops up where you pick the specific error from a dropdown (see <a href="#review-errors">Reviewer error catalog</a>). Picking "Something else" or "Not specified" reveals a free-text box where you can describe what's wrong.</div>
+          </li>
+          <li>
+            <div class="s-title">Assign work to a teammate</div>
+            <div class="s-body">From the ⋯ menu, choose <strong>Assign All</strong> or <strong>Assign Selected</strong>. A reviewer picker opens listing everyone with access. Click a name and press <strong>Assign</strong>. The notice rows show a small reviewer chip so you can see at a glance who is on what.</div>
+          </li>
+          <li>
+            <div class="s-title">Check progress on the Dashboard</div>
+            <div class="s-body">Come back to the Dashboard for the morning check-in. The Notice Mix donut shows today's spread by form type; toggle to MTD or YTD to see longer-range trends. On the Reviewed Notices tab, click the small bar-chart icon in the header to see a summary of how many were approved vs rejected and the top reject reasons.</div>
+          </li>
+        </ol>
+
+        <h4>Smart Ingest — the floating helper</h4>
+        <p>On the Processed Notices tab you'll see a small pulsing circle in the bottom-right corner. That's <strong>Smart Ingest</strong>. It runs in the background and tells you what's currently being read. Click the bubble to expand it into a panel showing the file being processed and the pipeline of files queued behind it. Click the minimize button (the bar icon) to shrink it back to the bubble. The status dot turns amber when it's actively processing and green when it's just listening.</p>
+
+        <div class="help-callout">
+          <span class="ico">${HELP_ICONS.bulb}</span>
+          <div class="help-callout-txt"><strong>Tip:</strong> The queue refreshes every 30 seconds automatically. If a colleague drops a new notice while you're working, it will appear without you having to reload the page.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REVIEWERS & ROLES ── -->
+    <div id="reviewers" class="help-sec panel">
+      <div class="panel-head">
+        <h3>Reviewers &amp; roles</h3>
+        <span style="font-size:12px;color:var(--ink-faint);">Who can see what</span>
+      </div>
+      <div class="help-body">
+        <p>Everyone who uses the app has one of two roles. The role decides what they can see and do.</p>
+
+        <div class="help-agents" style="grid-template-columns:repeat(2,1fr);">
+          <div class="help-agent">
+            <div class="help-agent-head">
+              <div class="help-agent-ico" style="background:var(--primary-soft);color:var(--primary);">${HELP_ICONS.users}</div>
+              <div class="help-agent-name">Administrator</div>
+            </div>
+            <div class="help-agent-desc">Full access. Sees the <strong>Settings</strong> menu, manages the platform, and can invite or remove users from <em>Settings → Reviewers</em>.</div>
+          </div>
+          <div class="help-agent">
+            <div class="help-agent-head">
+              <div class="help-agent-ico" style="background:var(--green-soft);color:var(--green);">${HELP_ICONS.flags}</div>
+              <div class="help-agent-name">Reviewer</div>
+            </div>
+            <div class="help-agent-desc">Reviews notices in the queue and can be assigned work. <strong>Does not</strong> see Settings or platform-level controls.</div>
+          </div>
+        </div>
+
+        <h4>Inviting someone new (admins only)</h4>
+        <p>Go to <strong>Settings → Reviewers</strong>. Each user is shown as a card with their name, email, phone, Entra ID, and role pill. Click <strong>Invite User</strong> in the top right to open the form. Required fields are <strong>Full Name</strong>, <strong>Email</strong>, and <strong>Role</strong>. <strong>Phone</strong> and <strong>Azure Entra ID</strong> are optional but recommended. The invitee receives an email and shows up as <em>Invite Pending</em> on the cards grid until they sign in.</p>
+
+        <h4>Switching a user's role</h4>
+        <p>Open the user's card on the Reviewers tab and use the edit button. Changing someone from Reviewer to Administrator gives them Settings access on their next sign-in.</p>
+
+        <div class="help-callout">
+          <span class="ico">${HELP_ICONS.bulb}</span>
+          <div class="help-callout-txt"><strong>Why two roles only:</strong> Keeping it simple. Reviewers focus on the queue without seeing configuration screens that could disrupt the platform. Admins handle setup and team management.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REVIEWER ERROR CATALOG ── -->
+    <div id="review-errors" class="help-sec panel">
+      <div class="panel-head">
+        <h3>Reviewer error catalog</h3>
+        <span style="font-size:12px;color:var(--ink-faint);">Codes NP001 onward</span>
+      </div>
+      <div class="help-body">
+        <p>When a reviewer rejects or flags a notice, they pick one of the labels below. Each label has a fixed code so the same issue can be tracked, counted, and audited over time.</p>
+        <p><strong>Severity</strong> tells you how serious the slip would be if it reached the case file.
+        <strong>Stage</strong> says which step the system was in when the mistake happened — Ingestion, Classification, Extraction, Write-back, or Cross-cutting.
+        <strong>High-Conf?</strong> marks the errors the system is most likely to make confidently — these are the ones the autonomy gate watches most carefully.</p>
+
+        <div class="err-tbl-wrap">
+          <table class="err-tbl">
+            <thead>
+              <tr>
+                <th style="width:78px;">Code</th>
+                <th>Description</th>
+                <th style="width:110px;">Severity</th>
+                <th style="width:130px;">Stage</th>
+                <th style="width:90px;text-align:center;">High-Conf?</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${REVIEW_ERRORS.map((e,i)=>`<tr>
+                <td><span class="err-code">${errCode(i)}</span></td>
+                <td class="err-name">${e.desc}</td>
+                <td><span class="err-sev ${e.sev}">${SEV_LABEL[e.sev]}</span></td>
+                <td class="err-stage">${e.stage}</td>
+                <td class="err-hc ${e.hc ? '' : 'no'}">${e.hc ? '✓' : '—'}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="help-callout">
+          <span class="ico">${HELP_ICONS.bulb}</span>
+          <div class="help-callout-txt"><strong>How codes are used:</strong> Reject reasons in <a href="notice_review.html" style="color:var(--primary);text-decoration:none;font-weight:600;">Notice Processing</a> map back to these codes. The Review Status popout groups rejections by code so you can spot patterns — e.g. lots of <span class="err-code" style="display:inline-block;">NP011</span> tells you the deadline-extraction logic needs a tune-up.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STATUS LEGEND ── -->
+    <div id="confidence" class="help-sec panel">
+      <div class="panel-head"><h3>Status &amp; confidence at a glance</h3><span style="font-size:12px;color:var(--ink-faint);">What the colors mean</span></div>
+      <div class="help-body">
+        <h4>Notice status pills</h4>
+        <div class="help-legend">
+          <div class="help-legend-row">
+            <div class="help-legend-pill"><span class="pill ready">${ICONS.dot} Ready</span></div>
+            <div class="help-legend-txt"><strong>Ready</strong>The AI has finished reading. It is waiting for your review.</div>
+          </div>
+          <div class="help-legend-row">
+            <div class="help-legend-pill"><span class="pill processing">${ICONS.spin} Processing</span></div>
+            <div class="help-legend-txt"><strong>Processing</strong>The AI is still reading the notice. Usually takes under a minute.</div>
+          </div>
+          <div class="help-legend-row">
+            <div class="help-legend-pill"><span class="pill completed">${ICONS.check} Completed</span></div>
+            <div class="help-legend-txt"><strong>Completed</strong>You have confirmed the notice. It has moved into the case record.</div>
+          </div>
+        </div>
+
+        <h4>Confidence score colors</h4>
+        <div class="help-legend">
+          <div class="help-legend-row">
+            <div class="help-legend-pill"><span style="display:inline-block;padding:4px 10px;border-radius:999px;background:var(--green-soft);color:var(--green);font-size:12px;font-weight:700;">90% +</span></div>
+            <div class="help-legend-txt"><strong>Green — Trusted</strong>Very high confidence. Glance and move on unless something looks visibly wrong.</div>
+          </div>
+          <div class="help-legend-row">
+            <div class="help-legend-pill"><span style="display:inline-block;padding:4px 10px;border-radius:999px;background:var(--amber-soft);color:var(--amber);font-size:12px;font-weight:700;">80–89%</span></div>
+            <div class="help-legend-txt"><strong>Amber — Verify</strong>Likely correct, but worth a quick glance at the document to confirm.</div>
+          </div>
+          <div class="help-legend-row">
+            <div class="help-legend-pill"><span style="display:inline-block;padding:4px 10px;border-radius:999px;background:var(--orange-soft);color:var(--orange);font-size:12px;font-weight:700;">Below 80%</span></div>
+            <div class="help-legend-txt"><strong>Orange — Manual Review</strong>The AI is unsure. Check the original notice and fix the field by hand if needed.</div>
+          </div>
+        </div>
+
+        <div class="help-callout">
+          <span class="ico">${HELP_ICONS.bulb}</span>
+          <div class="help-callout-txt"><strong>Still stuck?</strong> Head over to <a href="support.html" style="color:var(--primary);text-decoration:none;font-weight:600;">Support</a> to reach the Nihish team directly.</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// collapse toggle
+document.getElementById('collapseBtn').onclick = ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+};
+document.getElementById('brandIcon').onclick = ()=>{
+  document.getElementById('sidebar').classList.remove('collapsed');
+};
+
+// user popout
+(function(){
+  const btn = document.getElementById('userBtn');
+  const pop = document.getElementById('userPop');
+  if(!btn || !pop) return;
+  const close = ()=>{ pop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const open = pop.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', e=>{
+    if(!pop.classList.contains('open')) return;
+    if(!pop.contains(e.target) && !btn.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+})();
+
+renderNav();
+renderFoot();
+renderPage();
+</script>
+</body>
+</html>

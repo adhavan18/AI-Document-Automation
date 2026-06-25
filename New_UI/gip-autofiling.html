@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GIP Reviewer — Automate Filing (H4 EAD)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
+    --bg:#f3f5fa; --card:#ffffff;
+    --ink:#1a1f2e; --ink-soft:#5b6376; --ink-faint:#9aa1b2;
+    --line:#e6e9f0; --line-soft:#eef1f7;
+    --green:#1f8a52; --green-soft:#e4f3ea;
+    --amber:#b8791a; --amber-soft:#fbf0db;
+    --orange:#e14a28; --orange-soft:#fbe8e2;
+    --blue:#2f6fb0;  --blue-soft:#e6eff8;
+    --violet:#6b4ce0;--violet-soft:#ece7fb;
+    --side-bg:#0e1326; --side-bg-2:#111733;
+    --side-text:#aab2c6; --side-text-hi:#ffffff;
+    --side-line:#222a45;
+    --accent:#4d82f0; --accent-soft:rgba(77,130,240,.14);
+    --font:'Inter',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .spin{animation:spin 1s linear infinite;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#d3d8e4;border-radius:9px;}
+  button{font-family:var(--font);cursor:pointer;}
+  .shell{display:flex;height:100vh;}
+
+  /* ═══ SIDEBAR ═══ */
+  .sidebar{width:252px;flex-shrink:0;background:linear-gradient(180deg,var(--side-bg),var(--side-bg-2));
+    display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);}
+  .sidebar.collapsed{width:74px;}
+  .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
+  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
+    background:transparent;border:none;padding:0;cursor:pointer;
+    color:var(--side-text);display:none;align-items:center;justify-content:center;
+    transition:background .15s, color .15s;}
+  .brand-icon:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .brand-logo{display:none;}
+  .sidebar.collapsed .brand-icon{display:flex;margin:0 auto;}
+  .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
+    background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;transition:background .15s;}
+  .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
+  .sidebar.collapsed .collapse-btn{display:none;}
+  .nav{flex:1;overflow-y:auto;padding:6px 12px;}
+  .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
+    text-transform:uppercase;padding:14px 10px 7px;}
+  .sidebar.collapsed .nav-label{display:none;}
+  .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
+    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:12px;
+    font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;text-decoration:none;}
+  a.nav-item,a.nav-item:hover,a.nav-item:focus{text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:var(--side-text-hi);}
+  .nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600;}
+  .nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--accent);box-shadow:0 0 10px var(--accent);}
+  .nav-item .ico{flex-shrink:0;display:flex;}
+  .nav-item.active .ico{color:var(--accent);}
+  .nav-item .lbl{overflow:hidden;text-overflow:ellipsis;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding:11px 0;}
+  .sidebar.collapsed .nav-item .lbl{display:none;}
+  .sidebar.collapsed .nav-item:hover::after{content:attr(data-label);position:absolute;left:calc(100% + 10px);
+    top:50%;transform:translateY(-50%);background:#1c2340;color:#fff;font-size:12px;font-weight:500;
+    padding:6px 10px;border-radius:7px;white-space:nowrap;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+  .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
+  .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
+    border:none;background:transparent;color:var(--side-text);font-size:12px;font-weight:500;
+    margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;}
+  .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+  a.foot-item{text-decoration:none;}
+  .foot-item .badge{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:700;
+    min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+  .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
+  .sidebar.collapsed .foot-item .lbl,.sidebar.collapsed .foot-item .badge{display:none;}
+  .user{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-top:6px;border-radius:10px;
+    background:rgba(255,255,255,.04);border:1px solid var(--side-line);
+    transition:background .15s, border-color .15s;}
+  .user:hover{background:transparent;border-color:transparent;}
+  .avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--orange);color:#fff;
+    font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .user-txt{overflow:hidden;white-space:nowrap;}
+  .user-name{font-size:13px;font-weight:600;color:#fff;line-height:1.1;}
+  .user-role{font-size:11px;color:var(--ink-faint);}
+  .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
+  .sidebar.collapsed .user-txt{display:none;}
+  .user{cursor:pointer;width:100%;text-align:left;border:none;font:inherit;}
+  .user-caret{margin-left:auto;color:var(--ink-faint);display:flex;align-items:center;transition:transform .15s;}
+  .user-wrap{position:relative;}
+  .user-pop{position:absolute;left:12px;right:12px;bottom:calc(100% + 6px);
+    background:#1a2236;border:1px solid var(--side-line);border-radius:10px;
+    box-shadow:0 12px 28px rgba(0,0,0,.45);padding:5px;display:none;z-index:50;}
+  .user-pop.open{display:block;}
+  .user-pop-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+    border:none;background:transparent;color:var(--side-text);font-size:12.5px;font-weight:500;
+    border-radius:7px;cursor:pointer;text-align:left;text-decoration:none;}
+  .user-pop-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .user-pop-item .ico{display:flex;align-items:center;color:var(--ink-faint);}
+  .user-pop-sep{height:1px;background:var(--side-line);margin:4px 6px;}
+  .sidebar.collapsed .user-txt,.sidebar.collapsed .user-caret{display:none;}
+  .sidebar.collapsed .user-pop{left:auto;right:-216px;bottom:6px;width:200px;}
+
+  /* ═══ MAIN ═══ */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 30px;
+    background:var(--card);border-bottom:1px solid var(--line);}
+  .topbar h1{font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em;}
+  .topbar .date{font-size:12.5px;color:var(--ink-faint);margin-top:2px;}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .top-search{position:relative;}
+  .top-search input{width:230px;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13px;outline:none;}
+  .top-search input:focus{border-color:var(--primary);background:#fff;}
+  .top-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
+  .btn-primary{padding:9px 16px;border-radius:9px;border:none;background:var(--primary);color:#fff;
+    font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 2px 10px rgba(32,68,150,.22);}
+  .icon-btn-top{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);position:relative;}
+  .icon-btn-top .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;
+    background:var(--orange);border:1.5px solid #fff;}
+
+  .workspace{flex:1;display:flex;min-height:0;background:var(--bg);}
+
+  /* === LEFT: case list === */
+  .cases{width:340px;flex-shrink:0;border-right:1px solid var(--line);background:var(--card);
+    display:flex;flex-direction:column;}
+  .cases-head{padding:18px 18px 14px;border-bottom:1px solid var(--line-soft);}
+  .ch-title{font-size:14px;font-weight:700;letter-spacing:-.005em;}
+  .ch-sub{font-size:11px;color:var(--ink-faint);margin-top:3px;
+    text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+  .tabs{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+  .tab{padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;
+    color:var(--ink-soft);font-size:11.5px;font-weight:600;display:flex;align-items:center;gap:5px;
+    transition:all .15s;}
+  .tab .cnt{font-size:9.5px;opacity:.75;}
+  .tab.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .case-list{flex:1;overflow-y:auto;padding:10px 12px 14px;}
+
+  .case{position:relative;width:100%;text-align:left;padding:13px 14px 13px 16px;border-radius:12px;
+    border:1px solid var(--line);background:#fff;margin-bottom:8px;overflow:hidden;transition:all .18s;}
+  .case:hover{border-color:#d4d9e6;}
+  .case.active{border-color:var(--primary);box-shadow:0 2px 14px rgba(32,68,150,.10);}
+  .case .rail{position:absolute;left:0;top:0;bottom:0;width:3px;}
+  .case-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .case-name{font-size:13.5px;font-weight:700;letter-spacing:-.005em;}
+  .case-id{font-size:10px;color:var(--ink-faint);font-weight:500;}
+  .case-sub{font-size:11.5px;color:var(--ink-faint);margin-top:2px;font-weight:500;}
+  .case-meta{display:flex;align-items:center;gap:8px;margin-top:10px;justify-content:space-between;}
+  .mismatch-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+    padding:3px 8px;border-radius:7px;}
+  .mismatch-badge.clean{background:var(--green-soft);color:var(--green);}
+  .mismatch-badge.warn{background:var(--amber-soft);color:var(--amber);}
+  .mismatch-badge.bad{background:var(--orange-soft);color:var(--orange);}
+  .case-meta .when{font-size:10.5px;color:var(--ink-faint);font-weight:500;}
+
+  /* === CENTER: compare panel === */
+  .compare{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg);}
+  .c-bar{padding:14px 22px;display:flex;align-items:center;justify-content:space-between;
+    background:var(--card);border-bottom:1px solid var(--line);}
+  .c-bar-l{display:flex;align-items:center;gap:14px;}
+  .c-ico-lg{width:42px;height:42px;border-radius:11px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;}
+  .c-title{font-size:15.5px;font-weight:700;letter-spacing:-.005em;}
+  .c-sub{font-size:12px;color:var(--ink-faint);margin-top:2px;font-weight:500;}
+  .c-pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;
+    padding:4px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;}
+  .c-pill.clean{background:var(--green-soft);color:var(--green);}
+  .c-pill.warn{background:var(--amber-soft);color:var(--amber);}
+  .c-pill.bad{background:var(--orange-soft);color:var(--orange);}
+  .c-actions{display:flex;gap:8px;}
+  .btn-ghost{padding:8px 14px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    color:var(--ink);font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .btn-ghost:hover{background:var(--bg);}
+  .btn-file{padding:9px 16px;border-radius:9px;border:none;background:var(--green);color:#fff;
+    font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:7px;box-shadow:0 2px 10px rgba(31,138,82,.25);}
+  .btn-file:disabled{background:var(--ink-faint);box-shadow:none;cursor:not-allowed;}
+
+  .c-body{flex:1;overflow-y:auto;padding:22px 24px 32px;}
+
+  .compare-head{display:grid;grid-template-columns:1fr 22px 1fr;gap:0;
+    background:var(--card);border:1px solid var(--line);border-radius:12px 12px 0 0;
+    padding:11px 16px;font-size:11px;font-weight:700;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:.06em;border-bottom:none;}
+  .compare-head .col-r{text-align:right;}
+  .compare-head .src{font-size:9.5px;font-weight:600;color:var(--ink-faint);margin-left:6px;text-transform:none;letter-spacing:0;}
+
+  .compare-rows{background:var(--card);border:1px solid var(--line);border-radius:0 0 12px 12px;overflow:hidden;}
+  .crow{display:grid;grid-template-columns:1fr 22px 1fr;gap:0;align-items:center;padding:13px 16px;
+    border-bottom:1px solid var(--line-soft);font-size:13px;}
+  .crow:last-child{border-bottom:none;}
+  .crow .extracted{font-weight:600;font-variant-numeric:tabular-nums;}
+  .crow .record{font-weight:600;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink-soft);}
+  .crow .arrow{display:flex;align-items:center;justify-content:center;color:var(--ink-faint);}
+  .crow.diff{background:var(--orange-soft);}
+  .crow.diff .extracted{color:var(--orange);}
+  .crow.diff .record{color:var(--ink);}
+  .crow.diff .arrow{color:var(--orange);}
+  .crow.warn{background:var(--amber-soft);}
+  .crow.warn .extracted{color:var(--amber);}
+  .crow.warn .arrow{color:var(--amber);}
+  .crow .key{font-size:11.5px;color:var(--ink-faint);font-weight:600;text-transform:uppercase;
+    letter-spacing:.04em;margin-bottom:4px;}
+  .crow .v{display:flex;flex-direction:column;}
+  .crow .v.r{align-items:flex-end;}
+  .crow .v.r .key{align-self:flex-end;}
+
+  .sec-head{margin:22px 6px 10px;font-size:12px;font-weight:700;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:.08em;}
+  .sec-head:first-child{margin-top:0;}
+
+  /* === RIGHT: mismatch panel === */
+  .audit{width:380px;flex-shrink:0;border-left:1px solid var(--line);background:var(--card);
+    display:flex;flex-direction:column;}
+  .audit-head{padding:18px 20px 14px;border-bottom:1px solid var(--line-soft);}
+  .audit-title{font-size:15px;font-weight:700;letter-spacing:-.005em;}
+  .audit-sub{font-size:11.5px;color:var(--ink-faint);margin-top:3px;}
+  .scorecard{margin-top:14px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);
+    display:flex;align-items:center;gap:14px;}
+  .score-ring{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:15px;font-weight:800;flex-shrink:0;color:#fff;font-variant-numeric:tabular-nums;}
+  .score-info{flex:1;min-width:0;}
+  .score-lbl{font-size:11px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+  .score-head{font-size:14px;font-weight:700;margin-top:3px;letter-spacing:-.005em;}
+  .score-note{font-size:11.5px;color:var(--ink-faint);margin-top:2px;}
+
+  .audit-list{flex:1;overflow-y:auto;padding:14px 18px 18px;}
+  .issue{padding:13px 14px;border-radius:11px;border:1px solid var(--line);background:#fff;margin-bottom:10px;}
+  .issue.bad{border-color:var(--orange);box-shadow:0 1px 10px rgba(225,74,40,.06);}
+  .issue.warn{border-color:var(--amber);box-shadow:0 1px 10px rgba(184,121,26,.05);}
+  .issue-top{display:flex;align-items:center;gap:8px;justify-content:space-between;}
+  .issue-key{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;letter-spacing:-.005em;}
+  .issue-key .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;animation:pulse 2s ease-in-out infinite;}
+  .issue.bad .issue-key .dot{background:var(--orange);}
+  .issue.warn .issue-key .dot{background:var(--amber);}
+  .issue-sev{font-size:9.5px;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:5px;text-transform:uppercase;}
+  .issue.bad .issue-sev{background:var(--orange-soft);color:var(--orange);}
+  .issue.warn .issue-sev{background:var(--amber-soft);color:var(--amber);}
+  .issue-body{font-size:12.5px;color:var(--ink-soft);margin-top:8px;line-height:1.45;}
+  .issue-body b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;}
+  .issue-actions{display:flex;gap:8px;margin-top:11px;}
+  .issue-actions button{flex:1;padding:7px 10px;font-size:11.5px;font-weight:600;border-radius:8px;
+    border:1px solid var(--line);background:#fff;color:var(--ink-soft);display:flex;align-items:center;justify-content:center;gap:5px;}
+  .issue-actions button.fix{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+  .audit-foot{padding:14px 18px;border-top:1px solid var(--line);font-size:11px;color:var(--ink-faint);
+    display:flex;align-items:center;gap:7px;font-weight:500;}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <img class="brand-logo" src="assets/logo_white.png" alt="GIP" />
+      <button class="brand-icon" id="brandIcon" title="Expand menu" aria-label="Expand menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <button class="collapse-btn" id="collapseBtn" title="Collapse">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <div id="footItems"></div>
+      <div class="user-wrap">
+        <button class="user" id="userBtn" data-label="Austin" title="Austin · admin" aria-haspopup="true" aria-expanded="false">
+          <div class="avatar">A</div>
+          <div class="user-txt">
+            <div class="user-name">Austin</div>
+            <div class="user-role">admin</div>
+          </div>
+          <span class="user-caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+        </button>
+        <div class="user-pop" id="userPop" role="menu" aria-labelledby="userBtn">
+          <a class="user-pop-item" href="help.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
+            Help
+          </a>
+          <a class="user-pop-item" href="support.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+            Support
+          </a>
+          <div class="user-pop-sep"></div>
+          <a class="user-pop-item" href="gip-login.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+            Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Automate Filing (H4 EAD)</h1>
+        <div class="date" id="pageDate"></div>
+      </div>
+      <div class="top-actions">
+        <div class="top-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Search applicants…" />
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace">
+
+      <!-- LEFT: Cases -->
+      <aside class="cases">
+        <div class="cases-head">
+          <div class="ch-title">Filing Queue</div>
+          <div class="ch-sub">H4-EAD · Pre-submission Review</div>
+          <div class="tabs" id="tabs"></div>
+        </div>
+        <div class="case-list" id="caseList"></div>
+      </aside>
+
+      <!-- CENTER: Compare -->
+      <section class="compare">
+        <div class="c-bar">
+          <div class="c-bar-l">
+            <div class="c-ico-lg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg></div>
+            <div>
+              <div class="c-title" id="cTitle"></div>
+              <div class="c-sub" id="cSub"></div>
+            </div>
+            <div id="cPill"></div>
+          </div>
+          <div class="c-actions">
+            <button class="btn-ghost"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.5L21 8"/><polyline points="21 3 21 8 16 8"/></svg>Re-run check</button>
+            <button class="btn-file" id="fileBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>File to USCIS</button>
+          </div>
+        </div>
+
+        <div class="c-body" id="cBody"></div>
+      </section>
+
+      <!-- RIGHT: Audit -->
+      <aside class="audit">
+        <div class="audit-head">
+          <div class="audit-title">Mismatch Audit</div>
+          <div class="audit-sub">Issues flagged on this filing</div>
+          <div class="scorecard" id="scorecard"></div>
+        </div>
+        <div class="audit-list" id="auditList"></div>
+        <div class="audit-foot">
+          <span class="live-dot"></span>
+          Live cross-check against case record · <span style="font-weight:600;color:var(--ink-soft);">v2.4</span>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+</div>
+
+<script>
+const ICONS = {
+  dashboard:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>',
+  notice:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>',
+  compliance:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>',
+  filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  agentops:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
+  email:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  assistant:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+  arrow:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+  warn:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17"/></svg>',
+};
+
+const NAV = [
+  {id:'dashboard',  label:'Dashboard',                href:'dashboard.html',  icon:ICONS.dashboard,                        visible:1},
+  {id:'assistant',  label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:0},
+  {id:'notice',     label:'Notice Processing',        href:'notice_review.html',icon:ICONS.notice,    group:'Agents',         visible:1},
+  {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:0},
+  {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:0},
+  {id:'email',      label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:0},
+  {id:'agentops',   label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights',       visible:0},
+];
+const ACTIVE_NAV = 'filing';
+
+const FOOT_ICONS = {
+  settings:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  status:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>',
+  notifications:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+};
+/* TODO: replace with auth-derived role (e.g. from session/JWT). Reviewers see no Settings entry. */
+const CURRENT_USER_ROLE = 'admin';
+const FOOT = [
+  {id:'settings',      label:'Settings',      icon:FOOT_ICONS.settings,      href:'gip-settings.html', visible:(CURRENT_USER_ROLE==='admin'?1:0)},
+  {id:'status',        label:'Status',        icon:FOOT_ICONS.status,                                   visible:0},
+  {id:'notifications', label:'Notifications', icon:FOOT_ICONS.notifications, badge:'0',                 visible:0},
+];
+
+function renderFoot(){
+  document.getElementById('footItems').innerHTML = FOOT.filter(f=>f.visible).map(f=>{
+    const tag = f.href ? 'a' : 'button';
+    const href = f.href ? ` href="${f.href}"` : '';
+    const badge = f.badge ? `<span class="badge">${f.badge}</span>` : '';
+    return `<${tag} class="foot-item"${href} data-label="${f.label}" title="${f.label}">
+      <span class="ico">${f.icon}</span><span class="lbl">${f.label}</span>${badge}
+    </${tag}>`;
+  }).join('');
+}
+
+function renderNav(){
+  let html = '', currentGroup = null;
+  NAV.filter(n=>n.visible).forEach(n=>{
+    const g = n.group || null;
+    if(g !== currentGroup){
+      currentGroup = g;
+      if(g) html += `<div class="nav-label lbl">${g}</div>`;
+    }
+    html += `<a class="nav-item ${n.id===ACTIVE_NAV?'active':''}" href="${n.href}" data-label="${n.label}" title="${n.label}">
+      <span class="ico">${n.icon}</span><span class="lbl">${n.label}</span>
+    </a>`;
+  });
+  document.getElementById('nav').innerHTML = html;
+}
+
+/* ─── Filings data ─── */
+const FILINGS = [
+  {
+    id:'FIL-241', applicant:'Priya Nair', spouse:'Rohit Nair (H-1B)', when:'2 hrs ago',
+    state:'review', mismatches:3, severity:'bad', score:74,
+    extracted:{
+      'Family Name':'Nair','Given Name':'Priya','Middle Name':'—',
+      'Date of Birth':'1991-04-22','Country of Birth':'India','A-Number':'A201-555-998',
+      'Marital Status':'Married','Spouse A-Number':'A201-555-432','I-94 Expiry':'2027-03-10',
+      'Mailing Address':'412 Oak Ridge Dr, Apt 5B, Plano, TX 75024',
+      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
+    },
+    record:{
+      'Family Name':'Nair','Given Name':'Priya','Middle Name':'Devi',
+      'Date of Birth':'1991-04-22','Country of Birth':'India','A-Number':'A201-555-998',
+      'Marital Status':'Married','Spouse A-Number':'A201-555-432','I-94 Expiry':'2027-03-10',
+      'Mailing Address':'412 Oak Ridge Drive, #5B, Plano, TX 75024',
+      'Eligibility Cat.':'(c)(26)','Filing Fee':'$410',
+    },
+    diffs:['Middle Name','Mailing Address','Filing Fee'],
+    warns:[],
+  },
+  {
+    id:'FIL-238', applicant:'Mei-Ling Zhao', spouse:'Hao Zhao (H-1B)', when:'5 hrs ago',
+    state:'clean', mismatches:0, severity:'clean', score:98,
+    extracted:{
+      'Family Name':'Zhao','Given Name':'Mei-Ling','Middle Name':'—',
+      'Date of Birth':'1989-11-03','Country of Birth':'China','A-Number':'A209-110-204',
+      'Marital Status':'Married','Spouse A-Number':'A209-110-203','I-94 Expiry':'2026-09-19',
+      'Mailing Address':'88 Willow Ln, Bellevue, WA 98004',
+      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
+    },
+    record:{
+      'Family Name':'Zhao','Given Name':'Mei-Ling','Middle Name':'—',
+      'Date of Birth':'1989-11-03','Country of Birth':'China','A-Number':'A209-110-204',
+      'Marital Status':'Married','Spouse A-Number':'A209-110-203','I-94 Expiry':'2026-09-19',
+      'Mailing Address':'88 Willow Ln, Bellevue, WA 98004',
+      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
+    },
+    diffs:[], warns:[],
+  },
+  {
+    id:'FIL-235', applicant:'Sara Khan', spouse:'Bilal Khan (H-1B)', when:'Yesterday',
+    state:'review', mismatches:1, severity:'warn', score:88,
+    extracted:{
+      'Family Name':'Khan','Given Name':'Sara','Middle Name':'—',
+      'Date of Birth':'1993-02-14','Country of Birth':'Pakistan','A-Number':'A215-302-771',
+      'Marital Status':'Married','Spouse A-Number':'A215-302-770','I-94 Expiry':'2026-12-01',
+      'Mailing Address':'1209 Hawthorn St, Jersey City, NJ 07310',
+      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
+    },
+    record:{
+      'Family Name':'Khan','Given Name':'Sara','Middle Name':'—',
+      'Date of Birth':'1993-02-14','Country of Birth':'Pakistan','A-Number':'A215-302-771',
+      'Marital Status':'Married','Spouse A-Number':'A215-302-770','I-94 Expiry':'2026-11-28',
+      'Mailing Address':'1209 Hawthorn St, Jersey City, NJ 07310',
+      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
+    },
+    diffs:[], warns:['I-94 Expiry'],
+  },
+  {
+    id:'FIL-231', applicant:'Anika Patel', spouse:'Vikram Patel (H-1B)', when:'2 days ago',
+    state:'filed', mismatches:0, severity:'clean', score:100,
+    extracted:{
+      'Family Name':'Patel','Given Name':'Anika','Middle Name':'R.',
+      'Date of Birth':'1990-08-30','Country of Birth':'India','A-Number':'A218-444-118',
+      'Marital Status':'Married','Spouse A-Number':'A218-444-117','I-94 Expiry':'2028-01-15',
+      'Mailing Address':'77 Magnolia Ct, Sunnyvale, CA 94086',
+      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
+    },
+    record:{
+      'Family Name':'Patel','Given Name':'Anika','Middle Name':'R.',
+      'Date of Birth':'1990-08-30','Country of Birth':'India','A-Number':'A218-444-118',
+      'Marital Status':'Married','Spouse A-Number':'A218-444-117','I-94 Expiry':'2028-01-15',
+      'Mailing Address':'77 Magnolia Ct, Sunnyvale, CA 94086',
+      'Eligibility Cat.':'(c)(26)','Filing Fee':'$520',
+    },
+    diffs:[], warns:[],
+  },
+];
+
+let activeId = 'FIL-241';
+let filter = 'all';
+
+const SEV_COLOR = {clean:'var(--green)', warn:'var(--amber)', bad:'var(--orange)'};
+const SEV_LABEL = {clean:'Clean', warn:'1 Warning', bad:'Needs Review'};
+
+function renderTabs(){
+  const counts = {
+    all:FILINGS.length,
+    flagged:FILINGS.filter(f=>f.severity!=='clean' && f.state!=='filed').length,
+    clean:FILINGS.filter(f=>f.severity==='clean' && f.state!=='filed').length,
+    filed:FILINGS.filter(f=>f.state==='filed').length,
+  };
+  const tabs = [['all','All'],['flagged','Flagged'],['clean','Clean'],['filed','Filed']];
+  document.getElementById('tabs').innerHTML = tabs.map(([k,l])=>
+    `<button class="tab ${filter===k?'active':''}" data-tab="${k}">${l}<span class="cnt">${counts[k]}</span></button>`
+  ).join('');
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{filter=b.dataset.tab;renderTabs();renderList();});
+}
+
+function passFilter(f){
+  if(filter==='all') return true;
+  if(filter==='flagged') return f.severity!=='clean' && f.state!=='filed';
+  if(filter==='clean') return f.severity==='clean' && f.state!=='filed';
+  if(filter==='filed') return f.state==='filed';
+}
+
+function renderList(){
+  const list = FILINGS.filter(passFilter);
+  document.getElementById('caseList').innerHTML = list.map(f=>{
+    const sev = f.severity;
+    const badge = f.state==='filed'
+      ? `<span class="mismatch-badge clean">FILED</span>`
+      : `<span class="mismatch-badge ${sev}">${f.mismatches} ${f.mismatches===1?'mismatch':'mismatches'}</span>`;
+    return `<button class="case ${f.id===activeId?'active':''}" data-id="${f.id}">
+      <span class="rail" style="background:${SEV_COLOR[sev]};"></span>
+      <div class="case-top">
+        <div>
+          <div class="case-name">${f.applicant}</div>
+          <div class="case-sub">Spouse · ${f.spouse}</div>
+        </div>
+        <span class="case-id">#${f.id}</span>
+      </div>
+      <div class="case-meta">
+        ${badge}
+        <span class="when">${f.when}</span>
+      </div>
+    </button>`;
+  }).join('') || `<div style="text-align:center;color:var(--ink-faint);font-size:12.5px;padding:30px 10px;">No filings match this filter.</div>`;
+  document.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{activeId=b.dataset.id;renderAll();});
+}
+
+function renderCompare(){
+  const f = FILINGS.find(x=>x.id===activeId) || FILINGS[0];
+  document.getElementById('cTitle').textContent = `${f.applicant} — I-765 · H4-EAD`;
+  document.getElementById('cSub').textContent = `Filing ${f.id} · Spouse: ${f.spouse}`;
+  document.getElementById('cPill').innerHTML = `<span class="c-pill ${f.severity}">${SEV_LABEL[f.severity]}</span>`;
+  const fileBtn = document.getElementById('fileBtn');
+  if(f.state==='filed'){
+    fileBtn.textContent = '✓ Filed to USCIS';
+    fileBtn.disabled = true;
+  } else {
+    fileBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>File to USCIS`;
+    fileBtn.disabled = f.severity==='bad';
+  }
+
+  const SECTIONS = [
+    ['Applicant Identity',['Family Name','Given Name','Middle Name','Date of Birth','Country of Birth','A-Number']],
+    ['Family & Status',   ['Marital Status','Spouse A-Number','I-94 Expiry']],
+    ['Filing Detail',     ['Mailing Address','Eligibility Cat.','Filing Fee']],
+  ];
+
+  let html = `
+    <div class="compare-head">
+      <span>Extracted from Filing <span class="src">(Form I-765)</span></span>
+      <span></span>
+      <span class="col-r">Case Record <span class="src">(GIP master)</span></span>
+    </div>
+    <div class="compare-rows">`;
+  SECTIONS.forEach(([sec,keys])=>{
+    html += `<div class="sec-head" style="grid-column:1/-1;padding:14px 16px 6px;font-size:11px;font-weight:700;color:var(--ink-faint);background:var(--bg);border-bottom:1px solid var(--line-soft);text-transform:uppercase;letter-spacing:.06em;">${sec}</div>`;
+    keys.forEach(k=>{
+      const ev = f.extracted[k] ?? '—';
+      const rv = f.record[k] ?? '—';
+      const cls = f.diffs.includes(k) ? 'diff' : f.warns.includes(k) ? 'warn' : '';
+      html += `<div class="crow ${cls}">
+        <div class="v"><span class="key">${k}</span><span class="extracted">${ev}</span></div>
+        <div class="arrow">${cls?ICONS.warn:ICONS.arrow}</div>
+        <div class="v r"><span class="key">${k}</span><span class="record">${rv}</span></div>
+      </div>`;
+    });
+  });
+  html += `</div>`;
+  document.getElementById('cBody').innerHTML = html;
+}
+
+function scoreColor(s){ return s>=95?'var(--green)':s>=80?'var(--amber)':'var(--orange)'; }
+
+function renderAudit(){
+  const f = FILINGS.find(x=>x.id===activeId) || FILINGS[0];
+  const issues = [
+    ...f.diffs.map(k=>({key:k, sev:'bad',
+      msg:`Filing shows <b>${f.extracted[k]}</b>, case record has <b>${f.record[k]}</b>.`})),
+    ...f.warns.map(k=>({key:k, sev:'warn',
+      msg:`Filing shows <b>${f.extracted[k]}</b>, case record has <b>${f.record[k]}</b> — within tolerance but worth confirming.`})),
+  ];
+
+  document.getElementById('scorecard').innerHTML = `
+    <div class="score-ring" style="background:${scoreColor(f.score)};">${f.score}</div>
+    <div class="score-info">
+      <div class="score-lbl">Filing Readiness</div>
+      <div class="score-head">${f.score>=95?'Ready to file':f.score>=80?'Review before filing':'Blocking issues'}</div>
+      <div class="score-note">${issues.length} issue${issues.length===1?'':'s'} detected across ${Object.keys(f.extracted).length} fields</div>
+    </div>`;
+
+  const list = document.getElementById('auditList');
+  if(issues.length===0){
+    list.innerHTML = `<div style="padding:40px 14px;text-align:center;color:var(--ink-faint);">
+      <div style="width:54px;height:54px;border-radius:14px;background:var(--green-soft);color:var(--green);
+        margin:0 auto 14px;display:flex;align-items:center;justify-content:center;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-.005em;">All fields match</div>
+      <div style="font-size:12px;margin-top:6px;">No discrepancies between the filing and case record.</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML = issues.map(i=>`
+    <div class="issue ${i.sev}">
+      <div class="issue-top">
+        <div class="issue-key"><span class="dot"></span>${i.key}</div>
+        <span class="issue-sev">${i.sev==='bad'?'Mismatch':'Warning'}</span>
+      </div>
+      <div class="issue-body">${i.msg}</div>
+      <div class="issue-actions">
+        <button>Keep filing value</button>
+        <button class="fix">Use record value</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderAll(){ renderNav(); renderFoot(); renderTabs(); renderList(); renderCompare(); renderAudit(); }
+
+document.getElementById('collapseBtn').onclick = ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+};
+document.getElementById('brandIcon').onclick = ()=>{
+  document.getElementById('sidebar').classList.remove('collapsed');
+};
+
+// user popout
+(function(){
+  const btn = document.getElementById('userBtn');
+  const pop = document.getElementById('userPop');
+  if(!btn || !pop) return;
+  const close = ()=>{ pop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const open = pop.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', e=>{
+    if(!pop.classList.contains('open')) return;
+    if(!pop.contains(e.target) && !btn.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+})();
+document.getElementById('pageDate').textContent =
+  new Date().toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
+
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,2478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GIP Reviewer — Queue List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* GIP palette — shared with Dashboard */
+    --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
+    --bg:#f3f5fa; --card:#ffffff;
+    --ink:#1a1f2e; --ink-soft:#5b6376; --ink-faint:#9aa1b2;
+    --line:#e6e9f0; --line-soft:#eef1f7;
+    --green:#1f8a52; --green-soft:#e4f3ea;
+    --amber:#b8791a; --amber-soft:#fbf0db;
+    --orange:#e14a28; --orange-soft:#fbe8e2;
+    --red:#c92020; --red-soft:#fbe1e1;
+    --blue:#2f6fb0;  --blue-soft:#e6eff8;
+    --violet:#6b4ce0;--violet-soft:#ece7fb;
+    /* dark sidebar */
+    --side-bg:#0e1326; --side-bg-2:#111733;
+    --side-text:#aab2c6; --side-text-hi:#ffffff;
+    --side-line:#222a45;
+    --accent:#4d82f0; --accent-soft:rgba(77,130,240,.14);
+    --font:'Inter',-apple-system,sans-serif;
+    --mono:'Inter','SF Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .spin{animation:spin 1s linear infinite;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#d3d8e4;border-radius:9px;}
+  button{font-family:var(--font);cursor:pointer;}
+  .shell{display:flex;height:100vh;}
+
+  /* ═══ SIDEBAR (shared) ═══ */
+  .sidebar{width:252px;flex-shrink:0;background:linear-gradient(180deg,var(--side-bg),var(--side-bg-2));
+    display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);}
+  .sidebar.collapsed{width:74px;}
+
+  .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
+  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
+    background:transparent;border:none;padding:0;cursor:pointer;
+    color:var(--side-text);display:none;align-items:center;justify-content:center;
+    transition:background .15s, color .15s;}
+  .brand-icon:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .brand-logo{display:none;}
+  .sidebar.collapsed .brand-icon{display:flex;margin:0 auto;}
+  .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
+    background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;
+    transition:background .15s;}
+  .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
+  .sidebar.collapsed .collapse-btn{display:none;}
+
+  .nav{flex:1;overflow-y:auto;padding:6px 12px;}
+  .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
+    text-transform:uppercase;padding:14px 10px 7px;}
+  .sidebar.collapsed .nav-label{display:none;}
+  .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
+    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:12px;
+    font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;
+    text-decoration:none;}
+  a.nav-item,a.nav-item:hover,a.nav-item:focus{text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:var(--side-text-hi);}
+  .nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600;}
+  .nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--accent);box-shadow:0 0 10px var(--accent);}
+  .nav-item .ico{flex-shrink:0;display:flex;}
+  .nav-item.active .ico{color:var(--accent);}
+  .nav-item .lbl{overflow:hidden;text-overflow:ellipsis;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding:11px 0;}
+  .sidebar.collapsed .nav-item .lbl{display:none;}
+  .sidebar.collapsed .nav-item:hover::after{content:attr(data-label);position:absolute;left:calc(100% + 10px);
+    top:50%;transform:translateY(-50%);background:#1c2340;color:#fff;font-size:12px;font-weight:500;
+    padding:6px 10px;border-radius:7px;white-space:nowrap;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+
+  .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
+  .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
+    border:none;background:transparent;color:var(--side-text);font-size:12px;font-weight:500;
+    margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;}
+  .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+  a.foot-item{text-decoration:none;}
+  .foot-item .badge{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:700;
+    min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+  .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
+  .sidebar.collapsed .foot-item .lbl,.sidebar.collapsed .foot-item .badge{display:none;}
+  .user{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-top:6px;border-radius:10px;
+    background:rgba(255,255,255,.04);border:1px solid var(--side-line);
+    transition:background .15s, border-color .15s;}
+  .user:hover{background:transparent;border-color:transparent;}
+  .avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--orange);color:#fff;
+    font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .user-txt{overflow:hidden;white-space:nowrap;}
+  .user-name{font-size:13px;font-weight:600;color:#fff;line-height:1.1;}
+  .user-role{font-size:11px;color:var(--ink-faint);}
+  .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
+  .sidebar.collapsed .user-txt{display:none;}
+  .user{cursor:pointer;width:100%;text-align:left;border:none;font:inherit;}
+  .user-caret{margin-left:auto;color:var(--ink-faint);display:flex;align-items:center;transition:transform .15s;}
+  .user-wrap{position:relative;}
+  .user-pop{position:absolute;left:12px;right:12px;bottom:calc(100% + 6px);
+    background:#1a2236;border:1px solid var(--side-line);border-radius:10px;
+    box-shadow:0 12px 28px rgba(0,0,0,.45);padding:5px;display:none;z-index:50;}
+  .user-pop.open{display:block;}
+  .user-pop-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+    border:none;background:transparent;color:var(--side-text);font-size:12.5px;font-weight:500;
+    border-radius:7px;cursor:pointer;text-align:left;text-decoration:none;}
+  .user-pop-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .user-pop-item .ico{display:flex;align-items:center;color:var(--ink-faint);}
+  .user-pop-sep{height:1px;background:var(--side-line);margin:4px 6px;}
+  .sidebar.collapsed .user-txt,.sidebar.collapsed .user-caret{display:none;}
+  .sidebar.collapsed .user-pop{left:auto;right:-216px;bottom:6px;width:200px;}
+
+  /* ═══ MAIN ═══ */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 30px;
+    background:var(--card);border-bottom:1px solid var(--line);}
+  .topbar h1{font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em;}
+  .topbar .date{font-size:12.5px;color:var(--ink-faint);margin-top:2px;}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .top-search{position:relative;}
+  .top-search input{width:230px;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13px;outline:none;}
+  .top-search input:focus{border-color:var(--primary);background:#fff;}
+  .top-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
+  .btn-primary{padding:9px 16px;border-radius:9px;border:none;background:var(--primary);color:#fff;
+    font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 2px 10px rgba(32,68,150,.22);}
+  .icon-btn-top{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);position:relative;}
+  .icon-btn-top .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;
+    background:var(--orange);border:1.5px solid #fff;}
+
+  /* page area — vertically stacked grids */
+  .workspace{flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);
+    padding:22px 26px;gap:20px;overflow-y:auto;}
+
+  /* grid panel */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    display:flex;flex-direction:column;min-height:0;overflow:hidden;
+    box-shadow:0 1px 2px rgba(28,26,23,.03);}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;
+    padding:16px 20px;border-bottom:1px solid var(--line-soft);}
+  .panel-title{display:flex;align-items:center;gap:10px;}
+  .panel-title .ico-wrap{width:32px;height:32px;border-radius:9px;display:flex;
+    align-items:center;justify-content:center;}
+  .panel-title.auto .ico-wrap{background:var(--violet-soft);color:var(--violet);}
+  .panel-title.review .ico-wrap{background:var(--primary-soft);color:var(--primary);}
+  .panel-title h2{font-size:15px;font-weight:700;margin:0;letter-spacing:-.005em;}
+  .panel-title .sub{font-size:11.5px;color:var(--ink-faint);margin-top:2px;font-weight:500;}
+  .panel-head-r{display:flex;align-items:center;gap:8px;min-width:80px;justify-content:flex-end;}
+  .count-chip{font-size:11px;font-weight:700;color:var(--ink-soft);background:var(--bg);
+    border:1px solid var(--line);padding:5px 10px;border-radius:999px;font-variant-numeric:tabular-nums;}
+  .icon-btn-sm{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);transition:all .15s;}
+  .icon-btn-sm:hover{background:var(--bg);color:var(--ink);}
+
+  /* table */
+  .tbl-wrap{overflow-x:auto;height:470px;}
+  table.grid{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;table-layout:fixed;}
+  .grid col.c-chk{width:42px;}
+  .grid col.c-file{width:250px;}
+  .grid col.c-date{width:130px;}
+  .grid col.c-fn{width:170px;}
+  .grid col.c-acc{width:170px;}
+  .grid col.c-status{width:170px;}
+  .grid col.c-act{width:90px;}
+  .grid td,.grid th{overflow:hidden;}
+  .grid .file-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .grid thead th{text-align:left;font-size:10.5px;font-weight:700;color:var(--ink-faint);
+    letter-spacing:.08em;text-transform:uppercase;padding:11px 14px;background:var(--bg);
+    border-bottom:1px solid var(--line);white-space:nowrap;}
+  .grid tbody td{padding:14px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
+  .grid tbody tr:last-child td{border-bottom:none;}
+  .grid tbody tr:hover{background:#fafbfd;}
+  .file-cell{display:flex;align-items:center;gap:10px;min-width:220px;}
+  .file-ico{width:30px;height:30px;border-radius:8px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .file-name{font-weight:600;font-size:13px;color:var(--ink);}
+  .file-meta{font-size:11px;color:var(--ink-faint);margin-top:1px;}
+  .file-sub{display:flex;align-items:center;gap:8px;margin-top:5px;}
+  .file-sub .file-meta{margin-top:0;}
+  .col-date{color:var(--ink-soft);font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .form-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.02em;
+    padding:3px 9px;border-radius:6px;background:var(--primary-soft);color:var(--primary);white-space:nowrap;}
+  .fn-name{font-size:13px;font-weight:500;color:var(--ink);}
+  .accuracy{display:flex;align-items:center;gap:8px;min-width:130px;}
+  .accuracy .track{flex:1;height:5px;border-radius:999px;background:var(--line-soft);overflow:hidden;max-width:90px;}
+  .accuracy .track > i{display:block;height:100%;border-radius:999px;transition:width .5s;}
+  .accuracy .pct{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;}
+
+  /* status pills */
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:999px;
+    font-size:11px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
+  .pill.processing{background:var(--amber-soft);color:var(--amber);}
+  .pill.ready{background:var(--primary-soft);color:var(--primary);}
+  .pill.completed{background:var(--green-soft);color:var(--green);}
+  .pill.queued{background:var(--line-soft);color:var(--ink-soft);}
+  .pill.failed{background:var(--orange-soft);color:var(--orange);}
+
+  /* processing status with ring + % */
+  .proc-status{display:flex;align-items:center;gap:10px;min-width:160px;}
+  .proc-ring{position:relative;width:34px;height:34px;flex-shrink:0;}
+  .proc-ring svg{transform:rotate(-90deg);}
+  .proc-ring .ring-bg{stroke:var(--amber-soft);}
+  .proc-ring .ring-fg{stroke:var(--amber);stroke-linecap:round;transition:stroke-dashoffset .6s ease;}
+  .proc-ring .ring-spinner{stroke:var(--amber);stroke-linecap:round;
+    animation:spin 1.1s linear infinite;transform-origin:center;}
+  .proc-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:9.5px;font-weight:700;color:var(--amber);font-variant-numeric:tabular-nums;
+    transform:rotate(0deg);}
+  .proc-txt{display:flex;flex-direction:column;gap:2px;}
+  .proc-txt .lbl{font-size:11px;font-weight:700;color:var(--amber);
+    text-transform:uppercase;letter-spacing:.06em;}
+  .proc-txt .sub{font-size:10.5px;color:var(--ink-faint);font-weight:500;}
+
+  /* action buttons */
+  .actions{display:flex;align-items:center;gap:4px;}
+  .act-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);transition:all .15s;}
+  .act-btn:hover{background:var(--primary-soft);color:var(--primary);border-color:var(--primary-soft);}
+  .act-btn.danger:hover{background:var(--orange-soft);color:var(--orange);border-color:var(--orange-soft);}
+  .act-btn.disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
+
+  .empty{padding:40px;text-align:center;color:var(--ink-faint);font-size:13px;}
+
+  /* selection checkboxes */
+  .chk{appearance:none;-webkit-appearance:none;width:18px;height:18px;border:1.5px solid #c5cad7;
+    border-radius:5px;background:#fff;cursor:pointer;flex-shrink:0;position:relative;transition:all .15s;
+    margin:0;}
+  .chk:hover{border-color:var(--primary);}
+  .chk:checked{background:var(--primary);border-color:var(--primary);}
+  .chk:checked::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+    border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);}
+  .chk:indeterminate{background:var(--primary);border-color:var(--primary);}
+  .chk:indeterminate::after{content:"";position:absolute;left:3px;top:7px;width:10px;height:2px;
+    background:#fff;border-radius:2px;}
+  .grid thead th.col-chk{width:42px;padding-right:0;}
+  .grid tbody td.col-chk{width:42px;padding-right:0;}
+  .grid tbody tr.selected{background:var(--primary-soft);}
+  .grid tbody tr.selected:hover{background:var(--primary-soft);}
+
+  /* popout menu */
+  .menu-wrap{position:relative;}
+  .menu{position:absolute;top:calc(100% + 6px);right:0;min-width:200px;background:#fff;
+    border:1px solid var(--line);border-radius:11px;box-shadow:0 12px 36px rgba(16,22,40,.14),0 2px 6px rgba(16,22,40,.06);
+    padding:6px;z-index:30;opacity:0;transform:translateY(-4px);pointer-events:none;
+    transition:opacity .15s ease, transform .15s ease;}
+  .menu.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+  .menu-item{width:100%;display:flex;align-items:center;gap:10px;padding:9px 11px;border:none;
+    background:transparent;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:500;
+    color:var(--ink);text-align:left;cursor:pointer;transition:background .12s;}
+  .menu-item:hover{background:var(--bg);}
+  .menu-item .ico{color:var(--ink-faint);display:flex;flex-shrink:0;}
+  .menu-item:hover .ico{color:var(--primary);}
+  .menu-item .cnt{margin-left:auto;font-size:11px;font-weight:700;color:var(--ink-faint);
+    background:var(--bg);padding:2px 7px;border-radius:999px;font-variant-numeric:tabular-nums;}
+  .menu-item.disabled{color:var(--ink-faint);cursor:not-allowed;}
+  .menu-item.disabled:hover{background:transparent;}
+  .menu-sep{height:1px;background:var(--line-soft);margin:5px 4px;}
+
+  /* ═══ tabs ═══ */
+  .tabs-bar{display:flex;align-items:center;gap:4px;padding:0 20px;border-bottom:1px solid var(--line-soft);
+    background:var(--card);}
+  .tabs-left{display:flex;align-items:center;gap:4px;flex:1;}
+  .tab-btn{position:relative;padding:14px 4px;margin-right:24px;border:none;background:transparent;
+    font-family:var(--font);font-size:13.5px;font-weight:600;color:var(--ink-soft);
+    cursor:pointer;display:flex;align-items:center;gap:8px;transition:color .15s;}
+  .tab-btn:hover{color:var(--ink);}
+  .tab-btn.active{color:var(--primary);}
+  .tab-btn.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2.5px;
+    background:var(--primary);border-radius:2px 2px 0 0;}
+  .tab-btn .cnt{font-size:11px;font-weight:700;background:var(--bg);color:var(--ink-soft);
+    padding:2px 8px;border-radius:999px;font-variant-numeric:tabular-nums;}
+  .tab-btn.active .cnt{background:var(--primary-soft);color:var(--primary);}
+
+  /* Review Mode button (sits on the right of the tabs bar) */
+  .btn-review-mode{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;
+    border:1px solid var(--primary);background:#fff;color:var(--primary);
+    font-family:var(--font);font-size:12.5px;font-weight:600;cursor:pointer;
+    transition:all .15s;margin-left:10px;flex-shrink:0;}
+  .btn-review-mode:hover{background:var(--primary-soft);}
+  .btn-review-mode:disabled{opacity:.5;cursor:not-allowed;border-color:var(--line);color:var(--ink-faint);}
+  .btn-review-mode:disabled:hover{background:#fff;}
+  .btn-review-mode .kbd{font-size:10px;font-weight:600;color:var(--ink-faint);background:var(--bg);
+    border:1px solid var(--line);padding:1px 6px;border-radius:5px;margin-left:4px;letter-spacing:.04em;}
+
+  /* ═══ pagination footer ═══ */
+  .grid-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:12px 20px;border-top:1px solid var(--line-soft);background:#fbfcfe;
+    font-size:12.5px;color:var(--ink-soft);flex-wrap:wrap;}
+  .grid-foot .left{display:flex;align-items:center;gap:14px;min-width:300px;}
+  .grid-foot .rows-of{font-variant-numeric:tabular-nums;min-width:130px;}
+  .grid-foot .rows-of b{color:var(--ink);font-weight:700;}
+  .page-size{display:flex;align-items:center;gap:7px;font-size:12px;}
+  .page-size select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:#fff;
+    border-radius:7px;padding:5px 26px 5px 10px;font-family:var(--font);font-size:12px;font-weight:600;
+    color:var(--ink);cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%235b6376' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center;}
+  .pager{display:flex;align-items:center;gap:4px;min-width:150px;justify-content:flex-end;}
+  .pg{min-width:30px;height:30px;border-radius:7px;border:1px solid var(--line);background:#fff;
+    font-family:var(--font);font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;padding:0 9px;transition:all .15s;}
+  .pg:hover:not(:disabled):not(.active){background:var(--bg);color:var(--ink);}
+  .pg.active{background:var(--primary);color:#fff;border-color:var(--primary);cursor:default;}
+  .pg:disabled{opacity:.4;cursor:not-allowed;}
+  .pg.dots{border:none;background:transparent;cursor:default;color:var(--ink-faint);padding:0 2px;}
+
+  /* ═══ Processing Agent floating widget ═══ */
+  @keyframes typing-dot{0%,80%,100%{transform:translateY(0);opacity:.4;}40%{transform:translateY(-3px);opacity:1;}}
+  @keyframes pa-pop{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .pa-widget{position:fixed;right:24px;bottom:24px;z-index:60;width:340px;background:#fff;
+    border:1px solid var(--line);border-radius:14px;
+    box-shadow:0 14px 40px rgba(16,22,40,.16),0 4px 10px rgba(16,22,40,.06);
+    overflow:hidden;animation:pa-pop .25s ease;font-family:var(--font);}
+  .pa-head{display:flex;align-items:center;gap:10px;padding:12px 14px;
+    background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;}
+  .pa-avatar{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.18);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .pa-head-txt{flex:1;line-height:1.2;}
+  .pa-name{font-size:13px;font-weight:700;letter-spacing:.005em;}
+  .pa-status{font-size:10.5px;font-weight:600;opacity:.85;text-transform:uppercase;letter-spacing:.08em;
+    display:flex;align-items:center;gap:6px;margin-top:2px;}
+  .pa-status .live-dot{width:6px;height:6px;border-radius:50%;background:#7ee0a8;
+    box-shadow:0 0 0 3px rgba(126,224,168,.22);animation:pulse 2s ease-in-out infinite;}
+  .pa-min{width:26px;height:26px;border-radius:7px;border:none;background:rgba(255,255,255,.12);
+    color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;}
+  .pa-min:hover{background:rgba(255,255,255,.22);}
+  .pa-controls{display:flex;align-items:center;gap:5px;}
+  .pa-body{padding:14px;}
+
+  /* idle: Listening… with typing dots */
+  .pa-idle{display:flex;align-items:center;gap:10px;padding:6px 2px;}
+  .pa-wave{width:34px;height:34px;border-radius:10px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .pa-listening{display:flex;align-items:baseline;gap:2px;font-size:13.5px;font-weight:600;color:var(--ink);}
+  .pa-listening .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--ink-soft);
+    margin:0 1px;animation:typing-dot 1.2s infinite;}
+  .pa-listening .dot:nth-child(2){animation-delay:.15s;}
+  .pa-listening .dot:nth-child(3){animation-delay:.3s;}
+  .pa-listening .dot:nth-child(4){animation-delay:.45s;}
+  .pa-sub{font-size:11px;color:var(--ink-faint);margin-top:6px;}
+
+  /* expanded idle: vertically centered listening state */
+  @keyframes pa-ring-pulse{0%,100%{transform:scale(.85);opacity:.4;}50%{transform:scale(1.05);opacity:1;}}
+  .pa-idle-xl{min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:18px;padding:24px 16px;text-align:center;}
+  .pa-idle-xl .pa-wave-xl{position:relative;width:78px;height:78px;display:flex;align-items:center;justify-content:center;}
+  .pa-idle-xl .pa-wave-xl::before,
+  .pa-idle-xl .pa-wave-xl::after{content:"";position:absolute;inset:0;border-radius:50%;
+    border:2px solid var(--primary);opacity:.35;animation:pa-ring-pulse 2.4s ease-in-out infinite;}
+  .pa-idle-xl .pa-wave-xl::after{animation-delay:1.2s;}
+  .pa-idle-xl .pa-wave-core{position:relative;width:54px;height:54px;border-radius:50%;
+    background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(32,68,150,.32);}
+  .pa-idle-xl .pa-listening{font-size:15px;}
+  .pa-idle-xl .pa-sub{margin-top:0;font-size:12px;}
+
+  /* active: file row with processing ring */
+  .pa-active{display:flex;align-items:center;gap:11px;}
+  .pa-active .proc-ring{width:40px;height:40px;flex-shrink:0;}
+  .pa-active .proc-ring svg{width:40px;height:40px;}
+  .pa-active .proc-pct{font-size:10.5px;}
+  .pa-file{flex:1;min-width:0;}
+  .pa-file-name{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;}
+  .pa-file-meta{font-size:10.5px;color:var(--ink-faint);margin-top:2px;
+    display:flex;align-items:center;gap:6px;}
+  .pa-file-meta .form-tag{font-size:9.5px;padding:1px 6px;}
+  .pa-queue{margin-top:11px;padding-top:11px;border-top:1px solid var(--line-soft);
+    font-size:10.5px;color:var(--ink-faint);font-weight:500;letter-spacing:.04em;
+    display:flex;align-items:center;justify-content:space-between;}
+  .pa-queue b{color:var(--ink-soft);font-weight:700;font-variant-numeric:tabular-nums;}
+
+  /* 3-state widget: all share width — only body content/height differs */
+  .pa-widget.min .pa-body{display:none;}
+  .pa-queue-list{margin-top:11px;padding-top:11px;border-top:1px solid var(--line-soft);
+    display:flex;flex-direction:column;gap:8px;}
+  .pa-queue-list .pa-queue-label{font-size:10px;font-weight:700;letter-spacing:.08em;
+    color:var(--ink-faint);text-transform:uppercase;}
+  .pa-q-item{display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--bg);
+    border-radius:8px;border:1px solid var(--line-soft);}
+  .pa-q-item .q-form{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:5px;
+    background:var(--primary-soft);color:var(--primary);flex-shrink:0;}
+  .pa-q-item .q-file{flex:1;min-width:0;font-size:11.5px;font-weight:600;color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pa-q-item .q-state{font-size:10px;font-weight:700;color:var(--ink-faint);
+    text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;}
+  .pa-q-item.queued .q-state{color:var(--ink-soft);}
+  .pa-q-item.processing .q-state{color:var(--amber);}
+  .pa-q-item.processing{background:var(--amber-soft);border-color:var(--amber-soft);}
+
+  /* ═══ Upload button (topbar) ═══ */
+  .btn-upload{padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    color:var(--primary);font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;
+    transition:all .15s;}
+  .btn-upload:hover{background:var(--primary-soft);border-color:var(--primary-soft);}
+  .btn-upload svg{flex-shrink:0;}
+
+  /* ═══ Right Drawer (Upload) ═══ */
+  @keyframes drawer-in{from{transform:translateX(100%);}to{transform:translateX(0);}}
+  @keyframes overlay-in{from{opacity:0;}to{opacity:1;}}
+  .drawer-overlay{position:fixed;inset:0;background:rgba(14,19,38,.42);z-index:80;
+    opacity:0;pointer-events:none;transition:opacity .22s ease;}
+  .drawer-overlay.open{opacity:1;pointer-events:auto;}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:96vw;background:#fff;z-index:90;
+    box-shadow:-14px 0 40px rgba(16,22,40,.16);display:flex;flex-direction:column;
+    transform:translateX(100%);transition:transform .26s cubic-bezier(.22,.61,.36,1);}
+  .drawer.open{transform:translateX(0);}
+  .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;
+    border-bottom:1px solid var(--line-soft);}
+  .drawer-head-l{display:flex;align-items:center;gap:11px;}
+  .drawer-ico{width:36px;height:36px;border-radius:10px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .drawer-title{font-size:15px;font-weight:700;letter-spacing:-.005em;line-height:1.2;}
+  .drawer-sub{font-size:11.5px;color:var(--ink-faint);margin-top:2px;font-weight:500;}
+  .drawer-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);transition:all .15s;}
+  .drawer-close:hover{background:var(--bg);color:var(--ink);}
+  .drawer-body{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:18px;}
+
+  /* folder selector */
+  .field-label{font-size:11px;font-weight:700;color:var(--ink-faint);letter-spacing:.08em;
+    text-transform:uppercase;margin-bottom:7px;display:block;}
+  .folder-select{appearance:none;-webkit-appearance:none;width:100%;padding:11px 36px 11px 14px;
+    border-radius:9px;border:1px solid var(--line);background:#fff;font-family:var(--font);font-size:13px;
+    font-weight:600;color:var(--ink);cursor:pointer;outline:none;transition:border-color .15s;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235b6376' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center;}
+  .folder-select:focus{border-color:var(--primary);}
+
+  /* drop zone */
+  .drop-zone{border:2px dashed var(--line);border-radius:14px;background:var(--bg);
+    padding:36px 22px;text-align:center;cursor:pointer;transition:all .18s;
+    display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .drop-zone:hover{border-color:var(--primary);background:var(--primary-soft);}
+  .drop-zone.dragging{border-color:var(--primary);background:var(--primary-soft);
+    transform:scale(1.01);box-shadow:0 0 0 4px rgba(32,68,150,.08);}
+  .drop-ico{width:52px;height:52px;border-radius:14px;background:#fff;color:var(--primary);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(32,68,150,.12);}
+  .drop-zone.dragging .drop-ico{color:#fff;background:var(--primary);}
+  .drop-title{font-size:14px;font-weight:700;color:var(--ink);}
+  .drop-title b{color:var(--primary);}
+  .drop-sub{font-size:11.5px;color:var(--ink-faint);font-weight:500;}
+  .drop-zone input[type="file"]{display:none;}
+
+  /* file list */
+  .upload-list{display:flex;flex-direction:column;gap:9px;}
+  .upload-list-head{display:flex;align-items:center;justify-content:space-between;}
+  .upload-list-title{font-size:12px;font-weight:700;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:.06em;}
+  .upload-clear{font-size:11.5px;font-weight:600;color:var(--ink-faint);background:none;border:none;
+    cursor:pointer;padding:2px 4px;transition:color .15s;}
+  .upload-clear:hover{color:var(--orange);}
+  .upload-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line-soft);
+    border-radius:10px;background:#fff;transition:border-color .15s;}
+  .upload-item.uploading{border-color:var(--primary-soft);}
+  .upload-item.done{border-color:var(--green-soft);background:#fafffb;}
+  .upload-item.error{border-color:var(--orange-soft);background:#fffaf8;}
+  .ui-ico{width:34px;height:34px;border-radius:9px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .upload-item.done .ui-ico{background:var(--green-soft);color:var(--green);}
+  .upload-item.error .ui-ico{background:var(--orange-soft);color:var(--orange);}
+  .ui-info{flex:1;min-width:0;}
+  .ui-name{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;}
+  .ui-meta{font-size:10.5px;color:var(--ink-faint);margin-top:3px;
+    display:flex;align-items:center;gap:8px;}
+  .ui-bar{height:4px;border-radius:999px;background:var(--line-soft);overflow:hidden;margin-top:6px;}
+  .ui-bar > i{display:block;height:100%;background:var(--primary);border-radius:999px;
+    transition:width .25s ease;width:0;}
+  .upload-item.done .ui-bar > i{background:var(--green);width:100% !important;}
+  .upload-item.error .ui-bar > i{background:var(--orange);}
+  .ui-remove{width:26px;height:26px;border-radius:7px;border:none;background:transparent;color:var(--ink-faint);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;}
+  .ui-remove:hover{background:var(--orange-soft);color:var(--orange);}
+
+  .drawer-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:14px 22px;border-top:1px solid var(--line-soft);background:#fbfcfe;}
+  .drawer-foot-info{font-size:11.5px;color:var(--ink-faint);font-weight:500;}
+  .drawer-foot-info b{color:var(--ink);font-weight:700;}
+  .drawer-actions{display:flex;align-items:center;gap:8px;}
+  .btn-ghost{padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+  .btn-ghost:hover{background:var(--bg);color:var(--ink);}
+  .btn-primary[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none;}
+
+  /* ═══════════════════════════════════════════════════════════════ */
+  /*  REVIEW MODE — Fullscreen overlay (PDF | Extracted Fields)      */
+  /* ═══════════════════════════════════════════════════════════════ */
+  @keyframes rv-fade{from{opacity:0;}to{opacity:1;}}
+  @keyframes rv-slide{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .rv-root{position:fixed;inset:0;z-index:200;background:var(--bg);
+    display:none;flex-direction:column;animation:rv-fade .22s ease;}
+  .rv-root.open{display:flex;}
+
+  /* top bar */
+  .rv-top{display:flex;align-items:center;gap:16px;padding:14px 22px;
+    background:var(--card);border-bottom:1px solid var(--line);flex-shrink:0;}
+  .rv-brand{display:flex;align-items:center;gap:11px;min-width:240px;}
+  .rv-mode-pill{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:4px 10px;border-radius:999px;background:var(--primary);color:#fff;
+    display:flex;align-items:center;gap:6px;}
+  .rv-mode-pill .ico{display:flex;}
+  .rv-id{font-size:13px;color:var(--ink-soft);font-weight:600;font-variant-numeric:tabular-nums;}
+
+  /* center nav */
+  .rv-nav{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;}
+  .rv-nav-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);display:flex;align-items:center;justify-content:center;
+    transition:all .15s;flex-shrink:0;}
+  .rv-nav-btn:hover:not(:disabled){background:var(--primary-soft);color:var(--primary);border-color:var(--primary-soft);}
+  .rv-nav-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .rv-nav-info{min-width:260px;text-align:center;}
+  .rv-nav-title{font-size:14px;font-weight:700;letter-spacing:-.005em;line-height:1.1;}
+  .rv-nav-sub{font-size:11.5px;color:var(--ink-faint);margin-top:4px;font-weight:500;
+    display:flex;align-items:center;justify-content:center;gap:7px;}
+  .rv-sub-form{font-size:10.5px;font-weight:700;letter-spacing:.02em;
+    padding:2px 8px;border-radius:6px;background:var(--primary-soft);color:var(--primary);}
+  .rv-nav-counter{font-size:11px;font-weight:700;color:var(--primary);background:var(--primary-soft);
+    padding:3px 9px;border-radius:999px;margin-left:7px;font-variant-numeric:tabular-nums;
+    display:inline-flex;align-items:center;}
+
+  /* right actions */
+  .rv-actions{display:flex;align-items:center;gap:8px;min-width:320px;justify-content:flex-end;}
+  .rv-pager{display:flex;align-items:center;gap:6px;padding:3px;border:1px solid var(--line);
+    border-radius:10px;background:#fff;margin-right:4px;}
+  .rv-pager .rv-nav-btn{width:30px;height:30px;border-radius:7px;border:none;background:transparent;}
+  .rv-pager .rv-nav-counter{margin-left:0;}
+  /* compact variant used inside pane heads */
+  .rv-pager.rv-pager-sm{padding:2px;gap:4px;margin-right:6px;}
+  .rv-pager.rv-pager-sm .rv-nav-btn{width:26px;height:26px;}
+  .rv-pager.rv-pager-sm .rv-nav-counter{padding:2px 8px;font-size:10.5px;}
+
+  /* filename in PDF pane head — truncate cleanly */
+  .rv-pane-title-wrap{min-width:0;flex:1;}
+  .rv-pane-head-l{flex:1;min-width:0;}
+  .rv-pane-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+  .rv-act-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);display:flex;align-items:center;justify-content:center;
+    transition:all .15s;position:relative;}
+  .rv-act-btn:hover{background:var(--primary-soft);color:var(--primary);border-color:var(--primary-soft);}
+  .rv-act-btn.gcm{background:linear-gradient(135deg,var(--violet-soft),#fff);color:var(--violet);
+    border-color:var(--violet-soft);}
+  .rv-act-btn.gcm:hover{background:var(--violet);color:#fff;border-color:var(--violet);}
+  .rv-act-btn .dot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;
+    background:var(--orange);border:1.5px solid #fff;}
+  .rv-act-btn.close{border-color:var(--line);}
+  .rv-act-btn.close:hover{background:var(--orange-soft);color:var(--orange);border-color:var(--orange-soft);}
+  .rv-esc-hint{font-size:10.5px;color:var(--ink-faint);margin-left:6px;display:flex;align-items:center;gap:6px;}
+  .rv-esc-hint .kbd{font-size:10px;font-weight:600;color:var(--ink-soft);background:var(--bg);
+    border:1px solid var(--line);padding:1px 6px;border-radius:5px;letter-spacing:.04em;}
+
+  /* body — 50 / 50 split */
+  .rv-body{flex:1;display:flex;min-height:0;overflow:hidden;}
+  .rv-pane{flex:1 1 50%;min-width:0;display:flex;flex-direction:column;
+    background:var(--card);}
+  .rv-pane + .rv-pane{border-left:1px solid var(--line);}
+  .rv-pane-head{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:12px 20px;border-bottom:1px solid var(--line-soft);background:var(--card);flex-shrink:0;}
+  .rv-pane-head-l{display:flex;align-items:center;gap:10px;}
+  .rv-pane-title-block{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .rv-pane-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;background:var(--primary-soft);color:var(--primary);}
+  .rv-pane-ico.fields{background:var(--violet-soft);color:var(--violet);}
+  .rv-pane-title{font-size:13.5px;font-weight:700;letter-spacing:-.005em;}
+  .rv-pane-sub{font-size:11px;color:var(--ink-faint);font-weight:500;}
+  .rv-pane-sub:empty{display:none;}
+  .rv-pane-head-r{display:flex;align-items:center;gap:6px;}
+  .rv-tool{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .rv-tool:hover{background:var(--bg);color:var(--ink);}
+  .rv-zoom{font-size:11.5px;font-weight:700;color:var(--ink-soft);min-width:42px;text-align:center;
+    font-variant-numeric:tabular-nums;}
+
+  /* PDF canvas (left) */
+  .rv-canvas{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;
+    padding:28px;background:#1a1f2e;
+    background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.05) 1px,transparent 0);
+    background-size:22px 22px;}
+  .rv-doc{background:#fff;width:560px;max-width:100%;border-radius:6px;padding:36px 42px;
+    box-shadow:0 14px 50px rgba(0,0,0,.4);font-family:Georgia,serif;color:#111;font-size:11.5px;line-height:1.5;
+    transform-origin:top center;transition:transform .18s ease;}
+  .rv-doc-head{display:flex;justify-content:space-between;align-items:flex-start;}
+  .rv-seal{width:42px;height:42px;border-radius:50%;border:1.5px solid #333;display:flex;
+    align-items:center;justify-content:center;font-size:7.5px;color:#555;font-weight:700;}
+  .rv-doc-title{font-size:17px;font-weight:700;}
+  .rv-doc-rule{border-top:2px solid #111;border-bottom:2px solid #111;margin:18px 0;
+    display:grid;grid-template-columns:62px 1fr 1fr 1fr;}
+  .rv-doc-rule > div{padding:8px 6px;font-size:8px;font-weight:700;min-height:52px;border-right:1px solid #ccc;}
+  .rv-doc-rule > div:last-child{border-right:none;}
+  .rv-sec{background:#e9e9e9;padding:6px 8px;font-weight:700;font-size:11.5px;}
+  .rv-ckbox{display:inline-block;width:11px;height:11px;border:1px solid #333;text-align:center;
+    line-height:10px;margin-right:4px;font-size:9px;}
+  .rv-nm-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:6px;}
+  .rv-nm-grid .f-l{font-size:7.5px;color:#666;}
+  .rv-nm-grid .f-v{border:1px solid #999;padding:6px 7px;font-size:10.5px;}
+
+  /* Extracted fields list (right) */
+  .rv-primary{display:flex;align-items:center;gap:10px;}
+  .rv-primary-lbl{font-size:12px;font-weight:600;color:var(--ink-soft);}
+  .rv-toggle{position:relative;width:36px;height:20px;border-radius:999px;border:none;
+    background:var(--line);cursor:pointer;padding:0;transition:background .15s;}
+  .rv-toggle .rv-toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;
+    border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .15s;}
+  .rv-toggle[aria-checked="true"]{background:var(--green);}
+  .rv-toggle[aria-checked="true"] .rv-toggle-thumb{left:18px;}
+  .rv-conf{display:flex;align-items:center;gap:9px;padding:7px 11px;
+    border-radius:10px;background:var(--bg);border:1px solid var(--line);
+    flex:1 1 auto;min-width:200px;}
+  .rv-conf .lbl{font-size:11px;color:var(--ink-soft);font-weight:600;}
+  .rv-conf-track{flex:1;height:5px;border-radius:999px;background:var(--line-soft);overflow:hidden;}
+  .rv-conf-track > i{display:block;height:100%;border-radius:999px;}
+  .rv-summary{margin:14px 20px 0;display:flex;gap:8px;flex-wrap:wrap;font-size:11.5px;}
+  .rv-summary .stat{display:inline-flex;align-items:center;gap:5px;font-weight:600;padding:3px 9px;
+    border-radius:6px;}
+  .rv-summary .stat b{font-weight:700;font-variant-numeric:tabular-nums;}
+
+  .rv-flist{flex:1;overflow-y:auto;padding:16px 20px 16px;display:grid;grid-template-columns:1fr 1fr;
+    gap:11px;align-content:start;}
+  .rv-flist > .rv-field{min-width:0;}
+  .rv-field{padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:#fff;
+    transition:box-shadow .15s;}
+  .rv-field:hover{box-shadow:0 2px 12px rgba(28,26,23,.05);}
+  .rv-field.low{border-color:var(--orange);box-shadow:0 1px 10px rgba(225,74,40,.06);}
+  .rv-field.wide{grid-column:1 / -1;}
+  .rv-field-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .rv-field-key{font-size:11.5px;font-weight:700;color:var(--ink-soft);letter-spacing:.005em;}
+  .rv-field-meta{display:flex;align-items:center;gap:9px;}
+  .rv-src{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    padding:2px 6px;border-radius:5px;}
+  .rv-src.native{color:var(--blue);background:var(--blue-soft);}
+  .rv-src.llm{color:var(--violet);background:var(--violet-soft);}
+  .rv-src.default{color:var(--green);background:var(--green-soft);}
+  .rv-pct{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .rv-finput{position:relative;}
+  .rv-finput input,.rv-finput select,.rv-finput textarea{
+    width:100%;padding:9px 34px 9px 12px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13px;color:var(--ink);outline:none;
+    transition:all .15s;}
+  .rv-finput textarea{padding-right:12px;resize:vertical;min-height:64px;line-height:1.4;}
+  .rv-finput input:focus,.rv-finput select:focus,.rv-finput textarea:focus{
+    border-color:var(--primary);background:#fff;}
+  .rv-finput select{appearance:none;-webkit-appearance:none;cursor:pointer;}
+  .rv-finput svg.tail{position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    color:var(--ink-faint);pointer-events:none;}
+
+  /* custom dropdown for long-option selects */
+  .rv-cs{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:9px 34px 9px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);
+    font-family:var(--font);font-size:13px;color:var(--ink);text-align:left;cursor:pointer;
+    transition:all .15s;overflow:hidden;white-space:nowrap;}
+  .rv-cs:hover{background:#fff;}
+  .rv-cs.open{border-color:var(--primary);background:#fff;}
+  .rv-cs-val{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rv-cs-pop{position:absolute;top:calc(100% + 4px);left:0;
+    width:100%;max-height:320px;overflow-y:auto;
+    background:#fff;border:1px solid var(--line);border-radius:9px;
+    box-shadow:0 12px 28px rgba(28,26,23,.15);padding:5px;z-index:60;display:none;}
+  .rv-cs-pop.open{display:block;}
+  .rv-cs-opt{display:block;width:100%;padding:8px 10px;border-radius:6px;cursor:pointer;
+    font-size:12.5px;color:var(--ink);line-height:1.35;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rv-cs-opt:hover{background:var(--bg);}
+  .rv-cs-opt.selected{background:var(--primary-soft);color:var(--primary);font-weight:600;}
+  .rv-field-warn{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;
+    color:var(--orange);font-weight:500;}
+
+  /* footer with confirm */
+  .rv-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:13px 22px;border-top:1px solid var(--line);background:#fbfcfe;flex-shrink:0;}
+  .rv-foot-info{font-size:12px;color:var(--ink-soft);font-weight:500;}
+  .rv-foot-info b{color:var(--ink);font-weight:700;}
+  .rv-foot-actions{display:flex;align-items:center;gap:9px;}
+  .rv-btn-ghost{padding:9px 16px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;
+    transition:all .15s;}
+  .rv-btn-ghost:hover{background:var(--bg);color:var(--ink);}
+  .rv-btn-confirm{padding:9px 18px;border-radius:9px;border:none;background:var(--primary);color:#fff;
+    font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;cursor:pointer;
+    box-shadow:0 2px 10px rgba(32,68,150,.22);transition:filter .15s;}
+  .rv-btn-confirm:hover{filter:brightness(1.06);}
+
+  /* ═══════════════════════════════════════════════════════════════ */
+  /*  GCM MODAL — sits ABOVE the fullscreen review                   */
+  /* ═══════════════════════════════════════════════════════════════ */
+  @keyframes gcm-fade{from{opacity:0;}to{opacity:1;}}
+  @keyframes gcm-pop{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+  .gcm-overlay{position:fixed;inset:0;z-index:300;background:rgba(14,19,38,.55);
+    display:none;align-items:center;justify-content:center;padding:30px;
+    animation:gcm-fade .18s ease;}
+  .gcm-overlay.open{display:flex;}
+  .gcm-modal{width:760px;max-width:100%;max-height:90vh;background:#fff;border-radius:16px;
+    box-shadow:0 24px 80px rgba(16,22,40,.32),0 4px 12px rgba(16,22,40,.10);
+    display:flex;flex-direction:column;overflow:hidden;animation:gcm-pop .22s cubic-bezier(.22,.61,.36,1);}
+  .gcm-head{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:18px 22px;border-bottom:1px solid var(--line-soft);
+    background:linear-gradient(135deg,var(--violet-soft),#fff 65%);}
+  .gcm-head-l{display:flex;align-items:center;gap:12px;}
+  .gcm-ico{width:38px;height:38px;border-radius:10px;background:var(--violet);color:#fff;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    box-shadow:0 4px 14px rgba(107,76,224,.32);}
+  .gcm-title{font-size:16px;font-weight:700;letter-spacing:-.005em;line-height:1.15;}
+  .gcm-sub{font-size:12px;color:var(--ink-soft);margin-top:3px;font-weight:500;}
+  .gcm-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .gcm-close:hover{background:var(--orange-soft);color:var(--orange);border-color:var(--orange-soft);}
+
+  .gcm-body{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:18px;}
+
+  /* GCM hero — applicant + form summary */
+  .gcm-hero{padding:16px;border-radius:13px;border:1px solid var(--line);
+    background:linear-gradient(135deg,var(--primary-soft),#fff 70%);display:flex;align-items:center;gap:14px;}
+  .gcm-avatar{width:48px;height:48px;border-radius:12px;background:var(--primary);color:#fff;
+    font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;letter-spacing:-.01em;}
+  .gcm-hero-main{flex:1;min-width:0;}
+  .gcm-hero-name{font-size:16px;font-weight:700;letter-spacing:-.005em;}
+  .gcm-hero-meta{font-size:12px;color:var(--ink-soft);margin-top:3px;display:flex;align-items:center;gap:10px;}
+  .gcm-hero-meta .sep{color:var(--ink-faint);}
+  .gcm-form-tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;
+    background:var(--primary-soft);color:var(--primary);letter-spacing:.02em;}
+
+  /* GCM kv table */
+  .gcm-section{border:1px solid var(--line);border-radius:13px;overflow:hidden;}
+  .gcm-section-head{display:flex;align-items:center;justify-content:space-between;
+    padding:11px 16px;background:var(--bg);border-bottom:1px solid var(--line-soft);}
+  .gcm-section-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-soft);display:flex;align-items:center;gap:7px;}
+  .gcm-section-title svg{color:var(--primary);}
+  .gcm-status{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.04em;
+    text-transform:uppercase;}
+  .gcm-status.matched{background:var(--green-soft);color:var(--green);}
+  .gcm-status.partial{background:var(--amber-soft);color:var(--amber);}
+
+  .gcm-kv{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .gcm-row{padding:13px 16px;border-top:1px solid var(--line-soft);}
+  .gcm-row:nth-child(-n+2){border-top:none;}
+  .gcm-row:nth-child(odd){border-right:1px solid var(--line-soft);}
+  .gcm-k{font-size:10.5px;font-weight:700;color:var(--ink-faint);letter-spacing:.06em;
+    text-transform:uppercase;margin-bottom:4px;}
+  .gcm-v{font-size:13px;font-weight:600;color:var(--ink);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .gcm-v.mono{font-variant-numeric:tabular-nums;}
+  .gcm-v.muted{color:var(--ink-soft);font-weight:500;}
+
+  /* destination card — where the notice will be saved */
+  .gcm-dest{padding:14px 16px;border-radius:13px;border:1px dashed var(--primary);
+    background:var(--primary-soft);display:flex;align-items:center;gap:12px;}
+  .gcm-dest-ico{width:36px;height:36px;border-radius:10px;background:#fff;color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    box-shadow:0 2px 8px rgba(32,68,150,.16);}
+  .gcm-dest-txt{flex:1;min-width:0;}
+  .gcm-dest-lbl{font-size:10.5px;font-weight:700;color:var(--primary);letter-spacing:.08em;
+    text-transform:uppercase;}
+  .gcm-dest-path{font-size:13px;font-weight:600;color:var(--ink);margin-top:3px;
+    font-variant-numeric:tabular-nums;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .gcm-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:14px 22px;border-top:1px solid var(--line-soft);background:#fbfcfe;}
+  .gcm-foot-info{font-size:11.5px;color:var(--ink-faint);font-weight:500;}
+  .gcm-foot-actions{display:flex;align-items:center;gap:9px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <img class="brand-logo" src="assets/logo_white.png" alt="GIP" />
+      <button class="brand-icon" id="brandIcon" title="Expand menu" aria-label="Expand menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <button class="collapse-btn" id="collapseBtn" title="Collapse">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+    </div>
+
+    <nav class="nav" id="nav"></nav>
+
+    <div class="side-foot">
+      <div id="footItems"></div>
+      <div class="user-wrap">
+        <button class="user" id="userBtn" data-label="Austin" title="Austin · admin" aria-haspopup="true" aria-expanded="false">
+          <div class="avatar">A</div>
+          <div class="user-txt">
+            <div class="user-name">Austin</div>
+            <div class="user-role">admin</div>
+          </div>
+          <span class="user-caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+        </button>
+        <div class="user-pop" id="userPop" role="menu" aria-labelledby="userBtn">
+          <a class="user-pop-item" href="#" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            Manage
+          </a>
+          <a class="user-pop-item" href="#" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
+            Help
+          </a>
+          <a class="user-pop-item" href="#" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+            Support
+          </a>
+          <div class="user-pop-sep"></div>
+          <a class="user-pop-item" href="#" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+            Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Notice Processing</h1>
+        <div class="date">Queue List</div>
+      </div>
+      <div class="top-actions">
+        <div class="top-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Search files, applicants…" />
+        </div>
+        <button class="btn-upload" id="uploadBtn" title="Upload notices">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload
+        </button>
+      </div>
+    </div>
+
+    <!-- tabbed grid -->
+    <div class="workspace">
+      <section class="panel">
+        <div class="tabs-bar">
+          <div class="tabs-left">
+            <button class="tab-btn active" data-tab="review">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Review Que <span class="cnt" id="tabReviewCount">0</span>
+            </button>
+            <button class="tab-btn" data-tab="auto">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              Processed Notices <span class="cnt" id="tabAutoCount">0</span>
+            </button>
+          </div>
+          <button class="btn-review-mode" id="reviewModeBtn" title="Open immersive review workspace">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            Review Mode
+            <span class="kbd">F</span>
+          </button>
+        </div>
+
+        <div class="panel-head">
+          <div class="panel-title" id="panelTitle">
+            <div class="ico-wrap" id="panelIco"></div>
+            <div>
+              <h2 id="panelH2">Review Que</h2>
+              <div class="sub" id="panelSub">Awaiting reviewer validation</div>
+            </div>
+          </div>
+          <div class="panel-head-r">
+            <button class="icon-btn-sm" title="Refresh"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg></button>
+            <div class="menu-wrap" id="reviewMenuWrap">
+              <button class="icon-btn-sm" id="reviewMenuBtn" title="More"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              <div class="menu" id="reviewMenu">
+                <button class="menu-item" data-action="review-all">
+                  <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+                  Review All
+                  <span class="cnt" id="cntAll">0</span>
+                </button>
+                <button class="menu-item" data-action="review-selected">
+                  <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  Review Selected
+                  <span class="cnt" id="cntSel">0</span>
+                </button>
+                <div class="menu-sep"></div>
+                <button class="menu-item" data-action="assign-all">
+                  <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span>
+                  Assign All
+                  <span class="cnt" id="cntAll2">0</span>
+                </button>
+                <button class="menu-item" data-action="assign-selected">
+                  <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg></span>
+                  Assign Selected
+                  <span class="cnt" id="cntSel2">0</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tbl-wrap">
+          <table class="grid">
+            <colgroup>
+              <col class="c-chk"/>
+              <col class="c-file"/>
+              <col class="c-date"/>
+              <col class="c-fn"/>
+              <col class="c-acc"/>
+              <col class="c-status"/>
+              <col class="c-act"/>
+            </colgroup>
+            <thead id="gridHead"></thead>
+            <tbody id="gridBody"></tbody>
+          </table>
+        </div>
+
+        <div class="grid-foot">
+          <div class="left">
+            <span class="rows-of" id="rowsOf">0 of 0 rows</span>
+            <span class="page-size">Rows per page
+              <select id="pageSize">
+                <option value="6" selected>6</option>
+                <option value="12">12</option>
+                <option value="18">18</option>
+                <option value="24">24</option>
+              </select>
+            </span>
+          </div>
+          <div class="pager" id="pager"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- ═══ Upload Drawer ═══ -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="drawer" id="uploadDrawer" aria-hidden="true" aria-label="Upload notices">
+  <div class="drawer-head">
+    <div class="drawer-head-l">
+      <div class="drawer-ico">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div>
+        <div class="drawer-title">Upload Notices</div>
+        <div class="drawer-sub">Drop USCIS notices to ingest into the queue</div>
+      </div>
+    </div>
+    <button class="drawer-close" id="drawerCloseBtn" title="Close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+    <div>
+      <label class="field-label" for="uploadFolder">Destination Folder</label>
+      <select id="uploadFolder" class="folder-select">
+        <option value="notices/inbox">Notices · Inbox</option>
+        <option value="notices/i130">I-130 · Family Sponsorship</option>
+        <option value="notices/i485">I-485 · Adjustment of Status</option>
+        <option value="notices/i765">I-765 · EAD</option>
+        <option value="notices/n400">N-400 · Naturalization</option>
+        <option value="notices/h4ead">H4-EAD</option>
+        <option value="notices/other">Other / Unclassified</option>
+      </select>
+    </div>
+
+    <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Drop files or click to browse">
+      <div class="drop-ico">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div>
+        <div class="drop-title">Drop files here or <b>click to browse</b></div>
+        <div class="drop-sub">PDF, JPG, PNG · up to 25 MB each</div>
+      </div>
+      <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/*" />
+    </div>
+
+    <div class="upload-list" id="uploadList" style="display:none;">
+      <div class="upload-list-head">
+        <span class="upload-list-title">Files <span id="ulCount">0</span></span>
+        <button class="upload-clear" id="ulClear">Clear all</button>
+      </div>
+      <div id="ulItems"></div>
+    </div>
+  </div>
+
+  <div class="drawer-foot">
+    <div class="drawer-foot-info">
+      <span id="ulFootInfo"><b>0</b> files queued</span>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn-ghost" id="drawerCancelBtn">Cancel</button>
+      <button class="btn-primary" id="uploadStartBtn" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Upload
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ═══ REVIEW MODE — Fullscreen overlay                       ═══ -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="rv-root" id="rvRoot" role="dialog" aria-modal="true" aria-label="Review Mode" tabindex="-1">
+
+  <!-- ── Top bar: brand · centered details · actions (with prev/next) ── -->
+  <div class="rv-top">
+    <div class="rv-brand">
+      <span class="rv-mode-pill">
+        <span class="ico">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/></svg>
+        </span>
+        Review Mode
+      </span>
+    </div>
+
+    <div class="rv-nav">
+      <div class="rv-nav-info">
+        <div class="rv-nav-title" id="rvTitle">—</div>
+        <div class="rv-nav-sub">
+          <span id="rvSub">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rv-actions">
+      <div class="rv-pager">
+        <button class="rv-nav-btn" id="rvPrev" title="Previous notice (←)" aria-label="Previous notice">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="rv-nav-counter" id="rvCounterChip">— of —</span>
+        <button class="rv-nav-btn" id="rvNext" title="Next notice (→)" aria-label="Next notice">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <button class="rv-act-btn gcm" id="rvGcmBtn" title="View linked GCM record" aria-label="GCM record">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>
+      </button>
+      <button class="rv-act-btn close" id="rvClose" title="Exit Review Mode (Esc)" aria-label="Close">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <span class="rv-esc-hint">Press <span class="kbd">Esc</span></span>
+    </div>
+  </div>
+
+  <!-- ── Body: 50/50 split ── -->
+  <div class="rv-body">
+
+    <!-- LEFT: PDF -->
+    <section class="rv-pane">
+      <div class="rv-pane-head">
+        <div class="rv-pane-head-l">
+          <div class="rv-pane-ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="rv-pane-title-wrap">
+            <div class="rv-pane-title" id="rvPdfTitle" title="">Source Notice</div>
+          </div>
+        </div>
+        <div class="rv-pane-head-r">
+          <div class="rv-pager rv-pager-sm">
+            <button class="rv-nav-btn" id="rvPagePrev" title="Previous page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span class="rv-nav-counter" id="rvPageChip">Page 1 of 14</span>
+            <button class="rv-nav-btn" id="rvPageNext" title="Next page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          <button class="rv-tool" id="rvZoomOut" title="Zoom out">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <span class="rv-zoom" id="rvZoomLbl">100%</span>
+          <button class="rv-tool" id="rvZoomIn" title="Zoom in">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="rv-tool" id="rvDownload" title="Download notice PDF">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="rv-canvas" id="rvCanvas"></div>
+    </section>
+
+    <!-- RIGHT: Extracted fields -->
+    <section class="rv-pane">
+      <div class="rv-pane-head">
+        <div class="rv-pane-head-l">
+          <div class="rv-pane-ico fields">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L19 10l-5.1 1.2L12 17l-1.9-5.8L5 10l5.1-1.2z"/></svg>
+          </div>
+          <div class="rv-pane-title-block">
+            <div class="rv-pane-title">Extracted Fields</div>
+            <div class="rv-pane-sub" id="rvNeedReviewSlot"></div>
+          </div>
+        </div>
+        <div class="rv-primary" id="rvPrimary">
+          <span class="rv-primary-lbl">Primary Flag</span>
+          <button type="button" class="rv-toggle" id="rvPrimaryToggle" role="switch" aria-checked="false" title="Primary Flag">
+            <span class="rv-toggle-thumb"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="rv-flist" id="rvFlist"></div>
+
+      <div class="rv-foot">
+        <div class="rv-conf">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f8a52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          <div style="flex:1;min-width:0;">
+            <div class="lbl">Overall Extraction Confidence</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:3px;">
+              <div class="rv-conf-track"><i id="rvConfBar" style="width:0;background:var(--green);"></i></div>
+              <span id="rvConfPct" style="font-size:12px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums;">0%</span>
+            </div>
+          </div>
+        </div>
+        <div class="rv-foot-actions">
+          <button class="rv-btn-ghost" id="rvSkipBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+            Skip
+          </button>
+          <button class="rv-btn-confirm" id="rvConfirmBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Confirm &amp; Next
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ═══ GCM MODAL — sits above the fullscreen review            ═══ -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="gcm-overlay" id="gcmOverlay" role="dialog" aria-modal="true" aria-label="GCM linked record">
+  <div class="gcm-modal" role="document">
+    <div class="gcm-head">
+      <div class="gcm-head-l">
+        <div class="gcm-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>
+        </div>
+        <div>
+          <div class="gcm-title">GCM Linked Record</div>
+          <div class="gcm-sub">Where this notice will be filed in the Global Case Management system</div>
+        </div>
+      </div>
+      <button class="gcm-close" id="gcmCloseBtn" title="Close (Esc)" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="gcm-body" id="gcmBody"></div>
+
+    <div class="gcm-foot">
+      <div class="gcm-foot-info">Verified via case ID match · auto-linked</div>
+      <div class="gcm-foot-actions">
+        <button class="rv-btn-ghost" id="gcmCancelBtn">Close</button>
+        <button class="rv-btn-confirm" id="gcmGotoBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Open in GCM
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Processing Agent floating widget ═══ -->
+<div class="pa-widget" id="paWidget">
+  <div class="pa-head">
+    <div class="pa-avatar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+    </div>
+    <div class="pa-head-txt">
+      <div class="pa-name">Processing Agent</div>
+      <div class="pa-status"><span class="live-dot"></span><span id="paStatusTxt">Online</span></div>
+    </div>
+    <div class="pa-controls" id="paControls"></div>
+  </div>
+  <div class="pa-body" id="paBody"></div>
+</div>
+
+<script>
+/* ─── shared nav model (matches dashboard) ─── */
+const ICONS = {
+  dashboard:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>',
+  notice:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>',
+  compliance:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>',
+  filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  agentops:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
+  email:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  assistant:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+};
+const NAV = [
+  {id:'dashboard',  label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard,                        visible:1},
+  {id:'assistant',  label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:0},
+  {id:'notice',     label:'Notice Processing',        href:'gip-notice-list.html',icon:ICONS.notice,    group:'Agents',         visible:1},
+  {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:0},
+  {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:0},
+  {id:'email',      label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:0},
+  {id:'agentops',   label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights',       visible:0},
+];
+const ACTIVE_NAV = 'notice';
+
+const FOOT_ICONS = {
+  settings:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  status:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>',
+  notifications:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+};
+const FOOT = [
+  {id:'settings',      label:'Settings',      icon:FOOT_ICONS.settings,      href:'gip-settings.html', visible:0},
+  {id:'status',        label:'Status',        icon:FOOT_ICONS.status,                                   visible:0},
+  {id:'notifications', label:'Notifications', icon:FOOT_ICONS.notifications, badge:'0',                 visible:0},
+];
+
+function renderFoot(){
+  document.getElementById('footItems').innerHTML = FOOT.filter(f=>f.visible).map(f=>{
+    const tag = f.href ? 'a' : 'button';
+    const href = f.href ? ` href="${f.href}"` : '';
+    const badge = f.badge ? `<span class="badge">${f.badge}</span>` : '';
+    return `<${tag} class="foot-item"${href} data-label="${f.label}" title="${f.label}">
+      <span class="ico">${f.icon}</span><span class="lbl">${f.label}</span>${badge}
+    </${tag}>`;
+  }).join('');
+}
+
+function renderNav(){
+  let html = '', currentGroup = null;
+  NAV.filter(n=>n.visible).forEach(n=>{
+    const g = n.group || null;
+    if(g !== currentGroup){
+      currentGroup = g;
+      if(g) html += `<div class="nav-label lbl">${g}</div>`;
+    }
+    html += `<a class="nav-item ${n.id===ACTIVE_NAV?'active':''}" href="${n.href}" data-label="${n.label}" title="${n.label}">
+      <span class="ico">${n.icon}</span><span class="lbl">${n.label}</span>
+    </a>`;
+  });
+  document.getElementById('nav').innerHTML = html;
+}
+
+/* ─── grid data ─── */
+const AUTO_QUE = [
+  {file:'I130_Chen_Marcus_2026-06-03.pdf', size:'2.4 MB', date:'Jun 3, 2026', form:'I-130', fn:'Marcus Chen', accuracy:94, status:'completed'},
+  {file:'I485_Hassan_Ahmed_2026-06-03.pdf', size:'3.1 MB', date:'Jun 3, 2026', form:'I-485', fn:'Ahmed Hassan', accuracy:97, status:'completed'},
+  {file:'N400_Tanaka_Yuki_2026-06-03.pdf', size:'1.8 MB', date:'Jun 3, 2026', form:'N-400', fn:'Yuki Tanaka', accuracy:99, status:'completed'},
+  {file:'I765_Silva_Paulo_2026-06-03.pdf', size:'2.0 MB', date:'Jun 3, 2026', form:'I-765', fn:'Paulo Silva', accuracy:96, status:'completed'},
+  {file:'H4EAD_Kapoor_Riya_2026-06-03.pdf', size:'1.5 MB', date:'Jun 3, 2026', form:'H4-EAD', fn:'Riya Kapoor', accuracy:93, status:'completed'},
+  {file:'I140_Volkov_Anton_2026-06-02.pdf', size:'2.6 MB', date:'Jun 2, 2026', form:'I-140', fn:'Anton Volkov', accuracy:95, status:'completed'},
+  {file:'N400_Dubois_Camille_2026-06-02.pdf', size:'2.2 MB', date:'Jun 2, 2026', form:'N-400', fn:'Camille Dubois', accuracy:98, status:'completed'},
+  {file:'I539_Wong_Mei_2026-06-01.pdf', size:'1.7 MB', date:'Jun 1, 2026', form:'I-539', fn:'Mei Wong', accuracy:94, status:'completed'},
+];
+
+const REVIEW_QUE = [
+  {file:'N400_Rodriguez_Elena_2026-06-02.pdf', size:'2.7 MB', date:'Jun 2, 2026', form:'N-400', fn:'Elena Rodriguez', accuracy:91, status:'ready'},
+  {file:'H4EAD_Nair_Priya_2026-06-03.pdf', size:'1.9 MB', date:'Jun 3, 2026', form:'H4-EAD', fn:'Priya Nair', accuracy:88, status:'ready'},
+  {file:'I765_Okafor_David_2026-06-01.pdf', size:'2.2 MB', date:'Jun 1, 2026', form:'I-765', fn:'David Okafor', accuracy:84, status:'ready'},
+  {file:'N400_Mendez_Sofia_2026-06-01.pdf', size:'2.5 MB', date:'Jun 1, 2026', form:'N-400', fn:'Sofia Mendez', accuracy:78, status:'ready'},
+  {file:'I130_Bauer_Klaus_2026-05-31.pdf', size:'3.0 MB', date:'May 31, 2026', form:'I-130', fn:'Klaus Bauer', accuracy:73, status:'ready'},
+  {file:'I485_Park_Jiwoo_2026-05-31.pdf', size:'2.8 MB', date:'May 31, 2026', form:'I-485', fn:'Jiwoo Park', accuracy:68, status:'ready'},
+  {file:'I140_Costa_Mariana_2026-05-30.pdf', size:'2.3 MB', date:'May 30, 2026', form:'I-140', fn:'Mariana Costa', accuracy:89, status:'ready'},
+  {file:'I539_Al-Sayed_Omar_2026-05-30.pdf', size:'2.1 MB', date:'May 30, 2026', form:'I-539', fn:'Omar Al-Sayed', accuracy:82, status:'ready'},
+];
+
+const STATUS = {
+  processing:{label:'Processing'},
+  queued:{label:'Queued'},
+  ready:{label:'Ready for Review'},
+  completed:{label:'Completed'},
+  failed:{label:'Failed'},
+};
+
+const ICON = {
+  pdf:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  eye:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  edit:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  download:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  stop:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>',
+  retry:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>',
+  trash:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>',
+  check:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+};
+
+function accuracyTone(a){
+  if(a>=92) return 'var(--green)';
+  if(a>=87) return 'var(--amber)';
+  if(a>=72) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+function accuracyCell(a){
+  if(a==null) return `<span style="color:var(--ink-faint);font-size:12px;">—</span>`;
+  const tone = accuracyTone(a);
+  return `<div class="accuracy">
+    <div class="track"><i style="width:${a}%;background:${tone};"></i></div>
+    <span class="pct" style="color:${tone};">${a}%</span>
+  </div>`;
+}
+
+function processingStatusCell(progress){
+  const pct = Math.round(progress);
+  const C = 2 * Math.PI * 14;
+  const offset = C * (1 - pct/100);
+  return `<div class="proc-status">
+    <div class="proc-ring">
+      <svg width="34" height="34" viewBox="0 0 34 34">
+        <circle class="ring-bg" cx="17" cy="17" r="14" fill="none" stroke-width="3"/>
+        <circle class="ring-fg" cx="17" cy="17" r="14" fill="none" stroke-width="3"
+          stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"/>
+        <circle class="ring-spinner" cx="17" cy="17" r="14" fill="none" stroke-width="3"
+          stroke-dasharray="${(C*0.18).toFixed(2)} ${C.toFixed(2)}" opacity=".55"/>
+      </svg>
+      <div class="proc-pct">${pct}%</div>
+    </div>
+    <div class="proc-txt">
+      <span class="lbl">Processing</span>
+      <span class="sub">Extracting fields…</span>
+    </div>
+  </div>`;
+}
+
+function statusCell(row){
+  if(row.status==='processing') return processingStatusCell(row.progress ?? 0);
+  return `<span class="pill ${row.status}">${STATUS[row.status]?.label || row.status}</span>`;
+}
+
+function actionsCell(){
+  return `<div class="actions" style="justify-content:center;">
+    <a class="act-btn" href="gip-notice.html?count=1" title="View">${ICON.eye}</a>
+  </div>`;
+}
+
+function rowHTML(row, opts){
+  const selectable = opts && opts.selectable;
+  const idx = opts && opts.idx;
+  const leading = selectable
+    ? `<td class="col-chk"><input type="checkbox" class="chk row-chk" data-idx="${idx}" ${row._sel?'checked':''}/></td>`
+    : '';
+  return `<tr class="${selectable && row._sel ? 'selected':''}">
+    ${leading}
+    <td>
+      <div class="file-cell">
+        <div>
+          <div class="file-name">${row.file}</div>
+          <div class="file-sub">
+            <span class="form-tag">${row.form}</span>
+            <span class="file-meta">${row.size}</span>
+          </div>
+        </div>
+      </div>
+    </td>
+    <td><span class="col-date">${row.date}</span></td>
+    <td><span class="fn-name">${row.fn}</span></td>
+    <td>${accuracyCell(row.accuracy)}</td>
+    <td>${statusCell(row)}</td>
+    <td>${actionsCell()}</td>
+  </tr>`;
+}
+
+/* ─── tabbed grid state ─── */
+let activeTab = 'review';
+let currentPage = 1;
+let pageSize = 6;
+
+const TAB_META = {
+  review:{
+    title:'Review Que',
+    sub:'Awaiting reviewer validation',
+    ico:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    iconClass:'review',
+  },
+  auto:{
+    title:'Processed Notices',
+    sub:'Auto-extracted, ready for filing',
+    ico:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+    iconClass:'auto',
+  },
+};
+
+function activeData(){ return activeTab==='review' ? REVIEW_QUE : AUTO_QUE; }
+
+function renderHead(){
+  document.getElementById('gridHead').innerHTML = `<tr>
+    <th class="col-chk"><input type="checkbox" class="chk" id="selAll" /></th>
+    <th>File Name</th>
+    <th>Date</th>
+    <th>FN Name</th>
+    <th>Accuracy</th>
+    <th>Status</th>
+    <th style="text-align:center;">Action</th>
+  </tr>`;
+  document.getElementById('selAll').onchange = (e)=>{
+    const on = e.target.checked;
+    activeData().forEach(r=> r._sel = on);
+    renderGrids();
+  };
+}
+
+function renderPanelHead(){
+  const meta = TAB_META[activeTab];
+  document.getElementById('panelH2').textContent = meta.title;
+  document.getElementById('panelSub').textContent = meta.sub;
+  const ico = document.getElementById('panelIco');
+  ico.innerHTML = meta.ico;
+  ico.parentElement.className = 'panel-title ' + meta.iconClass;
+  document.getElementById('reviewMenuWrap').style.visibility = activeTab==='review' ? 'visible' : 'hidden';
+  const rvBtn = document.getElementById('reviewModeBtn');
+  if(rvBtn) rvBtn.style.display = activeTab==='review' ? 'flex' : 'none';
+}
+
+function renderTabs(){
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab===activeTab);
+  });
+  document.getElementById('tabReviewCount').textContent = REVIEW_QUE.length;
+  document.getElementById('tabAutoCount').textContent = AUTO_QUE.length;
+}
+
+function pageSlice(){
+  const data = activeData();
+  const start = (currentPage-1) * pageSize;
+  return data.slice(start, start+pageSize);
+}
+
+function renderFooter(){
+  const total = activeData().length;
+  const pages = Math.max(1, Math.ceil(total/pageSize));
+  if(currentPage > pages) currentPage = pages;
+  const start = total===0 ? 0 : (currentPage-1)*pageSize + 1;
+  const end = Math.min(total, currentPage*pageSize);
+  document.getElementById('rowsOf').innerHTML = total===0
+    ? `<b>0</b> rows`
+    : `<b>${start}–${end}</b> of <b>${total}</b> rows`;
+
+  /* pager: prev, 1, …, around current, …, last, next */
+  const pager = document.getElementById('pager');
+  const btn = (label, page, opts={})=>{
+    const cls = ['pg', opts.active?'active':'', opts.dots?'dots':''].filter(Boolean).join(' ');
+    const dis = opts.disabled?'disabled':'';
+    return `<button class="${cls}" ${dis} data-page="${page}">${label}</button>`;
+  };
+  const arr = [];
+  arr.push(btn('‹', currentPage-1, {disabled:currentPage<=1}));
+  const pushPage = p => arr.push(btn(p, p, {active:p===currentPage}));
+  const pageNums = new Set([1, pages, currentPage-1, currentPage, currentPage+1]);
+  const list = [...pageNums].filter(p=>p>=1 && p<=pages).sort((a,b)=>a-b);
+  let prev = 0;
+  list.forEach(p=>{
+    if(p - prev > 1) arr.push(`<button class="pg dots" disabled>…</button>`);
+    pushPage(p); prev = p;
+  });
+  arr.push(btn('›', currentPage+1, {disabled:currentPage>=pages}));
+  pager.innerHTML = arr.join('');
+  pager.querySelectorAll('.pg[data-page]').forEach(b=>{
+    if(b.disabled || b.classList.contains('active') || b.classList.contains('dots')) return;
+    b.onclick = ()=>{ currentPage = +b.dataset.page; renderGrids(); };
+  });
+}
+
+function renderGrids(){
+  renderTabs();
+  renderPanelHead();
+  renderHead();
+  const data = activeData();
+  const rows = pageSlice();
+  document.getElementById('gridBody').innerHTML = rows.length
+    ? rows.map(r=>{
+        const absoluteIdx = data.indexOf(r);
+        return rowHTML(r, {selectable:true, idx:absoluteIdx});
+      }).join('')
+    : `<tr><td colspan="7" class="empty">No rows to display</td></tr>`;
+  renderFooter();
+  wireRowSelection();
+  updateSelectionUI();
+}
+
+function wireRowSelection(){
+  const data = activeData();
+  document.querySelectorAll('.row-chk').forEach(box=>{
+    box.onchange = ()=>{
+      const i = +box.dataset.idx;
+      data[i]._sel = box.checked;
+      const tr = box.closest('tr');
+      if(tr) tr.classList.toggle('selected', box.checked);
+      updateSelectionUI();
+    };
+  });
+}
+
+function updateSelectionUI(){
+  const data = activeData();
+  const total = data.length;
+  const sel = data.filter(r=>r._sel).length;
+  const selAll = document.getElementById('selAll');
+  if(selAll){
+    selAll.checked = sel===total && total>0;
+    selAll.indeterminate = sel>0 && sel<total;
+  }
+  const reviewTotal = REVIEW_QUE.length;
+  const reviewSel = REVIEW_QUE.filter(r=>r._sel).length;
+  const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('cntAll', reviewTotal);
+  set('cntAll2', reviewTotal);
+  set('cntSel', reviewSel);
+  set('cntSel2', reviewSel);
+  document.querySelectorAll('[data-action="review-selected"],[data-action="assign-selected"]').forEach(b=>{
+    b.classList.toggle('disabled', reviewSel===0);
+  });
+}
+
+/* tab + page-size wiring */
+document.querySelectorAll('.tab-btn').forEach(b=>{
+  b.onclick = ()=>{
+    activeTab = b.dataset.tab;
+    currentPage = 1;
+    renderGrids();
+  };
+});
+document.getElementById('pageSize').onchange = (e)=>{
+  pageSize = +e.target.value;
+  currentPage = 1;
+  renderGrids();
+};
+
+/* simulate processing progress ticking */
+function tickProgress(){
+  let dirty = false;
+  AUTO_QUE.forEach(r=>{
+    if(r.status==='processing'){
+      r.progress = Math.min(100, r.progress + Math.random()*3);
+      if(r.progress>=100){
+        r.status='completed';
+        r.accuracy = 82 + Math.floor(Math.random()*15);
+      }
+      dirty = true;
+    }
+  });
+  if(dirty) renderGrids();
+  renderAgent();
+}
+setInterval(tickProgress, 1500);
+
+/* ─── Processing Agent widget ─── */
+/* widget view-state: 'min' | 'med' | 'max' — defaults to medium */
+let paState = 'med';
+
+function renderAgent(){
+  const body = document.getElementById('paBody');
+  const statusTxt = document.getElementById('paStatusTxt');
+  if(!body) return;
+  const widget = document.getElementById('paWidget');
+  widget.classList.remove('min','med');
+  if(paState==='min') widget.classList.add('min');
+  else if(paState==='med') widget.classList.add('med');
+
+  const active = AUTO_QUE.find(r=>r.status==='processing');
+  const pipeline = AUTO_QUE.filter(r=>r.status==='processing' || r.status==='queued');
+  statusTxt.textContent = active ? 'Processing' : 'Listening';
+
+  if(paState==='min') return; /* body hidden */
+
+  if(!active){
+    if(paState==='max'){
+      body.innerHTML = `
+        <div class="pa-idle-xl">
+          <div class="pa-wave-xl">
+            <div class="pa-wave-core">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l3-9 4 18 3-9h7"/></svg>
+            </div>
+          </div>
+          <div>
+            <div class="pa-listening">
+              Listening<span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+            <div class="pa-sub">Waiting for new notices to process…</div>
+          </div>
+        </div>`;
+    } else {
+      body.innerHTML = `
+        <div class="pa-idle">
+          <div class="pa-wave">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l3-9 4 18 3-9h7"/></svg>
+          </div>
+          <div>
+            <div class="pa-listening">
+              Listening<span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+            <div class="pa-sub">Waiting for new notices to process…</div>
+          </div>
+        </div>`;
+    }
+    return;
+  }
+
+  const pct = Math.round(active.progress || 0);
+  const C = 2 * Math.PI * 17;
+  const offset = C * (1 - pct/100);
+  const activeBlock = `
+    <div class="pa-active">
+      <div class="proc-ring">
+        <svg viewBox="0 0 40 40">
+          <circle class="ring-bg" cx="20" cy="20" r="17" fill="none" stroke-width="3"/>
+          <circle class="ring-fg" cx="20" cy="20" r="17" fill="none" stroke-width="3"
+            stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"/>
+          <circle class="ring-spinner" cx="20" cy="20" r="17" fill="none" stroke-width="3"
+            stroke-dasharray="${(C*0.18).toFixed(2)} ${C.toFixed(2)}" opacity=".55"/>
+        </svg>
+        <div class="proc-pct">${pct}%</div>
+      </div>
+      <div class="pa-file">
+        <div class="pa-file-name" title="${active.file}">${active.file}</div>
+        <div class="pa-file-meta">
+          <span class="form-tag">${active.form}</span>
+          <span>${active.fn}</span>
+        </div>
+      </div>
+    </div>`;
+
+  if(paState==='med'){
+    body.innerHTML = activeBlock;
+    return;
+  }
+
+  /* max — show full pipeline */
+  const list = pipeline.length
+    ? pipeline.map(r=>`
+        <div class="pa-q-item ${r.status}">
+          <span class="q-form">${r.form}</span>
+          <span class="q-file" title="${r.file}">${r.file}</span>
+          <span class="q-state">${r.status==='processing' ? Math.round(r.progress||0)+'%' : 'Queued'}</span>
+        </div>`).join('')
+    : `<div class="pa-sub" style="margin:0;">No files in pipeline.</div>`;
+  body.innerHTML = `${activeBlock}
+    <div class="pa-queue-list">
+      <div class="pa-queue-label">Pipeline · ${pipeline.length} file${pipeline.length===1?'':'s'}</div>
+      ${list}
+    </div>`;
+}
+
+const PA_ICONS = {
+  /* up chevron — expand from min to med */
+  expand:'<polyline points="6 15 12 9 18 15"/>',
+  /* down chevron — expand from med to max */
+  expandDown:'<polyline points="6 9 12 15 18 9"/>',
+  /* minus — collapse to next-smaller state */
+  dash:'<line x1="5" y1="12" x2="19" y2="12"/>',
+  /* corner-pinch — compress back from max to medium */
+  compress:'<polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/>',
+};
+
+function btn(action, iconKey, title){
+  return `<button class="pa-min" data-action="${action}" title="${title}">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${PA_ICONS[iconKey]}</svg>
+  </button>`;
+}
+
+function setPAControls(){
+  const c = document.getElementById('paControls');
+  if(paState==='min'){
+    c.innerHTML = btn('to-med-up','expand','Expand');
+  } else if(paState==='max'){
+    c.innerHTML = btn('to-med-down','compress','Collapse to medium') + btn('to-min','dash','Minimize');
+  } else { /* med */
+    c.innerHTML = btn('to-max','expand','Expand to full pipeline') + btn('to-min','dash','Minimize');
+  }
+  c.querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{
+      const a = b.dataset.action;
+      if(a==='to-med-up' || a==='to-med-down') paState = 'med';
+      else if(a==='to-max') paState = 'max';
+      else if(a==='to-min') paState = 'min';
+      setPAControls();
+      renderAgent();
+    };
+  });
+}
+setPAControls();
+
+renderAgent();
+
+document.getElementById('collapseBtn').onclick = ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+};
+document.getElementById('brandIcon').onclick = ()=>{
+  document.getElementById('sidebar').classList.remove('collapsed');
+};
+
+// user popout
+(function(){
+  const btn = document.getElementById('userBtn');
+  const pop = document.getElementById('userPop');
+  if(!btn || !pop) return;
+  const close = ()=>{ pop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const open = pop.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', e=>{
+    if(!pop.classList.contains('open')) return;
+    if(!pop.contains(e.target) && !btn.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+})();
+
+/* popout menu */
+const menuBtn = document.getElementById('reviewMenuBtn');
+const menu = document.getElementById('reviewMenu');
+menuBtn.onclick = (e)=>{
+  e.stopPropagation();
+  menu.classList.toggle('open');
+};
+document.addEventListener('click',(e)=>{
+  if(!menu.contains(e.target) && e.target!==menuBtn) menu.classList.remove('open');
+});
+menu.querySelectorAll('.menu-item').forEach(item=>{
+  item.onclick = ()=>{
+    if(item.classList.contains('disabled')) return;
+    const action = item.dataset.action;
+    const sel = REVIEW_QUE.filter(r=>r._sel);
+    const targets = action.endsWith('-all') ? REVIEW_QUE : sel;
+    if(targets.length===0) return;
+    menu.classList.remove('open');
+    if(action==='review-all' || action==='review-selected'){
+      const params = new URLSearchParams();
+      params.set('count', targets.length);
+      if(action==='review-selected'){
+        params.set('fns', targets.map(t=>t.fn).join('|'));
+      }
+      window.location.href = `gip-notice.html?${params.toString()}`;
+      return;
+    }
+    alert(`Assign ${targets.length} file(s)`);
+  };
+});
+
+renderNav();
+renderFoot();
+renderGrids();
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  REVIEW MODE — fullscreen workspace                             */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* extracted-fields template (shared across all review items in this mock) */
+const RV_PRIMARY_FLAG = {key:'Primary Flag', value:'False', conf:96, src:'native', options:['True','False']};
+const RV_FIELDS_TEMPLATE = [
+  {key:'Receipt For',            value:'',                    conf:74, src:'llm',    type:'text'},
+  {key:'Receipt Type',           value:'USCIS Receipt Number',conf:92, src:'native', type:'select', custom:true,
+    options:['USCIS Receipt Number','J Visa Application Number','NVC Matter Number','PERM Receipt','Others']},
+  {key:'Gov Form',               value:'(I-129) I-129, 01/20/25 Edition: Petition for a Nonimmigrant Worker', conf:91, src:'native', type:'select', custom:true,
+    options:[
+      '(DS-156) DS-156: Nonimmigrant Visa Application',
+      '(DS-156E) DS-156E: NonImmigrant Treaty Trader/Investor Application Use With Form DS-160/I-129',
+      '(DS-7002) DS-7002: Training/Internship Placement Plan',
+      '(EOIR-28) EOIR-28: Notice of Entry of Appearance as Attorney or Representative Before the Immigration Court',
+      '(eta_9035_test) eta_9035_test',
+      '(ETA-9035) ETA 9035: Labor Condition Application for Nonimmigrant Workers',
+      '(ETA-9035_06-22-2026) ETA 9035: Labor Condition Application for Nonimmigrant Workers',
+      '(ETA-9035_Instr) Instruction Sheet: ETA 9035: Labor Condition Application for Nonimmigrant Workers',
+      '(ETA-9089) ETA-9089: Application for Permanent Employment Certification',
+      '(ETA-9141) ETA-9141: Application for Prevailing Wage Determination',
+      '(G-1145) G-1145: E-Notification Of Application/Petition Acceptance (Applicant)',
+      '(G-1145 C) G-1145 C - e-Notification of Application / Petition Acceptance (Petitioner)',
+      '(G-28IN) G-28: (Family Based Petitions / Individual Clients) Notice of Entry of Appearance as Attorney',
+      '(G-28IN1) G-28: (Family Based Petitions / Individual Clients where an Individual is sponsoring other individual) Notice of Entry of Appearance as Attorney',
+      '(I-129) I-129, 01/20/25 Edition: Petition for a Nonimmigrant Worker',
+      '(I-130) I-130: Petition for Alien Relative',
+      '(I-140) I-140: Immigrant Petition for Alien Worker',
+      '(I-485) I-485: Application to Register Permanent Residence',
+      '(I-765) I-765: Application for Employment Authorization',
+      '(N-400) N-400: Application for Naturalization',
+    ],
+    condShow:{key:'Receipt Type', value:'USCIS Receipt Number'}},
+  {key:'Matter Pending at',      value:'Service Center - Texas', conf:90, src:'native', type:'select', custom:true,
+    options:['Service Center - Texas','Service Center - California','Service Center - Nebraska','Service Center - Vermont','Service Center - Potomac','National Benefits Center'],
+    condShow:{key:'Receipt Type', value:'USCIS Receipt Number'}},
+  {key:'Sent Government Agency', value:'2026-05-28',          conf:94, src:'native', type:'date'},
+  {key:'Receipt Date',           value:'2026-05-30',          conf:95, src:'native', type:'date'},
+  {key:'Receipt Number',         value:'MSC2190123456',       conf:88, src:'native', type:'number'},
+  {key:'Receipt Notice Date',    value:'2026-06-01',          conf:93, src:'native', type:'date'},
+  {key:'Receipt Status',         value:'Pending',             conf:90, src:'llm',    type:'select',
+    options:['Pending','Approved','Denied','RFE','Withdrawn','Shipped']},
+  {key:'Expiration Notice',      value:'Yes',                 conf:95, src:'native', type:'select', options:['Yes','No'], tag:'default'},
+  {key:'Receipt Notes',          value:'',                    conf:0,  src:'llm',    type:'textarea'},
+];
+
+/* GCM mock — keyed by FN (applicant) name; falls back to a generic stub */
+const GCM_BY_FN = {
+  'Elena Rodriguez':{caseId:'GCM-2026-04812', client:'Elena M. Rodriguez', a:'A-201-948-376', dob:'1988-03-14', country:'Mexico', attorney:'J. Patel', team:'Naturalization', status:'matched', dest:'/Clients/Rodriguez_Elena/N-400/Notices/'},
+  'Priya Nair':     {caseId:'GCM-2026-04519', client:'Priya R. Nair',      a:'A-198-552-118', dob:'1991-07-22', country:'India',  attorney:'M. Chen',  team:'EAD',         status:'matched', dest:'/Clients/Nair_Priya/H4-EAD/Notices/'},
+  'David Okafor':   {caseId:'GCM-2026-04388', client:'David T. Okafor',    a:'A-216-704-009', dob:'1985-11-02', country:'Nigeria', attorney:'S. Wu',    team:'EAD',         status:'matched', dest:'/Clients/Okafor_David/I-765/Notices/'},
+  'Sofia Mendez':   {caseId:'GCM-2026-04207', client:'Sofia A. Mendez',    a:'A-207-118-554', dob:'1979-02-19', country:'Colombia',attorney:'J. Patel', team:'Naturalization', status:'matched', dest:'/Clients/Mendez_Sofia/N-400/Notices/'},
+  'Klaus Bauer':    {caseId:'GCM-2026-04019', client:'Klaus W. Bauer',     a:'A-192-018-664', dob:'1972-05-08', country:'Germany', attorney:'L. Rao',   team:'Family',      status:'partial', dest:'/Clients/Bauer_Klaus/I-130/Notices/'},
+  'Jiwoo Park':     {caseId:'GCM-2026-03997', client:'Jiwoo Park',         a:'A-228-664-220', dob:'1990-09-30', country:'S. Korea',attorney:'M. Chen',  team:'AOS',         status:'matched', dest:'/Clients/Park_Jiwoo/I-485/Notices/'},
+  'Mariana Costa':  {caseId:'GCM-2026-03781', client:'Mariana B. Costa',   a:'A-204-008-118', dob:'1986-12-11', country:'Brazil',  attorney:'S. Wu',    team:'EB',          status:'matched', dest:'/Clients/Costa_Mariana/I-140/Notices/'},
+  'Omar Al-Sayed':  {caseId:'GCM-2026-03654', client:'Omar Al-Sayed',      a:'A-218-441-009', dob:'1982-04-06', country:'Jordan',  attorney:'L. Rao',   team:'NIV',         status:'partial', dest:'/Clients/AlSayed_Omar/I-539/Notices/'},
+};
+
+let rvIndex = 0;     /* which row in REVIEW_QUE we are reviewing */
+let rvZoom = 100;
+let rvPage = 1;
+const rvRoot = document.getElementById('rvRoot');
+
+function rvCurrent(){ return REVIEW_QUE[rvIndex] || null; }
+function rvTotalPages(){ return 14; /* mock fixed page count for preview */ }
+
+function rvIcon(name){
+  const M = {
+    pencil:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+    chev:  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+    cal:   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    spark: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L19 10l-5.1 1.2L12 17l-1.9-5.8L5 10l5.1-1.2z"/></svg>',
+  };
+  return M[name] || '';
+}
+
+function rvConfTone(c){ return c>=90?'var(--green)':c>=80?'var(--amber)':'var(--orange)'; }
+
+/* ─── PDF preview (left pane) ─── */
+function rvDocHTML(row){
+  const formTitle = ({
+    'N-400':'Application for Naturalization',
+    'H4-EAD':'Employment Authorization (H-4)',
+    'I-765':'Application for Employment Authorization',
+    'I-130':'Petition for Alien Relative',
+    'I-485':'Application to Register Permanent Residence or Adjust Status',
+    'I-140':'Immigrant Petition for Alien Worker',
+    'I-539':'Application to Extend/Change Nonimmigrant Status',
+  })[row.form] || 'USCIS Notice';
+
+  const [family, ...rest] = (row.fn || '').split(' ');
+  const given = rest.join(' ') || '—';
+
+  return `<div class="rv-doc" id="rvDoc" style="transform:scale(${rvZoom/100});">
+    <div class="rv-doc-head">
+      <div class="rv-seal">USCIS</div>
+      <div style="text-align:center;flex:1;">
+        <div class="rv-doc-title">${formTitle}</div>
+        <div style="font-size:10px;margin-top:3px;">Department of Homeland Security</div>
+        <div style="font-size:9px;color:#444;">U.S. Citizenship and Immigration Services</div>
+      </div>
+      <div style="text-align:right;font-size:9px;">
+        <div style="font-weight:700;">USCIS</div>
+        <div>Form ${row.form}</div>
+        <div style="color:#666;">OMB No. 1615-0052</div>
+      </div>
+    </div>
+    <div class="rv-doc-rule">
+      <div>For USCIS Use Only</div><div>Date Stamp</div><div>Receipt</div><div>Action Block</div>
+    </div>
+    <div class="rv-sec">Part 1. Information About Your Eligibility</div>
+    <div style="margin-top:10px;font-size:10.5px;">
+      <div style="margin-bottom:7px;"><b>A.</b> <span class="rv-ckbox">&#10003;</span>General Provision.</div>
+      <div style="margin-bottom:6px;color:#333;"><span class="rv-ckbox"></span>B. Spouse of U.S. Citizen</div>
+      <div style="margin-bottom:6px;color:#333;"><span class="rv-ckbox"></span>C. VAWA</div>
+      <div style="margin-bottom:6px;color:#333;"><span class="rv-ckbox"></span>D. Qualified Employment Outside the U.S.</div>
+    </div>
+    <div class="rv-sec" style="margin-top:14px;">Part 2. Information About You</div>
+    <div style="margin-top:8px;font-size:9.5px;">Your Current Legal Name</div>
+    <div class="rv-nm-grid">
+      <div><div class="f-l">Family Name</div><div class="f-v">${family || '—'}</div></div>
+      <div><div class="f-l">Given Name</div><div class="f-v">${given}</div></div>
+      <div><div class="f-l">Middle Name</div><div class="f-v">—</div></div>
+    </div>
+    <div class="rv-sec" style="margin-top:14px;">Part 3. Receipt Details</div>
+    <div style="margin-top:8px;font-size:10px;color:#444;line-height:1.6;">
+      Your case has been received and is being processed by the U.S. Citizenship and Immigration Services.
+      Receipt date: <b>${new Date().toLocaleDateString('en-US')}</b>. Please retain this notice for your records and refer to the case number for all future correspondence.
+    </div>
+    <div style="margin-top:26px;display:flex;justify-content:space-between;font-size:8.5px;color:#666;">
+      <span>Form ${row.form} · Edition 01/20/25</span>
+      <span>Page ${rvPage} of ${rvTotalPages()}</span>
+    </div>
+  </div>`;
+}
+
+/* ─── Extracted fields (right pane) ─── */
+const rvFieldValMap = {};
+function rvFieldVal(rowId, key, fallback){
+  const k = rowId + ' ' + key;
+  return rvFieldValMap[k] === undefined ? fallback : rvFieldValMap[k];
+}
+function rvSetFieldVal(rowId, key, value){
+  rvFieldValMap[rowId + ' ' + key] = value;
+}
+
+function rvFieldsForCurrent(){
+  const row = rvCurrent();
+  if(!row) return [];
+  const receiptType = rvFieldVal(row.id, 'Receipt Type', RV_FIELDS_TEMPLATE.find(f=>f.key==='Receipt Type').value);
+  return RV_FIELDS_TEMPLATE
+    .filter(f=> !f.condShow || (f.condShow.key==='Receipt Type' && f.condShow.value===receiptType))
+    .map(f=> ({
+      ...f,
+      value: f.key==='Receipt For' ? row.fn
+           : f.custom ? rvFieldVal(row.id, f.key, f.value)
+           : f.value,
+    }));
+}
+
+const rvPrimaryMap = {};
+function rvPrimaryFor(row){
+  if(!row) return RV_PRIMARY_FLAG.value === 'True';
+  if(rvPrimaryMap[row.id] === undefined) rvPrimaryMap[row.id] = RV_PRIMARY_FLAG.value === 'True';
+  return rvPrimaryMap[row.id];
+}
+function rvSyncPrimaryToggle(){
+  const row = rvCurrent();
+  const t = document.getElementById('rvPrimaryToggle');
+  if(!t) return;
+  t.setAttribute('aria-checked', rvPrimaryFor(row) ? 'true' : 'false');
+}
+
+function rvRenderFields(){
+  const fields = rvFieldsForCurrent();
+  const scored = fields.filter(f=>f.type!=='textarea');
+  const total = scored.length;
+  const need  = scored.filter(f=>f.conf<80).length;
+  const native = scored.filter(f=>f.src==='native' && f.conf>=80).length;
+  const llm   = scored.filter(f=>f.src==='llm' && f.conf>=80).length;
+  const overall = Math.round(scored.reduce((a,f)=>a+f.conf,0) / Math.max(1,scored.length));
+  const tone = rvConfTone(overall);
+  document.getElementById('rvConfBar').style.width = overall+'%';
+  document.getElementById('rvConfBar').style.background = tone;
+  const pctEl = document.getElementById('rvConfPct');
+  pctEl.textContent = overall+'%';
+  pctEl.style.color = tone;
+
+  const needSlot = document.getElementById('rvNeedReviewSlot');
+  needSlot.innerHTML = need > 0
+    ? `<span class="stat" style="color:var(--orange);background:var(--orange-soft);
+        display:inline-flex;align-items:center;gap:5px;font-weight:600;
+        padding:3px 9px;border-radius:6px;font-size:11.5px;">
+        <b style="font-weight:700;font-variant-numeric:tabular-nums;">${need}</b> Need Review
+      </span>`
+    : '';
+
+  rvSyncPrimaryToggle();
+
+  document.getElementById('rvFlist').innerHTML = fields.map(f=>{
+    const isNotes = f.type==='textarea';
+    const low = !isNotes && f.conf<80;
+    const tone2 = rvConfTone(f.conf);
+    const meta = isNotes ? ''
+      : f.tag ? `<span class="rv-src ${f.tag}">${f.tag.charAt(0).toUpperCase()+f.tag.slice(1)}</span>`
+      : `
+      <span class="rv-src ${f.src}">${f.src==='native'?'Native':'LLM'}</span>
+      <span class="rv-pct" style="color:${tone2};">${f.conf}%</span>`;
+    const customSel = f.type==='select' && f.custom
+      ? `<button type="button" class="rv-cs" data-cs-trigger title="${f.value??''}">
+           <span class="rv-cs-val">${f.value??''}</span>
+         </button>${rvIcon('chev')}
+         <div class="rv-cs-pop" data-cs-pop>
+           ${(f.options||[]).map(o=>`<div class="rv-cs-opt${o===f.value?' selected':''}" data-cs-opt="${(''+o).replace(/"/g,'&quot;')}" title="${o}">${o}</div>`).join('')}
+         </div>`
+      : null;
+    const inputHTML =
+      customSel           ? customSel :
+      f.type==='date'     ? `<input type="date" value="${f.value??''}" />${rvIcon('cal')}` :
+      f.type==='select'   ? `<select>${(f.options||[]).map(o=>`<option ${o===f.value?'selected':''}>${o}</option>`).join('')}</select>${rvIcon('chev')}` :
+      f.type==='textarea' ? `<textarea rows="3" placeholder="Add notes…">${f.value??''}</textarea>` :
+      f.type==='number'   ? `<input type="text" inputmode="numeric" value="${f.value??''}" />${rvIcon('pencil')}` :
+                            `<input value="${f.value??''}" />${rvIcon('pencil')}`;
+    return `<div class="rv-field ${low?'low':''} ${isNotes?'wide':''}" data-field-key="${f.key}">
+      <div class="rv-field-top">
+        <span class="rv-field-key">${f.key}</span>
+        <div class="rv-field-meta">${meta}</div>
+      </div>
+      <div class="rv-finput">
+        ${inputHTML.replace('<svg', '<svg class="tail"')}
+      </div>
+      ${low?`<div class="rv-field-warn">${rvIcon('spark')}Manual Review — verify against original notice</div>`:''}
+    </div>`;
+  }).join('');
+
+  rvWireCustomDropdowns();
+}
+
+function rvCloseAllCustomDropdowns(){
+  document.querySelectorAll('#rvFlist .rv-cs.open').forEach(el=>el.classList.remove('open'));
+  document.querySelectorAll('#rvFlist .rv-cs-pop.open').forEach(el=>el.classList.remove('open'));
+}
+
+function rvWireCustomDropdowns(){
+  document.querySelectorAll('#rvFlist .rv-field').forEach(field=>{
+    const trigger = field.querySelector('[data-cs-trigger]');
+    const pop = field.querySelector('[data-cs-pop]');
+    if(!trigger || !pop) return;
+    trigger.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const wasOpen = pop.classList.contains('open');
+      rvCloseAllCustomDropdowns();
+      if(!wasOpen){ trigger.classList.add('open'); pop.classList.add('open'); }
+    });
+    pop.querySelectorAll('[data-cs-opt]').forEach(opt=>{
+      opt.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const row = rvCurrent();
+        const key = field.getAttribute('data-field-key');
+        if(row && key){
+          rvSetFieldVal(row.id, key, opt.getAttribute('data-cs-opt'));
+          rvCloseAllCustomDropdowns();
+          rvRenderFields();
+        }
+      });
+    });
+  });
+}
+
+/* ─── Top-bar header content ─── */
+function rvRenderHeader(){
+  const row = rvCurrent();
+  const total = REVIEW_QUE.length;
+  if(!row){
+    document.getElementById('rvTitle').textContent = 'No notices in queue';
+    document.getElementById('rvSub').textContent = '';
+    document.getElementById('rvCounterChip').textContent = '0 of 0';
+    return;
+  }
+  document.getElementById('rvTitle').textContent = row.fn;
+  document.getElementById('rvSub').innerHTML = `<span class="rv-sub-form">${row.form}</span> · ${row.date}`;
+  document.getElementById('rvCounterChip').textContent = `${rvIndex+1} of ${total}`;
+  document.getElementById('rvPrev').disabled = rvIndex <= 0;
+  document.getElementById('rvNext').disabled = rvIndex >= total-1;
+}
+
+/* ─── PDF pane render ─── */
+function rvRenderCanvas(){
+  const row = rvCurrent();
+  document.getElementById('rvCanvas').innerHTML = row ? rvDocHTML(row)
+    : `<div style="color:#aab2c6;font-family:var(--font);padding:60px 30px;text-align:center;">
+         No notice selected.
+       </div>`;
+  const titleEl = document.getElementById('rvPdfTitle');
+  titleEl.textContent = row ? row.file : 'Source Notice';
+  titleEl.title = row ? row.file : '';
+  const totalPages = rvTotalPages();
+  document.getElementById('rvPageChip').textContent = `Page ${rvPage} of ${totalPages}`;
+  document.getElementById('rvPagePrev').disabled = rvPage <= 1;
+  document.getElementById('rvPageNext').disabled = rvPage >= totalPages;
+  document.getElementById('rvZoomLbl').textContent = rvZoom+'%';
+}
+
+function rvRenderAll(){
+  rvRenderHeader();
+  rvRenderCanvas();
+  rvRenderFields();
+}
+
+/* ─── Open / close ─── */
+function openReviewMode(startIdx){
+  if(REVIEW_QUE.length===0){
+    alert('No notices in the Review Queue.');
+    return;
+  }
+  rvIndex = (typeof startIdx==='number' && startIdx>=0 && startIdx<REVIEW_QUE.length) ? startIdx : 0;
+  rvPage = 1;
+  rvZoom = 100;
+  rvRoot.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  rvRenderAll();
+  setTimeout(()=>rvRoot.focus(), 30);
+  if(!document.fullscreenElement && document.documentElement.requestFullscreen){
+    document.documentElement.requestFullscreen().catch(()=>{});
+  }
+}
+
+function closeReviewMode(){
+  /* if GCM modal is open, Esc closes it first (handled in keydown) */
+  rvRoot.classList.remove('open');
+  document.body.style.overflow = '';
+  if(document.fullscreenElement && document.exitFullscreen){
+    document.exitFullscreen().catch(()=>{});
+  }
+}
+
+function rvGoto(delta){
+  const next = rvIndex + delta;
+  if(next<0 || next>=REVIEW_QUE.length) return;
+  rvIndex = next;
+  rvPage = 1;
+  rvRenderAll();
+}
+
+/* ─── PDF tools ─── */
+function rvSetZoom(d){
+  rvZoom = Math.max(60, Math.min(180, rvZoom + d));
+  const doc = document.getElementById('rvDoc');
+  if(doc) doc.style.transform = `scale(${rvZoom/100})`;
+  document.getElementById('rvZoomLbl').textContent = rvZoom+'%';
+}
+function rvSetPage(d){
+  const p = rvPage + d;
+  if(p<1 || p>rvTotalPages()) return;
+  rvPage = p;
+  rvRenderCanvas();
+}
+
+/* ─── Confirm / skip ─── */
+function rvConfirm(){
+  /* simulate removing the reviewed item; if any remain, advance */
+  if(REVIEW_QUE.length===0) return;
+  REVIEW_QUE.splice(rvIndex, 1);
+  if(REVIEW_QUE.length===0){
+    closeReviewMode();
+    renderGrids();
+    return;
+  }
+  rvIndex = Math.min(rvIndex, REVIEW_QUE.length-1);
+  rvPage = 1;
+  rvRenderAll();
+  renderGrids();
+}
+
+/* ─── GCM modal ─── */
+const gcmOverlay = document.getElementById('gcmOverlay');
+function gcmDataFor(row){
+  if(!row) return null;
+  const hit = GCM_BY_FN[row.fn];
+  if(hit) return hit;
+  /* generic stub for any FN not in the mock map */
+  const safe = (row.fn||'Client').split(' ');
+  return {
+    caseId:'GCM-2026-09999',
+    client:row.fn||'Client',
+    a:'A-200-000-000',
+    dob:'1990-01-01',
+    country:'—',
+    attorney:'Unassigned',
+    team:row.form,
+    status:'partial',
+    dest:`/Clients/${(safe[1]||safe[0])}_${safe[0]}/${row.form}/Notices/`,
+  };
+}
+
+function openGcm(){
+  const row = rvCurrent();
+  const g = gcmDataFor(row);
+  if(!g) return;
+  const initials = (g.client||'').split(/\s+/).map(s=>s[0]).slice(0,2).join('').toUpperCase() || '?';
+  const statusCls = g.status==='matched' ? 'matched' : 'partial';
+  const statusTxt = g.status==='matched' ? 'Auto-matched' : 'Partial match';
+
+  document.getElementById('gcmBody').innerHTML = `
+    <div class="gcm-hero">
+      <div class="gcm-avatar">${initials}</div>
+      <div class="gcm-hero-main">
+        <div class="gcm-hero-name">${g.client}</div>
+        <div class="gcm-hero-meta">
+          <span class="gcm-form-tag">${row.form}</span>
+          <span class="sep">·</span>
+          <span>Case <b style="color:var(--ink);">${g.caseId}</b></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="gcm-section">
+      <div class="gcm-section-head">
+        <div class="gcm-section-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+          Client Record
+        </div>
+        <span class="gcm-status ${statusCls}">${statusTxt}</span>
+      </div>
+      <div class="gcm-kv">
+        <div class="gcm-row"><div class="gcm-k">Client Name</div><div class="gcm-v">${g.client}</div></div>
+        <div class="gcm-row"><div class="gcm-k">A-Number</div><div class="gcm-v mono">${g.a}</div></div>
+        <div class="gcm-row"><div class="gcm-k">Date of Birth</div><div class="gcm-v mono">${g.dob}</div></div>
+        <div class="gcm-row"><div class="gcm-k">Country of Birth</div><div class="gcm-v">${g.country}</div></div>
+        <div class="gcm-row"><div class="gcm-k">Attorney</div><div class="gcm-v">${g.attorney}</div></div>
+        <div class="gcm-row"><div class="gcm-k">Team</div><div class="gcm-v muted">${g.team}</div></div>
+      </div>
+    </div>
+
+    <div class="gcm-dest" title="${g.dest}">
+      <div class="gcm-dest-ico">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="gcm-dest-txt">
+        <div class="gcm-dest-lbl">Destination Folder</div>
+        <div class="gcm-dest-path" title="${g.dest}">${g.dest}</div>
+      </div>
+    </div>
+  `;
+
+  gcmOverlay.classList.add('open');
+}
+function closeGcm(){ gcmOverlay.classList.remove('open'); }
+
+/* ─── Wire up controls ─── */
+document.getElementById('reviewModeBtn').onclick = ()=>openReviewMode(0);
+document.getElementById('rvClose').onclick = closeReviewMode;
+document.getElementById('rvPrev').onclick  = ()=>rvGoto(-1);
+document.getElementById('rvNext').onclick  = ()=>rvGoto(1);
+document.getElementById('rvZoomIn').onclick  = ()=>rvSetZoom(10);
+document.getElementById('rvZoomOut').onclick = ()=>rvSetZoom(-10);
+document.getElementById('rvPagePrev').onclick = ()=>rvSetPage(-1);
+document.getElementById('rvPageNext').onclick = ()=>rvSetPage(1);
+document.getElementById('rvSkipBtn').onclick  = ()=>rvGoto(1);
+document.getElementById('rvConfirmBtn').onclick = rvConfirm;
+document.getElementById('rvPrimaryToggle').onclick = ()=>{
+  const row = rvCurrent();
+  if(!row) return;
+  rvPrimaryMap[row.id] = !rvPrimaryFor(row);
+  rvSyncPrimaryToggle();
+};
+document.getElementById('rvGcmBtn').onclick = openGcm;
+document.getElementById('rvDownload').onclick = ()=>{
+  const row = rvCurrent();
+  if(row) alert('Download: '+row.file);
+};
+
+document.getElementById('gcmCloseBtn').onclick = closeGcm;
+document.getElementById('gcmCancelBtn').onclick = closeGcm;
+document.getElementById('gcmGotoBtn').onclick = ()=>{
+  alert('Open in GCM (mock)');
+  closeGcm();
+};
+gcmOverlay.addEventListener('click', (e)=>{ if(e.target===gcmOverlay) closeGcm(); });
+
+/* keyboard:
+   - Esc: close GCM first, then close review
+   - ← →: prev / next when fullscreen open and GCM closed
+   - F:   toggle review mode from the list page                    */
+/* outside-click closes any open custom dropdown in review mode */
+document.addEventListener('click', (e)=>{
+  if(!document.querySelector('#rvFlist .rv-cs-pop.open')) return;
+  if(e.target.closest('#rvFlist .rv-cs-pop') || e.target.closest('#rvFlist [data-cs-trigger]')) return;
+  rvCloseAllCustomDropdowns();
+});
+
+document.addEventListener('keydown', (e)=>{
+  const rvOpen = rvRoot.classList.contains('open');
+  const gcmOpen = gcmOverlay.classList.contains('open');
+  if(e.key==='Escape'){
+    if(gcmOpen){ closeGcm(); e.preventDefault(); return; }
+    /* if a custom dropdown is open, just close it */
+    if(rvOpen && document.querySelector('#rvFlist .rv-cs-pop.open')){
+      rvCloseAllCustomDropdowns(); e.preventDefault(); return;
+    }
+    /* if fullscreen is active, let the browser exit fullscreen on Esc — keep review open */
+    if(document.fullscreenElement){ return; }
+    if(rvOpen){ closeReviewMode(); e.preventDefault(); return; }
+  }
+  if(rvOpen && !gcmOpen){
+    if(e.key==='ArrowLeft')  { rvGoto(-1); e.preventDefault(); }
+    if(e.key==='ArrowRight') { rvGoto(1);  e.preventDefault(); }
+  }
+  /* shortcut F to launch review mode — only on the Review Que tab, not while typing */
+  if(!rvOpen && (e.key==='f' || e.key==='F') && activeTab==='review'){
+    const t = e.target;
+    if(t && (t.tagName==='INPUT' || t.tagName==='TEXTAREA' || t.tagName==='SELECT' || t.isContentEditable)) return;
+    e.preventDefault();
+    openReviewMode(0);
+  }
+});
+
+/* ─── Upload Drawer ─── */
+/* Point this at your real ingest endpoint. The folder is sent as a form field.
+   Example backend: POST /api/uploads (multipart: file, folder) → 200 OK */
+const UPLOAD_ENDPOINT = '/api/uploads';
+
+const drawer = document.getElementById('uploadDrawer');
+const overlay = document.getElementById('drawerOverlay');
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const folderSel = document.getElementById('uploadFolder');
+const ulItems = document.getElementById('ulItems');
+const ulCount = document.getElementById('ulCount');
+const ulFootInfo = document.getElementById('ulFootInfo');
+const uploadList = document.getElementById('uploadList');
+const uploadStartBtn = document.getElementById('uploadStartBtn');
+
+let pending = []; /* {id, file, status:'queued'|'uploading'|'done'|'error', progress} */
+let dragCounter = 0;
+
+function openDrawer(){
+  drawer.classList.add('open');
+  overlay.classList.add('open');
+  drawer.setAttribute('aria-hidden','false');
+}
+function closeDrawer(){
+  drawer.classList.remove('open');
+  overlay.classList.remove('open');
+  drawer.setAttribute('aria-hidden','true');
+}
+document.getElementById('uploadBtn').onclick = openDrawer;
+document.getElementById('drawerCloseBtn').onclick = closeDrawer;
+document.getElementById('drawerCancelBtn').onclick = closeDrawer;
+overlay.onclick = closeDrawer;
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && drawer.classList.contains('open')) closeDrawer(); });
+
+/* ─ file size formatter ─ */
+function fmtSize(b){
+  if(b<1024) return b+' B';
+  if(b<1024*1024) return (b/1024).toFixed(1)+' KB';
+  return (b/(1024*1024)).toFixed(1)+' MB';
+}
+
+/* ─ file type icon (PDF vs image) ─ */
+const PDF_ICO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+const IMG_ICO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+const DONE_ICO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const ERR_ICO  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>';
+
+function iconFor(item){
+  if(item.status==='done') return DONE_ICO;
+  if(item.status==='error') return ERR_ICO;
+  return item.file.type.startsWith('image/') ? IMG_ICO : PDF_ICO;
+}
+
+function renderUploadList(){
+  if(pending.length===0){
+    uploadList.style.display = 'none';
+    ulFootInfo.innerHTML = '<b>0</b> files queued';
+    uploadStartBtn.disabled = true;
+    return;
+  }
+  uploadList.style.display = 'flex';
+  ulCount.textContent = pending.length;
+  ulItems.innerHTML = pending.map(it=>{
+    const stateTxt = it.status==='done' ? 'Uploaded'
+      : it.status==='error' ? (it.error || 'Failed')
+      : it.status==='uploading' ? Math.round(it.progress)+'%'
+      : 'Ready';
+    return `<div class="upload-item ${it.status}" data-id="${it.id}">
+      <div class="ui-ico">${iconFor(it)}</div>
+      <div class="ui-info">
+        <div class="ui-name" title="${it.file.name}">${it.file.name}</div>
+        <div class="ui-meta"><span>${fmtSize(it.file.size)}</span><span>·</span><span>${stateTxt}</span></div>
+        <div class="ui-bar"><i style="width:${it.progress||0}%;"></i></div>
+      </div>
+      <button class="ui-remove" data-rm="${it.id}" title="Remove">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+  ulItems.querySelectorAll('[data-rm]').forEach(b=>{
+    b.onclick = ()=>{
+      const id = b.dataset.rm;
+      pending = pending.filter(p=>p.id!==id);
+      renderUploadList();
+    };
+  });
+  const queued = pending.filter(p=>p.status==='queued').length;
+  const done = pending.filter(p=>p.status==='done').length;
+  ulFootInfo.innerHTML = `<b>${queued}</b> queued · <b>${done}</b> uploaded`;
+  uploadStartBtn.disabled = queued===0;
+}
+
+document.getElementById('ulClear').onclick = ()=>{ pending = []; renderUploadList(); };
+
+const MAX_BYTES = 25 * 1024 * 1024;
+const OK_TYPES = /\.(pdf|jpe?g|png)$/i;
+
+function addFiles(fileList){
+  const arr = Array.from(fileList);
+  let added = 0;
+  arr.forEach(f=>{
+    if(!OK_TYPES.test(f.name)) return;
+    if(f.size > MAX_BYTES) return;
+    /* simple de-dup on name + size */
+    if(pending.some(p=>p.file.name===f.name && p.file.size===f.size)) return;
+    pending.push({
+      id: 'f_'+Math.random().toString(36).slice(2,9),
+      file: f,
+      status: 'queued',
+      progress: 0,
+    });
+    added++;
+  });
+  if(added>0) renderUploadList();
+}
+
+/* click-to-browse */
+dropZone.onclick = ()=> fileInput.click();
+dropZone.onkeydown = e=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); fileInput.click(); } };
+fileInput.onchange = e=>{ addFiles(e.target.files); fileInput.value = ''; };
+
+/* drag-and-drop on the drop zone */
+['dragenter','dragover'].forEach(ev=>{
+  dropZone.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragging'); });
+});
+['dragleave','drop'].forEach(ev=>{
+  dropZone.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragging'); });
+});
+dropZone.addEventListener('drop', e=>{
+  const files = e.dataTransfer?.files;
+  if(files && files.length) addFiles(files);
+});
+
+/* prevent the browser from navigating away if a file is dropped outside the zone while the drawer is open */
+['dragover','drop'].forEach(ev=>{
+  window.addEventListener(ev, e=>{
+    if(drawer.classList.contains('open')) e.preventDefault();
+  });
+});
+
+/* ─ upload (real fetch with XHR-based progress; gracefully falls back to a simulated upload if the endpoint is unreachable, so the mock works without a backend) ─ */
+function uploadOne(item, folder){
+  return new Promise(resolve=>{
+    const fd = new FormData();
+    fd.append('file', item.file);
+    fd.append('folder', folder);
+    const xhr = new XMLHttpRequest();
+    let usedReal = false;
+    xhr.upload.onprogress = e=>{
+      if(e.lengthComputable){
+        usedReal = true;
+        item.progress = (e.loaded / e.total) * 100;
+        item.status = 'uploading';
+        renderUploadList();
+      }
+    };
+    xhr.onload = ()=>{
+      if(xhr.status>=200 && xhr.status<300){
+        item.status='done'; item.progress=100;
+      } else {
+        item.status='error'; item.error = 'HTTP '+xhr.status;
+      }
+      renderUploadList();
+      resolve();
+    };
+    xhr.onerror = ()=>{
+      /* No backend wired up — simulate progress so the UX is demonstrable. */
+      if(!usedReal){
+        simulateUpload(item).then(resolve);
+      } else {
+        item.status='error'; item.error='Network error';
+        renderUploadList();
+        resolve();
+      }
+    };
+    try {
+      xhr.open('POST', UPLOAD_ENDPOINT);
+      xhr.send(fd);
+    } catch(_){
+      simulateUpload(item).then(resolve);
+    }
+  });
+}
+
+function simulateUpload(item){
+  return new Promise(resolve=>{
+    item.status='uploading'; item.progress=0; renderUploadList();
+    const tick = setInterval(()=>{
+      item.progress = Math.min(100, item.progress + 6 + Math.random()*10);
+      renderUploadList();
+      if(item.progress>=100){
+        clearInterval(tick);
+        item.status='done';
+        renderUploadList();
+        resolve();
+      }
+    }, 140);
+  });
+}
+
+uploadStartBtn.onclick = async ()=>{
+  const folder = folderSel.value;
+  const queue = pending.filter(p=>p.status==='queued');
+  if(queue.length===0) return;
+  uploadStartBtn.disabled = true;
+  /* upload sequentially so progress is visible per-file */
+  for(const item of queue){
+    await uploadOne(item, folder);
+  }
+  renderUploadList();
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GIP Reviewer — Notice Processing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* GIP palette — shared with Dashboard */
+    --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
+    --bg:#f3f5fa; --card:#ffffff;
+    --ink:#1a1f2e; --ink-soft:#5b6376; --ink-faint:#9aa1b2;
+    --line:#e6e9f0; --line-soft:#eef1f7;
+    --green:#1f8a52; --green-soft:#e4f3ea;
+    --amber:#b8791a; --amber-soft:#fbf0db;
+    --orange:#e14a28; --orange-soft:#fbe8e2;
+    --blue:#2f6fb0;  --blue-soft:#e6eff8;
+    --violet:#6b4ce0;--violet-soft:#ece7fb;
+    /* dark sidebar */
+    --side-bg:#0e1326; --side-bg-2:#111733;
+    --side-text:#aab2c6; --side-text-hi:#ffffff;
+    --side-line:#222a45;
+    --accent:#4d82f0; --accent-soft:rgba(77,130,240,.14);
+    --font:'Inter',-apple-system,sans-serif;
+    --mono:'Inter','SF Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .spin{animation:spin 1s linear infinite;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#d3d8e4;border-radius:9px;}
+  button{font-family:var(--font);cursor:pointer;}
+  .shell{display:flex;height:100vh;}
+
+  /* ═══ SIDEBAR (shared) ═══ */
+  .sidebar{width:252px;flex-shrink:0;background:linear-gradient(180deg,var(--side-bg),var(--side-bg-2));
+    display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);}
+  .sidebar.collapsed{width:74px;}
+
+  .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
+  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
+    background:transparent;border:none;padding:0;cursor:pointer;
+    color:var(--side-text);display:none;align-items:center;justify-content:center;
+    transition:background .15s, color .15s;}
+  .brand-icon:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .brand-logo{display:none;}
+  .sidebar.collapsed .brand-icon{display:flex;margin:0 auto;}
+  .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
+    background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;
+    transition:background .15s;}
+  .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
+  .sidebar.collapsed .collapse-btn{display:none;}
+
+  .nav{flex:1;overflow-y:auto;padding:6px 12px;}
+  .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
+    text-transform:uppercase;padding:14px 10px 7px;}
+  .sidebar.collapsed .nav-label{display:none;}
+  .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
+    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:12px;
+    font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;
+    text-decoration:none;}
+  a.nav-item,a.nav-item:hover,a.nav-item:focus{text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:var(--side-text-hi);}
+  .nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600;}
+  .nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--accent);box-shadow:0 0 10px var(--accent);}
+  .nav-item .ico{flex-shrink:0;display:flex;}
+  .nav-item.active .ico{color:var(--accent);}
+  .nav-item .lbl{overflow:hidden;text-overflow:ellipsis;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding:11px 0;}
+  .sidebar.collapsed .nav-item .lbl{display:none;}
+  .sidebar.collapsed .nav-item:hover::after{content:attr(data-label);position:absolute;left:calc(100% + 10px);
+    top:50%;transform:translateY(-50%);background:#1c2340;color:#fff;font-size:12px;font-weight:500;
+    padding:6px 10px;border-radius:7px;white-space:nowrap;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+
+  .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
+  .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
+    border:none;background:transparent;color:var(--side-text);font-size:12px;font-weight:500;
+    margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;}
+  .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+  a.foot-item{text-decoration:none;}
+  .foot-item .badge{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:700;
+    min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+  .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
+  .sidebar.collapsed .foot-item .lbl,.sidebar.collapsed .foot-item .badge{display:none;}
+  .user{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-top:6px;border-radius:10px;
+    background:rgba(255,255,255,.04);border:1px solid var(--side-line);
+    transition:background .15s, border-color .15s;}
+  .user:hover{background:transparent;border-color:transparent;}
+  .avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--orange);color:#fff;
+    font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .user-txt{overflow:hidden;white-space:nowrap;}
+  .user-name{font-size:13px;font-weight:600;color:#fff;line-height:1.1;}
+  .user-role{font-size:11px;color:var(--ink-faint);}
+  .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
+  .sidebar.collapsed .user-txt{display:none;}
+  .user{cursor:pointer;width:100%;text-align:left;border:none;font:inherit;}
+  .user-caret{margin-left:auto;color:var(--ink-faint);display:flex;align-items:center;transition:transform .15s;}
+  .user-wrap{position:relative;}
+  .user-pop{position:absolute;left:12px;right:12px;bottom:calc(100% + 6px);
+    background:#1a2236;border:1px solid var(--side-line);border-radius:10px;
+    box-shadow:0 12px 28px rgba(0,0,0,.45);padding:5px;display:none;z-index:50;}
+  .user-pop.open{display:block;}
+  .user-pop-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+    border:none;background:transparent;color:var(--side-text);font-size:12.5px;font-weight:500;
+    border-radius:7px;cursor:pointer;text-align:left;text-decoration:none;}
+  .user-pop-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .user-pop-item .ico{display:flex;align-items:center;color:var(--ink-faint);}
+  .user-pop-sep{height:1px;background:var(--side-line);margin:4px 6px;}
+  .sidebar.collapsed .user-txt,.sidebar.collapsed .user-caret{display:none;}
+  .sidebar.collapsed .user-pop{left:auto;right:-216px;bottom:6px;width:200px;}
+
+  /* ═══ MAIN (shared topbar + page) ═══ */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 30px;
+    background:var(--card);border-bottom:1px solid var(--line);}
+  .topbar h1{font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em;}
+  .topbar .date{font-size:12.5px;color:var(--ink-faint);margin-top:2px;}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .top-search{position:relative;}
+  .top-search input{width:230px;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13px;outline:none;}
+  .top-search input:focus{border-color:var(--primary);background:#fff;}
+  .top-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
+  .btn-primary{padding:9px 16px;border-radius:9px;border:none;background:var(--primary);color:#fff;
+    font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 2px 10px rgba(32,68,150,.22);}
+  .icon-btn-top{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);position:relative;}
+  .icon-btn-top .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;
+    background:var(--orange);border:1.5px solid #fff;}
+
+  /* page area — full-bleed three-column workspace */
+  .workspace{flex:1;display:flex;min-height:0;background:var(--bg);}
+
+  /* ── LEFT: queue ── */
+  .queue{width:320px;flex-shrink:0;border-right:1px solid var(--line);
+    background:var(--card);display:flex;flex-direction:column;
+    transition:width .22s ease;overflow:hidden;}
+  .queue.collapsed{width:54px;}
+  .queue.collapsed .q-head{padding:14px 8px;border-bottom:1px solid var(--line-soft);}
+  .queue.collapsed .q-head-row{justify-content:center;}
+  .queue.collapsed .q-head-row > div:first-child{display:none;}
+  .queue.collapsed .search,.queue.collapsed .q-list,.queue.collapsed .q-foot{display:none;}
+  .q-head{padding:18px 18px 14px;border-bottom:1px solid var(--line-soft);}
+  .q-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  .q-toggle{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    transition:all .15s;}
+  .q-toggle:hover{background:var(--primary-soft);color:var(--primary);border-color:var(--primary-soft);}
+  .q-title{font-size:14px;font-weight:700;letter-spacing:-.005em;}
+  .q-sub{font-size:11px;color:var(--ink-faint);margin-top:3px;
+    text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+  .search{position:relative;margin-top:14px;}
+  .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
+  .search input{width:100%;padding:8px 10px 8px 32px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:12.5px;outline:none;}
+  .search input:focus{border-color:var(--primary);background:#fff;}
+  .tabs{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+  .tab{padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;
+    color:var(--ink-soft);font-size:11.5px;font-weight:600;display:flex;align-items:center;gap:5px;
+    transition:all .15s;}
+  .tab .cnt{font-size:9.5px;opacity:.75;}
+  .tab.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .q-list{flex:1;overflow-y:auto;padding:10px 12px 14px;}
+  .q-foot{padding:11px 18px;border-top:1px solid var(--line);display:flex;align-items:center;
+    gap:7px;font-size:10.5px;color:var(--ink-faint);font-weight:500;}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
+
+  /* queue card */
+  .card{position:relative;width:100%;text-align:left;padding:13px 14px 13px 16px;border-radius:12px;
+    border:1px solid var(--line);background:#fff;margin-bottom:8px;overflow:hidden;
+    transition:all .18s;}
+  .card:hover{border-color:#d4d9e6;}
+  .card.active{border-color:var(--primary);background:#fff;box-shadow:0 2px 14px rgba(32,68,150,.10);}
+  .rail{position:absolute;left:0;top:0;bottom:0;width:3px;opacity:.55;}
+  .card.active .rail{opacity:1;}
+  .card .shim{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(100deg,transparent 30%,rgba(184,121,26,.07) 50%,transparent 70%);
+    background-size:200% 100%;animation:shimmer 1.8s linear infinite;}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .ctype{font-size:14px;font-weight:700;letter-spacing:-.005em;}
+  .hi{font-size:9px;font-weight:700;color:var(--orange);
+    background:var(--orange-soft);padding:1px 6px;border-radius:5px;letter-spacing:.04em;}
+  .cid{font-size:10px;color:var(--ink-faint);font-weight:500;}
+  .capp{font-size:12.5px;font-weight:600;margin-top:5px;}
+  .clabel{font-size:11.5px;color:var(--ink-faint);margin-top:1px;}
+  .crow{display:flex;align-items:center;justify-content:space-between;margin-top:11px;}
+  .cmeta{font-size:10.5px;color:var(--ink-faint);font-weight:500;}
+  .cbar{margin-top:9px;height:3px;border-radius:999px;background:var(--line-soft);overflow:hidden;}
+  .cbar > i{display:block;height:100%;background:var(--amber);border-radius:999px;transition:width .6s;}
+
+  /* pill (shared shape with dashboard) */
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 7px;border-radius:999px;
+    font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
+  .pill.processing{background:var(--amber-soft);color:var(--amber);}
+  .pill.ready{background:var(--primary-soft);color:var(--primary);}
+  .pill.tag-primary{background:var(--primary);color:#fff;}
+  .pill.completed{background:var(--green-soft);color:var(--green);}
+
+  /* ── CENTER: viewer ── */
+  .viewer{flex:1;min-width:0;display:flex;flex-direction:column;background:#1a1f2e;}
+  .v-bar{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;
+    background:var(--card);border-bottom:1px solid var(--line);}
+  .v-bar-l{display:flex;align-items:center;gap:12px;}
+  .v-title{font-size:14.5px;font-weight:700;letter-spacing:-.005em;}
+  .v-sub{font-size:11px;color:var(--ink-faint);margin-top:2px;font-weight:500;}
+  .pgnav{display:flex;align-items:center;gap:6px;}
+  .pg-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);transition:all .15s;}
+  .pg-btn:hover{background:var(--bg);color:var(--ink);}
+  .pg-btn:disabled{opacity:.35;cursor:not-allowed;background:#fff;color:var(--ink-soft);}
+  .pg-num{font-size:12px;color:var(--ink-soft);min-width:56px;text-align:center;font-weight:600;
+    font-variant-numeric:tabular-nums;}
+  .canvas{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:32px;
+    background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.04) 1px,transparent 0);
+    background-size:22px 22px;}
+
+  /* doc preview */
+  .doc{background:#fff;width:520px;max-width:100%;border-radius:6px;padding:34px 38px;
+    box-shadow:0 8px 40px rgba(0,0,0,.32);font-family:Georgia,serif;color:#111;font-size:11px;line-height:1.5;}
+  .doc-head{display:flex;justify-content:space-between;align-items:flex-start;}
+  .seal{width:40px;height:40px;border-radius:50%;border:1.5px solid #333;display:flex;
+    align-items:center;justify-content:center;font-size:7px;color:#555;}
+  .doc-title{font-size:16px;font-weight:700;}
+  .doc-rule{border-top:2px solid #111;border-bottom:2px solid #111;margin:16px 0;
+    display:grid;grid-template-columns:60px 1fr 1fr 1fr;}
+  .doc-rule > div{padding:8px 6px;font-size:8px;font-weight:700;min-height:50px;border-right:1px solid #ccc;}
+  .doc-rule > div:last-child{border-right:none;}
+  .sec{background:#e9e9e9;padding:5px 8px;font-weight:700;font-size:11px;}
+  .ckbox{display:inline-block;width:11px;height:11px;border:1px solid #333;text-align:center;
+    line-height:10px;margin-right:4px;font-size:9px;}
+  .nm-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:5px;}
+  .nm-grid .f-l{font-size:7px;color:#666;}
+  .nm-grid .f-v{border:1px solid #999;padding:5px 6px;font-size:10px;}
+
+  /* processing state */
+  .proc{margin-top:80px;text-align:center;color:#aab2c6;}
+  .proc h3{font-size:18px;margin:18px 0 6px;color:#fff;font-weight:700;letter-spacing:-.005em;}
+  .proc p{font-size:13px;opacity:.75;margin:0;}
+  .proc-bar{width:220px;height:5px;border-radius:999px;background:rgba(255,255,255,.1);
+    margin:18px auto 0;overflow:hidden;}
+  .proc-bar > i{display:block;height:100%;background:var(--amber);border-radius:999px;}
+
+  /* ── RIGHT: fields ── */
+  .fields{width:380px;flex-shrink:0;border-left:1px solid var(--line);background:var(--card);
+    display:flex;flex-direction:column;}
+  .f-head{padding:18px 20px 14px;border-bottom:1px solid var(--line-soft);}
+  .f-head-row{display:flex;justify-content:space-between;align-items:center;}
+  .f-title{font-size:15px;font-weight:700;letter-spacing:-.005em;}
+  .icon-btn-sm{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-faint);transition:all .15s;}
+  .icon-btn-sm:hover{background:var(--bg);color:var(--ink);}
+  .conf-card{margin-top:12px;padding:11px 13px;border-radius:11px;background:var(--bg);
+    border:1px solid var(--line);display:flex;align-items:center;gap:11px;}
+  .conf-card .lbl{font-size:11px;color:var(--ink-soft);font-weight:600;}
+  .conf-track{flex:1;height:5px;border-radius:999px;background:var(--line-soft);overflow:hidden;}
+  .conf-track > i{display:block;height:100%;border-radius:999px;}
+  .summary{margin-top:10px;font-size:11.5px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .summary .stat{display:inline-flex;align-items:center;gap:5px;font-weight:600;padding:3px 9px;
+    border-radius:6px;}
+  .summary .stat b{font-weight:700;font-variant-numeric:tabular-nums;}
+  .f-list{flex:1;overflow-y:auto;padding:16px 18px;}
+  .workspace.q-collapsed .fields{width:auto;flex:1;}
+  .workspace.q-collapsed .f-list{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;align-content:start;}
+  .workspace.q-collapsed .f-list .field{margin-bottom:0;}
+  .workspace.q-hidden .queue{display:none;}
+  .workspace.q-hidden .fields{width:auto;flex:1;}
+  .workspace.q-hidden .f-list{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;align-content:start;}
+  .workspace.q-hidden .f-list .field{margin-bottom:0;}
+  .f-actions{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:10px;}
+  .btn-confirm{flex:1;padding:12px;border-radius:10px;border:none;background:var(--primary);color:#fff;
+    font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;
+    box-shadow:0 2px 10px rgba(32,68,150,.22);}
+
+  /* field row */
+  .field{padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:#fff;margin-bottom:10px;
+    transition:box-shadow .15s;}
+  .field:hover{box-shadow:0 2px 12px rgba(28,26,23,.05);}
+  .field.low{border-color:var(--orange);box-shadow:0 1px 10px rgba(225,74,40,.06);}
+  .field-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .field-key{font-size:11.5px;font-weight:700;color:var(--ink-soft);letter-spacing:.005em;}
+  .field-meta{display:flex;align-items:center;gap:10px;}
+  .src{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    padding:2px 6px;border-radius:5px;}
+  .src.native{color:var(--blue);background:var(--blue-soft);}
+  .src.llm{color:var(--violet);background:var(--violet-soft);}
+  .confbar{display:flex;align-items:center;gap:7px;}
+  .confbar .track{width:38px;height:4px;border-radius:999px;background:var(--line-soft);overflow:hidden;}
+  .confbar .track > i{display:block;height:100%;border-radius:999px;transition:width .5s;}
+  .confbar .pct{font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .field-input{position:relative;}
+  .field-input input{width:100%;padding:9px 34px 9px 12px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13.5px;color:var(--ink);outline:none;transition:all .15s;}
+  .field-input input:focus{border-color:var(--primary);background:#fff;}
+  .field-input svg{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--ink-faint);
+    pointer-events:none;}
+  .field-input input[type=date]{font-family:var(--font);}
+  .field-input input[type=date]::-webkit-calendar-picker-indicator{position:absolute;right:0;top:0;
+    width:36px;height:100%;margin:0;padding:0;opacity:0;cursor:pointer;}
+  .field-input select{width:100%;padding:9px 34px 9px 12px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13.5px;font-weight:500;color:var(--ink);outline:none;
+    transition:all .15s;appearance:none;-webkit-appearance:none;-moz-appearance:none;cursor:pointer;
+    line-height:1.3;background-image:none;}
+  .field-input select::-ms-expand{display:none;}
+  .field-input select:hover{border-color:#c7cdda;}
+  .field-input select:focus{border-color:var(--primary);background:#fff;}
+  .field-input select option{font-weight:500;color:var(--ink);background:#fff;}
+  .field-input textarea{width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13.5px;color:var(--ink);outline:none;
+    resize:vertical;min-height:64px;line-height:1.4;transition:all .15s;}
+  .field-input textarea:focus{border-color:var(--primary);background:#fff;}
+  .field-warn{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--orange);font-weight:500;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <img class="brand-logo" src="assets/logo_white.png" alt="GIP" />
+      <button class="brand-icon" id="brandIcon" title="Expand menu" aria-label="Expand menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <button class="collapse-btn" id="collapseBtn" title="Collapse">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+    </div>
+
+    <nav class="nav" id="nav"></nav>
+
+    <div class="side-foot">
+      <div id="footItems"></div>
+      <div class="user-wrap">
+        <button class="user" id="userBtn" data-label="Austin" title="Austin · admin" aria-haspopup="true" aria-expanded="false">
+          <div class="avatar">A</div>
+          <div class="user-txt">
+            <div class="user-name">Austin</div>
+            <div class="user-role">admin</div>
+          </div>
+          <span class="user-caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+        </button>
+        <div class="user-pop" id="userPop" role="menu" aria-labelledby="userBtn">
+          <a class="user-pop-item" href="help.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
+            Help
+          </a>
+          <a class="user-pop-item" href="support.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+            Support
+          </a>
+          <div class="user-pop-sep"></div>
+          <a class="user-pop-item" href="gip-login.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+            Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle">Notice Processing</h1>
+        <div class="date">Review Queue</div>
+      </div>
+      <div class="top-actions">
+        <div class="top-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Search cases, notices…" />
+        </div>
+      </div>
+    </div>
+
+    <!-- three-column workspace -->
+    <div class="workspace" id="workspace">
+
+      <!-- ── LEFT: Review Queue ── -->
+      <aside class="queue" id="queue">
+        <div class="q-head">
+          <div class="q-head-row">
+            <div>
+              <div class="q-title">Review Queue</div>
+              <div class="q-sub">USCIS Forms</div>
+            </div>
+            <button class="q-toggle" id="qToggle" title="Collapse panel">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+            </button>
+          </div>
+
+          <div class="search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input placeholder="Search applicant or form…" />
+          </div>
+
+        </div>
+
+        <div class="q-list" id="qlist"></div>
+
+        <div class="q-foot">
+          <span class="live-dot"></span>
+          Live · auto-refresh in <span id="refresh">28</span>s
+        </div>
+      </aside>
+
+      <!-- ── CENTER: Viewer ── -->
+      <section class="viewer">
+        <div class="v-bar">
+          <div class="v-bar-l">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#204496" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div>
+              <div class="v-title" id="vTitle"></div>
+              <div class="v-sub" id="vSub"></div>
+            </div>
+          </div>
+          <div class="pgnav" id="pgnav" title="Navigate between notices">
+            <button class="pg-btn" id="prevPg" title="Previous notice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <span class="pg-num" id="pgNum">1 / 1</span>
+            <button class="pg-btn" id="nextPg" title="Next notice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+          </div>
+        </div>
+        <div class="canvas" id="canvas"></div>
+      </section>
+
+      <!-- ── RIGHT: Extracted Fields ── -->
+      <aside class="fields">
+        <div class="f-head">
+          <div class="f-head-row">
+            <div class="f-title">Extracted Fields</div>
+            <a class="icon-btn-sm" href="gip-notice-list.html" title="Close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></a>
+          </div>
+          <div class="conf-card">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f8a52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            <div style="flex:1;">
+              <div class="lbl">Overall Extraction Confidence</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                <div class="conf-track"><i style="width:92%;background:#1f8a52;"></i></div>
+                <span style="font-size:12px;font-weight:700;color:#1f8a52;font-variant-numeric:tabular-nums;">92%</span>
+              </div>
+            </div>
+          </div>
+          <div class="summary" id="summary"></div>
+        </div>
+
+        <div class="f-list" id="flist"></div>
+
+        <div class="f-actions">
+          <button class="btn-confirm" id="confirmBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Confirm All Fields
+          </button>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+</div>
+
+<script>
+/* ─── shared nav model (matches dashboard) ─── */
+const ICONS = {
+  dashboard:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>',
+  notice:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>',
+  compliance:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>',
+  filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  agentops:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
+  email:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  assistant:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+};
+const NAV = [
+  {id:'dashboard',  label:'Dashboard',                href:'dashboard.html',  icon:ICONS.dashboard,                        visible:1},
+  {id:'assistant',  label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:0},
+  {id:'notice',     label:'Notice Processing',        href:'notice_review.html',icon:ICONS.notice,    group:'Agents',         visible:1},
+  {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:0},
+  {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:0},
+  {id:'email',      label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:0},
+  {id:'agentops',   label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights',       visible:0},
+];
+const ACTIVE_NAV = 'notice';
+
+const FOOT_ICONS = {
+  settings:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  status:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>',
+  notifications:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+};
+/* TODO: replace with auth-derived role (e.g. from session/JWT). Reviewers see no Settings entry. */
+const CURRENT_USER_ROLE = 'admin';
+const FOOT = [
+  {id:'settings',      label:'Settings',      icon:FOOT_ICONS.settings,      href:'gip-settings.html', visible:(CURRENT_USER_ROLE==='admin'?1:0)},
+  {id:'status',        label:'Status',        icon:FOOT_ICONS.status,                                   visible:0},
+  {id:'notifications', label:'Notifications', icon:FOOT_ICONS.notifications, badge:'0',                 visible:0},
+];
+
+function renderFoot(){
+  document.getElementById('footItems').innerHTML = FOOT.filter(f=>f.visible).map(f=>{
+    const tag = f.href ? 'a' : 'button';
+    const href = f.href ? ` href="${f.href}"` : '';
+    const badge = f.badge ? `<span class="badge">${f.badge}</span>` : '';
+    return `<${tag} class="foot-item"${href} data-label="${f.label}" title="${f.label}">
+      <span class="ico">${f.icon}</span><span class="lbl">${f.label}</span>${badge}
+    </${tag}>`;
+  }).join('');
+}
+
+function renderNav(){
+  let html = '', currentGroup = null;
+  NAV.filter(n=>n.visible).forEach(n=>{
+    const g = n.group || null;
+    if(g !== currentGroup){
+      currentGroup = g;
+      if(g) html += `<div class="nav-label lbl">${g}</div>`;
+    }
+    html += `<a class="nav-item ${n.id===ACTIVE_NAV?'active':''}" href="${n.href}" data-label="${n.label}" title="${n.label}">
+      <span class="ico">${n.icon}</span><span class="lbl">${n.label}</span>
+    </a>`;
+  });
+  document.getElementById('nav').innerHTML = html;
+}
+
+/* ─── notice review page state ─── */
+const STATUS = {
+  processing:{label:'Processing', color:'var(--amber)'},
+  ready:{label:'Ready for Review', color:'var(--primary)'},
+  completed:{label:'Completed', color:'var(--green)'},
+};
+
+const QUEUE = [
+  {id:'0588250d',type:'N-400',label:'Application for Naturalization',applicant:'Elena Rodriguez',status:'ready',priority:'normal',fields:7,pages:14,time:'Jun 2, 2026 · 10:43 PM',primary:true},
+  {id:'0344f1a2',type:'I-130',label:'Petition for Alien Relative',applicant:'Marcus Chen',status:'processing',priority:'high',fields:4,pages:12,time:'Jun 3, 2026 · 11:04 AM',progress:62},
+  {id:'0991ccde',type:'H4-EAD',label:'Employment Authorization (H4)',applicant:'Priya Nair',status:'ready',priority:'high',fields:9,pages:6,time:'Jun 3, 2026 · 09:12 AM',primary:true},
+  {id:'07b3e810',type:'I-765',label:'Application for Employment Auth.',applicant:'David Okafor',status:'completed',priority:'normal',fields:11,pages:8,time:'Jun 1, 2026 · 04:30 PM'},
+  {id:'0c52a7fb',type:'N-400',label:'Application for Naturalization',applicant:'Sofia Mendez',status:'completed',priority:'normal',fields:7,pages:14,time:'Jun 1, 2026 · 02:15 PM'},
+  {id:'0ff19a34',type:'I-485',label:'Adjustment of Status',applicant:'Ahmed Hassan',status:'processing',priority:'normal',fields:2,pages:18,time:'Jun 3, 2026 · 11:20 AM',progress:28},
+];
+
+const FIELDS = [
+  {key:'Primary Flag',value:'True',conf:96,src:'native',type:'select',options:['True','False']},
+  {key:'Sent Government Agency',value:'2026-05-28',conf:94,src:'native',type:'date'},
+  {key:'Receipt For',value:'Elena Rodriguez',conf:95,src:'native',type:'text'},
+  {key:'Receipt Type',value:'USCIS Receipt Number',conf:92,src:'native',type:'select',
+    options:['USCIS Receipt Number','J Visa Application Number','NVC Matter Number','PERM Receipt','Others']},
+  {key:'Receipt Date',value:'2026-05-30',conf:95,src:'native',type:'date'},
+  {key:'Receipt Notice Date',value:'2026-06-01',conf:93,src:'native',type:'date'},
+  {key:'Receipt Number',value:'MSC2190123456',conf:88,src:'native',type:'number'},
+  {key:'Receipt Status',value:'Pending',conf:90,src:'llm',type:'select',
+    options:['Pending','Approved','Denied','RFE','Withdrawn','Shipped']},
+  {key:'Expiration Notice',value:'Yes',conf:74,src:'llm',type:'select',options:['Yes','No']},
+  {key:'Receipt Notes',value:'',conf:0,src:'llm',type:'textarea'},
+];
+
+let activeId = '0588250d';
+let filter = 'all';
+let page = 1;
+
+const ICON = {
+  spin:'<svg class="spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
+  ready:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
+  check:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+  pencil:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  calendar:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  spark:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L19 10l-5.1 1.2L12 17l-1.9-5.8L5 10l5.1-1.2z"/></svg>',
+  chevron:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+};
+
+function pillHTML(status, progress){
+  const s = STATUS[status];
+  const ic = status==='processing'?ICON.spin:status==='ready'?ICON.ready:ICON.check;
+  const pct = (status==='processing' && progress!=null) ? `<span style="opacity:.7;">${progress}%</span>` : '';
+  return `<span class="pill ${status}">${ic}${s.label}${pct}</span>`;
+}
+
+function confTone(c){ return c>=90?'var(--green)':c>=80?'var(--amber)':'var(--orange)'; }
+
+function renderList(){
+  const list = QUEUE.filter(d=>{
+    if(filter==='all')return true;
+    if(filter==='review')return d.status==='ready';
+    if(filter==='processing')return d.status==='processing';
+    if(filter==='completed')return d.status==='completed';
+  });
+  document.getElementById('qlist').innerHTML = list.map(d=>{
+    const s = STATUS[d.status];
+    const meta = d.status==='processing' ? `${d.fields} / ${d.pages}p` : `${d.fields} fields`;
+    return `<button class="card ${d.id===activeId?'active':''}" data-id="${d.id}">
+      <span class="rail" style="background:${s.color};"></span>
+      ${d.status==='processing'?'<span class="shim"></span>':''}
+      <div class="card-top">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="ctype">${d.type}</span>
+          ${d.priority==='high'?'<span class="hi">HIGH</span>':''}
+        </div>
+        <span class="cid">#${d.id}</span>
+      </div>
+      <div class="capp">${d.applicant}</div>
+      <div class="clabel">${d.label}</div>
+      <div class="crow">${pillHTML(d.status,d.progress)}<span class="cmeta">${meta}</span></div>
+      ${d.status==='processing'?`<div class="cbar"><i style="width:${d.progress}%;"></i></div>`:''}
+    </button>`;
+  }).join('');
+  document.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{activeId=b.dataset.id;page=1;renderViewer();renderFields();renderList();});
+}
+
+function renderViewer(){
+  const d = QUEUE.find(x=>x.id===activeId) || QUEUE[0];
+  document.getElementById('vTitle').textContent = `${d.type} — ${d.id}…`;
+  document.getElementById('vSub').textContent = `${d.applicant} · ${d.time}`;
+  const idx = QUEUE.findIndex(x=>x.id===d.id);
+  const total = QUEUE.length;
+  document.getElementById('pgNum').textContent = `${idx+1} / ${total}`;
+  document.getElementById('pgnav').style.display = total <= 1 ? 'none' : 'flex';
+  document.getElementById('prevPg').disabled = idx <= 0;
+  document.getElementById('nextPg').disabled = idx >= total-1;
+
+  const canvas = document.getElementById('canvas');
+  if(d.status==='processing'){
+    canvas.innerHTML = `<div class="proc">
+      <svg class="spin" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#b8791a" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      <h3>Extracting fields…</h3>
+      <p>${d.fields} of ~${d.pages} pages parsed · ${d.progress}%</p>
+      <div class="proc-bar"><i style="width:${d.progress}%;"></i></div>
+    </div>`;
+  } else {
+    canvas.innerHTML = docPreview();
+  }
+}
+
+function docPreview(){
+  return `<div class="doc">
+    <div class="doc-head">
+      <div class="seal">USCIS</div>
+      <div style="text-align:center;flex:1;">
+        <div class="doc-title">Application for Naturalization</div>
+        <div style="font-size:10px;margin-top:3px;">Department of Homeland Security</div>
+        <div style="font-size:9px;color:#444;">U.S. Citizenship and Immigration Services</div>
+      </div>
+      <div style="text-align:right;font-size:9px;">
+        <div style="font-weight:700;">USCIS</div><div>Form N-400</div><div style="color:#666;">OMB No. 1615-0052</div>
+      </div>
+    </div>
+    <div class="doc-rule">
+      <div>For USCIS Use Only</div><div>Date Stamp</div><div>Receipt</div><div>Action Block</div>
+    </div>
+    <div class="sec">Part 1. Information About Your Eligibility</div>
+    <div style="margin-top:10px;font-size:10px;">
+      <div style="margin-bottom:7px;"><b>A.</b> <span class="ckbox">✓</span>General Provision.</div>
+      <div style="margin-bottom:6px;color:#333;"><span class="ckbox"></span>B. Spouse of U.S. Citizen</div>
+      <div style="margin-bottom:6px;color:#333;"><span class="ckbox"></span>C. VAWA</div>
+      <div style="margin-bottom:6px;color:#333;"><span class="ckbox"></span>D. Qualified Employment Outside the U.S.</div>
+    </div>
+    <div class="sec" style="margin-top:14px;">Part 2. Information About You</div>
+    <div style="margin-top:8px;font-size:9px;">Your Current Legal Name</div>
+    <div class="nm-grid">
+      <div><div class="f-l">Family Name</div><div class="f-v">Rodriguez</div></div>
+      <div><div class="f-l">Given Name</div><div class="f-v">Elena</div></div>
+      <div><div class="f-l">Middle Name</div><div class="f-v">Maria</div></div>
+    </div>
+    <div style="margin-top:26px;display:flex;justify-content:space-between;font-size:8px;color:#666;">
+      <span>Form N-400 · Edition 01/20/25</span><span>Page 1 of 14</span>
+    </div>
+  </div>`;
+}
+
+function renderSummary(){
+  const scored = FIELDS.filter(f=>f.type!=='textarea');
+  const fields = scored.length;
+  const needReview = scored.filter(f=>f.conf<80).length;
+  const native = scored.filter(f=>f.src==='native' && f.conf>=80).length;
+  const llm = scored.filter(f=>f.src==='llm' && f.conf>=80).length;
+  const stats = [
+    {n:fields, l:'Fields', color:'var(--ink-soft)', bg:'var(--line-soft)'},
+    {n:needReview, l:'Need Review', color:'var(--orange)', bg:'var(--orange-soft)'},
+    {n:native, l:'Native', color:'var(--blue)', bg:'var(--blue-soft)'},
+    {n:llm, l:'LLM', color:'var(--violet)', bg:'var(--violet-soft)'},
+  ];
+  document.getElementById('summary').innerHTML = stats.map(s=>
+    `<span class="stat" style="color:${s.color};background:${s.bg};"><b>${s.n}</b> ${s.l}</span>`
+  ).join('');
+}
+
+function renderFields(){
+  renderSummary();
+  document.getElementById('flist').innerHTML = FIELDS.map(f=>{
+    const isNotes = f.type==='textarea';
+    const low = !isNotes && f.conf<80;
+    const tone = confTone(f.conf);
+    return `<div class="field ${low?'low':''}">
+      <div class="field-top">
+        <span class="field-key">${f.key}</span>
+        <div class="field-meta">
+          ${isNotes ? '' : `
+            <span class="src ${f.src}">${f.src==='native'?'Native':'LLM'}</span>
+            <span class="pct" style="color:${tone};font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;">${f.conf}%</span>`}
+        </div>
+      </div>
+      <div class="field-input">
+        ${f.type==='date'
+          ? `<input type="date" value="${f.value??''}" placeholder="mm/dd/yyyy" />${ICON.calendar}`
+        : f.type==='select'
+          ? `<select>${(f.options||[]).filter(o=>o!=null).map(o=>`<option ${o===f.value?'selected':''}>${o}</option>`).join('')}</select>${ICON.chevron}`
+        : f.type==='textarea'
+          ? `<textarea rows="3" placeholder="Add notes…">${f.value??''}</textarea>`
+        : f.type==='number'
+          ? `<input type="text" inputmode="numeric" value="${f.value??''}" />${ICON.pencil}`
+          : `<input value="${f.value??''}" />${ICON.pencil}`}
+      </div>
+      ${low?`<div class="field-warn">${ICON.spark}Manual Review— verify original notice</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderAll(){ renderNav(); renderFoot(); renderList(); renderViewer(); renderFields(); }
+
+document.getElementById('prevPg').onclick=()=>{
+  const i = QUEUE.findIndex(x=>x.id===activeId);
+  if(i>0){ activeId = QUEUE[i-1].id; page=1; renderViewer(); renderList(); renderFields(); }
+};
+document.getElementById('nextPg').onclick=()=>{
+  const i = QUEUE.findIndex(x=>x.id===activeId);
+  if(i<QUEUE.length-1){ activeId = QUEUE[i+1].id; page=1; renderViewer(); renderList(); renderFields(); }
+};
+
+document.getElementById('confirmBtn').onclick=()=>{
+  const i = QUEUE.findIndex(x=>x.id===activeId);
+  if(i<0) return;
+  QUEUE.splice(i,1);
+  if(QUEUE.length===0){
+    window.location.href = 'gip-notice-list.html';
+    return;
+  }
+  activeId = QUEUE[Math.min(i, QUEUE.length-1)].id;
+  page = 1;
+  renderList(); renderViewer(); renderFields();
+};
+
+document.getElementById('collapseBtn').onclick = ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+};
+document.getElementById('brandIcon').onclick = ()=>{
+  document.getElementById('sidebar').classList.remove('collapsed');
+};
+
+// user popout
+(function(){
+  const btn = document.getElementById('userBtn');
+  const pop = document.getElementById('userPop');
+  if(!btn || !pop) return;
+  const close = ()=>{ pop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const open = pop.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', e=>{
+    if(!pop.classList.contains('open')) return;
+    if(!pop.contains(e.target) && !btn.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+})();
+
+document.getElementById('qToggle').onclick = ()=>{
+  const collapsed = document.getElementById('queue').classList.toggle('collapsed');
+  document.getElementById('workspace').classList.toggle('q-collapsed', collapsed);
+  document.getElementById('qToggle').title = collapsed ? 'Expand panel' : 'Collapse panel';
+};
+
+/* apply list-page selection: hide queue for single, filter for selected subset */
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const count = parseInt(params.get('count') || '', 10);
+  const fns = params.get('fns');
+  if(fns){
+    const wanted = new Set(fns.split('|').filter(Boolean));
+    for(let i=QUEUE.length-1;i>=0;i--){
+      if(!wanted.has(QUEUE[i].applicant)) QUEUE.splice(i,1);
+    }
+    if(QUEUE.length && !QUEUE.find(d=>d.id===activeId)) activeId = QUEUE[0].id;
+  }
+  if(count === 1){
+    document.getElementById('workspace').classList.add('q-hidden');
+  }
+})();
+
+
+let r = 28;
+setInterval(()=>{ r = r<=1?30:r-1; document.getElementById('refresh').textContent=r; }, 1000);
+
+renderAll();
+</script>
+</body>
+</html>

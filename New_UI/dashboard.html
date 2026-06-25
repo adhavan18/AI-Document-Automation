@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GIP Reviewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* GIP palette */
+    --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
+    --bg:#f3f5fa; --card:#ffffff;
+    --ink:#1a1f2e; --ink-soft:#5b6376; --ink-faint:#9aa1b2;
+    --line:#e6e9f0; --line-soft:#eef1f7;
+    --green:#1f8a52; --green-soft:#e4f3ea;
+    --amber:#b8791a; --amber-soft:#fbf0db;
+    --orange:#e14a28; --orange-soft:#fbe8e2;
+    /* dark sidebar (mosaic structure, GIP-tinted navy) */
+    --side-bg:#0e1326; --side-bg-2:#111733;
+    --side-text:#aab2c6; --side-text-hi:#ffffff;
+    --side-line:#222a45;
+    --accent:#4d82f0; --accent-soft:rgba(77,130,240,.14);
+    --font:'Inter',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .spin{animation:spin 1s linear infinite;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#d3d8e4;border-radius:9px;}
+  button{font-family:var(--font);cursor:pointer;}
+  .shell{display:flex;height:100vh;}
+
+  /* ═══ SIDEBAR ═══ */
+  .sidebar{width:252px;flex-shrink:0;background:linear-gradient(180deg,var(--side-bg),var(--side-bg-2));
+    display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);}
+  .sidebar.collapsed{width:74px;}
+
+  .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
+  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
+    background:transparent;border:none;padding:0;cursor:pointer;
+    color:var(--side-text);display:none;align-items:center;justify-content:center;
+    transition:background .15s, color .15s;}
+  .brand-icon:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .brand-logo{display:none;}
+  .sidebar.collapsed .brand-icon{display:flex;margin:0 auto;}
+  .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
+    background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;
+    transition:background .15s;}
+  .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
+  .sidebar.collapsed .collapse-btn{display:none;}
+
+  .nav{flex:1;overflow-y:auto;padding:6px 12px;}
+  .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
+    text-transform:uppercase;padding:14px 10px 7px;}
+  .sidebar.collapsed .nav-label{display:none;}
+  .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
+    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:12px;
+    font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;
+    text-decoration:none;}
+  a.nav-item,a.nav-item:hover,a.nav-item:focus{text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:var(--side-text-hi);}
+  .nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600;}
+  .nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--accent);box-shadow:0 0 10px var(--accent);}
+  .nav-item .ico{flex-shrink:0;display:flex;}
+  .nav-item.active .ico{color:var(--accent);}
+  .nav-item .lbl{overflow:hidden;text-overflow:ellipsis;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding:11px 0;}
+  .sidebar.collapsed .nav-item .lbl{display:none;}
+  /* collapsed tooltip */
+  .sidebar.collapsed .nav-item:hover::after{content:attr(data-label);position:absolute;left:calc(100% + 10px);
+    top:50%;transform:translateY(-50%);background:#1c2340;color:#fff;font-size:12px;font-weight:500;
+    padding:6px 10px;border-radius:7px;white-space:nowrap;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+
+  .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
+  .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
+    border:none;background:transparent;color:var(--side-text);font-size:12px;font-weight:500;
+    margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;}
+  .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+  a.foot-item{text-decoration:none;}
+  .foot-item .badge{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:700;
+    min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+  .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
+  .sidebar.collapsed .foot-item .lbl,.sidebar.collapsed .foot-item .badge{display:none;}
+  .user{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-top:6px;border-radius:10px;
+    background:rgba(255,255,255,.04);border:1px solid var(--side-line);
+    transition:background .15s, border-color .15s;}
+  .user:hover{background:transparent;border-color:transparent;}
+  .avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--orange);color:#fff;
+    font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .user-txt{overflow:hidden;white-space:nowrap;}
+  .user-name{font-size:13px;font-weight:600;color:#fff;line-height:1.1;}
+  .user-role{font-size:11px;color:var(--ink-faint);}
+  .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
+  .sidebar.collapsed .user-txt,.sidebar.collapsed .user-caret{display:none;}
+  .user{cursor:pointer;width:100%;text-align:left;border:none;font:inherit;}
+  .user-caret{margin-left:auto;color:var(--ink-faint);display:flex;align-items:center;transition:transform .15s;}
+  .user-wrap{position:relative;}
+  .user-pop{position:absolute;left:12px;right:12px;bottom:calc(100% + 6px);
+    background:#1a2236;border:1px solid var(--side-line);border-radius:10px;
+    box-shadow:0 12px 28px rgba(0,0,0,.45);padding:5px;display:none;z-index:50;}
+  .user-pop.open{display:block;}
+  .user-pop-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+    border:none;background:transparent;color:var(--side-text);font-size:12.5px;font-weight:500;
+    border-radius:7px;cursor:pointer;text-align:left;text-decoration:none;}
+  .user-pop-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .user-pop-item .ico{display:flex;align-items:center;color:var(--ink-faint);}
+  .user-pop-sep{height:1px;background:var(--side-line);margin:4px 6px;}
+  .sidebar.collapsed .user-pop{left:auto;right:-216px;bottom:6px;width:200px;}
+
+  /* ═══ MAIN ═══ */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 30px;
+    background:var(--card);border-bottom:1px solid var(--line);}
+  .topbar h1{font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em;}
+  .topbar .date{font-size:12.5px;color:var(--ink-faint);margin-top:2px;}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .platform-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;
+    background:var(--primary-soft);color:var(--primary);font-size:11px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(32,68,150,.18);}
+  .platform-badge svg{flex-shrink:0;}
+  .top-search{position:relative;}
+  .top-search input{width:230px;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13px;outline:none;}
+  .top-search input:focus{border-color:var(--primary);background:#fff;}
+  .top-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
+  .btn-primary{padding:9px 16px;border-radius:9px;border:none;background:var(--primary);color:#fff;
+    font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 2px 10px rgba(32,68,150,.22);}
+  .icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);position:relative;}
+  .icon-btn .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;
+    background:var(--orange);border:1.5px solid #fff;}
+
+  .content{flex:1;overflow-y:auto;padding:26px 30px 40px;}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;
+    position:relative;overflow:hidden;}
+  .kpi .k-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:13px;}
+  .kpi .k-val{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1;}
+  .kpi .k-lbl{font-size:12.5px;color:var(--ink-soft);font-weight:500;margin-top:6px;}
+  .kpi .k-delta{font-size:11.5px;font-weight:600;margin-top:9px;display:inline-flex;align-items:center;gap:4px;}
+  .kpi .k-life{position:absolute;top:14px;right:14px;background:var(--bg);border:1px solid var(--line);
+    border-radius:999px;padding:3px 9px;display:inline-flex;align-items:center;gap:5px;
+    font-size:10.5px;font-weight:600;color:var(--ink-soft);}
+  .kpi .k-life-val{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:700;}
+  .kpi .k-life-lbl{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);}
+
+  /* autonomy KPI panel */
+  .autonomy-wrap{display:flex;flex-direction:column;gap:14px;padding:14px;}
+  .ahero{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+    padding:22px 22px 20px;border-radius:12px;background:var(--bg);border:1px solid var(--line-soft);}
+  .ahero-l{display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .ahero-tag{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--primary);background:var(--primary-soft);
+    padding:4px 9px;border-radius:999px;align-self:flex-start;}
+  .ahero-lbl{font-size:13px;font-weight:600;color:var(--ink-soft);margin-top:2px;}
+  .ahero-val{font-size:46px;font-weight:800;letter-spacing:-.025em;line-height:1;color:var(--ink);
+    font-variant-numeric:tabular-nums;}
+  .ahero-sub{font-size:12.5px;color:var(--ink-soft);margin-top:4px;}
+  .ahero-sub .delta{font-weight:700;}
+  .ahero-r{flex-shrink:0;}
+  .a-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .a-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px;
+    position:relative;display:flex;flex-direction:column;gap:6px;}
+  .a-tile-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .a-tile-ico{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .a-tile-spark{flex-shrink:0;opacity:.85;}
+  .a-tile-val{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.1;color:var(--ink);
+    font-variant-numeric:tabular-nums;margin-top:2px;}
+  .a-tile-lbl{font-size:12px;color:var(--ink-soft);font-weight:500;line-height:1.3;}
+  .a-tile-delta{font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:3px;margin-top:2px;}
+  .a-tile-delta.good{color:var(--green);}
+  .a-tile-delta.bad{color:var(--orange);}
+  .a-tile-delta.flat{color:var(--ink-faint);}
+  @media (max-width:980px){ .a-tiles{grid-template-columns:1fr;} .ahero{flex-direction:column;align-items:flex-start;gap:14px;} .ahero-r{width:100%;} }
+
+  /* notice mix donut */
+  .tabs{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px;}
+  .tab{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:5px 11px;border-radius:7px;border:none;background:transparent;color:var(--ink-soft);cursor:pointer;
+    transition:background .15s, color .15s;}
+  .tab:hover{color:var(--ink);}
+  .tab.active{background:var(--card);color:var(--primary);box-shadow:0 1px 3px rgba(15,25,55,.08);}
+  .mix-wrap{padding:18px 18px 16px;display:flex;flex-direction:column;gap:14px;flex:1;}
+  .mix-top{display:flex;align-items:center;gap:18px;flex:1;}
+  .mix-donut-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;}
+  .mix-donut{position:relative;width:180px;height:180px;flex-shrink:0;}
+  .mix-range{font-size:10.5px;color:var(--ink-faint);font-weight:500;letter-spacing:.01em;white-space:nowrap;}
+  .mix-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .mix-center-val{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .mix-center-lbl{font-size:10.5px;font-weight:600;color:var(--ink-faint);letter-spacing:.04em;text-transform:uppercase;margin-top:4px;}
+  .mix-legend{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;}
+  .mix-row{display:flex;align-items:center;gap:9px;font-size:12.5px;}
+  .mix-swatch{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+  .mix-name{flex:1;color:var(--ink);font-weight:600;}
+  .mix-val{font-variant-numeric:tabular-nums;color:var(--ink-soft);font-weight:600;}
+  .mix-pct{font-variant-numeric:tabular-nums;color:var(--ink-faint);font-size:11.5px;min-width:38px;text-align:right;}
+
+  /* layout grid */
+  .grid{display:grid;grid-template-columns:1.7fr 1fr;gap:18px;margin-top:18px;}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+    border-bottom:1px solid var(--line-soft);}
+  .panel-head h3{font-size:15px;font-weight:700;margin:0;}
+  .panel-head a{font-size:12.5px;color:var(--primary);font-weight:600;text-decoration:none;}
+  .panel-body{padding:8px 12px 12px;}
+
+  /* doc row */
+  .doc-row{display:flex;align-items:center;gap:14px;padding:12px 12px;border-radius:10px;transition:background .15s;}
+  .doc-row:hover{background:var(--bg);}
+  .doc-ico{width:36px;height:36px;border-radius:9px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .doc-main{flex:1;min-width:0;}
+  .doc-title{font-size:13.5px;font-weight:600;}
+  .doc-sub{font-size:12px;color:var(--ink-faint);margin-top:1px;}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 7px;border-radius:999px;
+    font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
+  .pill.ready{background:var(--primary-soft);color:var(--primary);}
+  .pill.processing{background:var(--amber-soft);color:var(--amber);}
+  .pill.completed{background:var(--green-soft);color:var(--green);}
+  .conf{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;width:42px;text-align:right;}
+
+  /* deadlines */
+  .dl{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;transition:background .15s;}
+  .dl:hover{background:var(--bg);}
+  .dl-bar{width:3px;align-self:stretch;border-radius:3px;}
+  .dl-main{flex:1;min-width:0;}
+  .dl-title{font-size:13px;font-weight:600;}
+  .dl-sub{font-size:11.5px;color:var(--ink-faint);margin-top:1px;}
+  .dl-date{font-size:12px;font-weight:600;text-align:right;white-space:nowrap;}
+
+  /* agent status */
+  .ag{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;transition:background .15s;}
+  .ag:hover{background:var(--bg);}
+  .ag-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ag-ico svg{width:18px;height:18px;}
+  .ag-main{flex:1;min-width:0;}
+  .ag-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;}
+  .ag-sub{font-size:11.5px;color:var(--ink-faint);margin-top:1px;}
+  .ag-pill{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    padding:3px 8px 3px 7px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+  .ag-pill.run{background:var(--green-soft);color:var(--green);}
+  .ag-pill.stop{background:#eef1f7;color:var(--ink-soft);}
+  .ag-pill.warn{background:var(--amber-soft);color:var(--amber);}
+  .ag-dot{width:7px;height:7px;border-radius:50%;background:currentColor;position:relative;}
+  .ag-pill.run .ag-dot::after{content:'';position:absolute;inset:0;border-radius:50%;background:currentColor;
+    animation:pulse-ring 1.6s ease-out infinite;}
+  @keyframes pulse-ring{
+    0%  {transform:scale(1);   opacity:.55;}
+    80% {transform:scale(2.6); opacity:0;}
+    100%{transform:scale(2.6); opacity:0;}
+  }
+  .ag-pill.run .ag-dot{animation:pulse-core 1.6s ease-in-out infinite;}
+  @keyframes pulse-core{
+    0%,100%{opacity:1;}
+    50%    {opacity:.6;}
+  }
+
+  /* mini chart */
+  .chart{display:flex;align-items:flex-end;gap:12px;height:120px;padding:14px 18px 6px;}
+  .bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end;}
+  .bar{width:100%;max-width:34px;border-radius:7px 7px 0 0;background:linear-gradient(180deg,var(--accent),var(--primary));
+    transition:height .4s ease;}
+  .bar-lbl{font-size:11px;color:var(--ink-faint);font-weight:600;}
+
+  .section-label{font-size:13px;font-weight:700;color:var(--ink-soft);margin:24px 4px 12px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <img class="brand-logo" src="assets/logo_white.png" alt="GIP" />
+      <button class="brand-icon" id="brandIcon" title="Expand menu" aria-label="Expand menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <button class="collapse-btn" id="collapseBtn" title="Collapse">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+    </div>
+
+    <nav class="nav" id="nav"></nav>
+
+    <div class="side-foot">
+      <div id="footItems"></div>
+      <div class="user-wrap">
+        <button class="user" id="userBtn" data-label="Austin" title="Austin · admin" aria-haspopup="true" aria-expanded="false">
+          <div class="avatar">A</div>
+          <div class="user-txt">
+            <div class="user-name">Austin</div>
+            <div class="user-role">admin</div>
+          </div>
+          <span class="user-caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+        </button>
+        <div class="user-pop" id="userPop" role="menu" aria-labelledby="userBtn">
+          <a class="user-pop-item" href="help.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
+            Help
+          </a>
+          <a class="user-pop-item" href="support.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+            Support
+          </a>
+          <div class="user-pop-sep"></div>
+          <a class="user-pop-item" href="gip-login.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+            Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <div class="date" id="pageDate"></div>
+      </div>
+      <div class="top-actions">
+        <span class="platform-badge" title="GCM AI Platform">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          GCM AI Platform
+        </span>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<script>
+const ICONS = {
+  dashboard:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>',
+  notice:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>',
+  compliance:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>',
+  filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  agentops:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
+  email:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  assistant:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+  file:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  spin:'<svg class="spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
+  bolt:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  shield:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>',
+  alert:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17"/></svg>',
+  clock:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  timer:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="14" x2="15" y2="11"/><circle cx="12" cy="14" r="8"/></svg>',
+  pencil:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>',
+  cloudcheck:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.95-8.9 6 6 0 1 0-11.27 3.5"/><polyline points="8 17 11 20 16 14"/></svg>',
+  arrowUp:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>',
+  arrowDown:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>',
+  arrowFlat:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  dot:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
+  check:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+};
+
+const NAV = [
+  {id:'dashboard',   label:'Dashboard',                icon:ICONS.dashboard, href:'dashboard.html',                          visible:1},
+  {id:'assistant',   label:'AI Assistant',             icon:ICONS.assistant, href:'gip-ai-assistant.html', group:'Agents',       visible:0},
+  {id:'notice',      label:'Notice Processing',        icon:ICONS.notice,    href:'notice_review.html',  group:'Agents',       visible:1},
+  {id:'compliance',  label:'Compliance Doc (PAF)',     icon:ICONS.compliance,href:'gip-compliance.html',   group:'Agents',       visible:0},
+  {id:'filing',      label:'Automate Filing (H4 EAD)', icon:ICONS.filing,    href:'gip-autofiling.html',   group:'Agents',       visible:0},
+  {id:'email',       label:'Email Templates',          icon:ICONS.email,     href:'#',                     group:'Tools',        visible:0},
+  {id:'agentops',    label:'Agent Ops',                icon:ICONS.agentops,  href:'gip-agent-ops.html',    group:'Insights',     visible:0},
+];
+
+const ACTIVE_NAV = 'dashboard';
+
+const FOOT_ICONS = {
+  settings:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  status:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>',
+  notifications:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+};
+/* TODO: replace with auth-derived role (e.g. from session/JWT). Reviewers see no Settings entry. */
+const CURRENT_USER_ROLE = 'admin';
+const FOOT = [
+  {id:'settings',      label:'Settings',      icon:FOOT_ICONS.settings,      href:'gip-settings.html', visible:(CURRENT_USER_ROLE==='admin'?1:0)},
+  {id:'status',        label:'Status',        icon:FOOT_ICONS.status,                                   visible:0},
+  {id:'notifications', label:'Notifications', icon:FOOT_ICONS.notifications, badge:'0',                 visible:0},
+];
+
+function renderFoot(){
+  document.getElementById('footItems').innerHTML = FOOT.filter(f=>f.visible).map(f=>{
+    const tag = f.href ? 'a' : 'button';
+    const href = f.href ? ` href="${f.href}"` : '';
+    const badge = f.badge ? `<span class="badge">${f.badge}</span>` : '';
+    return `<${tag} class="foot-item"${href} data-label="${f.label}" title="${f.label}">
+      <span class="ico">${f.icon}</span><span class="lbl">${f.label}</span>${badge}
+    </${tag}>`;
+  }).join('');
+}
+
+const DOCS = [
+  {type:'N-400',  applicant:'Elena Rodriguez', status:'ready',      conf:97, time:'10 min ago'},
+  {type:'I-130',  applicant:'Marcus Chen',     status:'processing', conf:null,time:'now'},
+  {type:'H4-EAD', applicant:'Priya Nair',      status:'ready',      conf:91, time:'1 hr ago'},
+  {type:'I-485',  applicant:'Ahmed Hassan',    status:'processing', conf:null,time:'now'},
+  {type:'I-765',  applicant:'David Okafor',    status:'completed',  conf:99, time:'Yesterday'},
+];
+const STATUS_LABEL = {ready:['ready','Ready',ICONS.dot], processing:['processing','Processing',ICONS.spin], completed:['completed','Completed',ICONS.check]};
+
+const DEADLINES = [
+  {title:'RFE Response Due', sub:'Marcus Chen · I-130',     date:'Jun 8',  level:'high'},
+  {title:'Biometrics Appt',  sub:'Elena Rodriguez · N-400',  date:'Jun 14', level:'med'},
+  {title:'EAD Expiry',       sub:'Priya Nair · H4-EAD',      date:'Jun 21', level:'med'},
+  {title:'Status Check',     sub:'Ahmed Hassan · I-485',     date:'Jun 30', level:'low'},
+];
+const LEVEL_COLOR = {high:'var(--orange)', med:'var(--amber)', low:'var(--ink-faint)'};
+
+/**
+ * Autonomy & quality metrics for the dashboard panel.
+ * TODO: replace with live metrics endpoint (e.g. GET /api/dashboard/autonomy)
+ * Shape:
+ *   AutonomyMetrics = {
+ *     stp:    { value:number, unit:'%', deltaPts:number, baseline:number, todayCount:number, series:number[] },
+ *     tiles:  Array<MetricTile>
+ *   }
+ *   MetricTile = {
+ *     key:string, label:string, icon:keyof ICONS, tint:'primary'|'green'|'amber'|'orange',
+ *     value:string,                     // formatted display value, e.g. '99.4%', '4.2 min'
+ *     deltaPts:number,                  // movement vs prior period (signed)
+ *     deltaLabel:string,                // e.g. '+0.6 pts', '-1.4 pts', '-22s'
+ *     directionality:'higher-is-better'|'lower-is-better',
+ *     series:number[]                   // 7-day spark series
+ *   }
+ */
+const AUTONOMY = {
+  stp: {
+    value: 64, unit: '%', deltaPts: 6, baseline: 58, todayCount: 14,
+    series: [55, 57, 56, 60, 58, 62, 64],
+  },
+  tiles: [
+    {
+      key:'critical-accuracy', label:'Critical-Field Accuracy',
+      icon:'shield', tint:'primary',
+      value:'99.4%', deltaPts:0.6, deltaLabel:'+0.6 pts',
+      directionality:'higher-is-better',
+      series:[98.4, 98.6, 98.9, 99.0, 99.1, 99.2, 99.4],
+    },
+    {
+      key:'hc-error', label:'High-Confidence Error Rate',
+      icon:'alert', tint:'orange',
+      value:'0.3%', deltaPts:-0.2, deltaLabel:'-0.2 pts',
+      directionality:'lower-is-better',
+      series:[0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3],
+    },
+    {
+      key:'deadline-compliance', label:'Deadline Compliance',
+      icon:'clock', tint:'green',
+      value:'98.7%', deltaPts:0.4, deltaLabel:'+0.4 pts',
+      directionality:'higher-is-better',
+      series:[97.5, 97.8, 98.0, 98.2, 98.4, 98.6, 98.7],
+    },
+    {
+      key:'cycle-time', label:'Avg Cycle Time',
+      icon:'timer', tint:'primary',
+      value:'4.2 min', deltaPts:-0.4, deltaLabel:'-22s',
+      directionality:'lower-is-better',
+      series:[5.1, 4.9, 4.8, 4.6, 4.5, 4.3, 4.2],
+    },
+    {
+      key:'correction-rate', label:'Correction Rate',
+      icon:'pencil', tint:'amber',
+      value:'8.2%', deltaPts:-1.1, deltaLabel:'-1.1 pts',
+      directionality:'lower-is-better',
+      series:[10.4, 10.0, 9.6, 9.2, 8.8, 8.5, 8.2],
+    },
+    {
+      key:'writeback', label:'Write-Back Success Rate',
+      icon:'cloudcheck', tint:'green',
+      value:'99.9%', deltaPts:0.1, deltaLabel:'+0.1 pts',
+      directionality:'higher-is-better',
+      series:[99.6, 99.7, 99.7, 99.8, 99.8, 99.9, 99.9],
+    },
+  ],
+};
+const TINT_BG = {primary:'var(--primary-soft)', green:'var(--green-soft)', amber:'var(--amber-soft)', orange:'var(--orange-soft)'};
+const TINT_FG = {primary:'var(--primary)',      green:'var(--green)',      amber:'var(--amber)',      orange:'var(--orange)'};
+
+const AGENTS = [
+  {name:'File Dispatcher', sub:'Routing · 12 docs/min',  status:'running',
+   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 3h10v9a2 2 0 0 1-2 2H3z"/><path d="M3 7V5a2 2 0 0 1 2-2h3"/></svg>',
+   bg:'var(--primary-soft)', icol:'var(--primary)'},
+  {name:'Smart Ingest',    sub:'OCR + classify · idle 2s', status:'running',
+   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>',
+   bg:'var(--green-soft)',   icol:'var(--green)'},
+  {name:'Gateway Agent',   sub:'API bridge · 4 connections', status:'running',
+   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/><circle cx="8" cy="6" r="1.6" fill="currentColor"/><circle cx="16" cy="12" r="1.6" fill="currentColor"/><circle cx="9" cy="18" r="1.6" fill="currentColor"/></svg>',
+   bg:'#fbe8e2',             icol:'var(--orange)'},
+];
+const AGENT_STATUS_LABEL = {running:'Running', stopped:'Stopped', warn:'Degraded'};
+const AGENT_STATUS_CLASS = {running:'run',     stopped:'stop',    warn:'warn'};
+
+const VOLUME = [['Mon',8],['Tue',12],['Wed',15],['Thu',9],['Fri',14]];
+
+/**
+ * Notice-type mix per time frame.
+ * TODO: replace with live metrics endpoint (e.g. GET /api/dashboard/notice-mix?frame=day|mtd|ytd)
+ * Shape: NoticeMix = Record<'day'|'mtd'|'ytd', Array<{type:string, count:number}>>
+ */
+const NOTICE_MIX = {
+  day: [
+    {type:'N-400',  count:18},
+    {type:'I-130',  count:14},
+    {type:'I-485',  count:12},
+    {type:'I-765',  count:10},
+    {type:'H4-EAD', count:7},
+    {type:'RFE',    count:6},
+    {type:'NOID',   count:3},
+  ],
+  mtd: [
+    {type:'N-400',  count:392},
+    {type:'I-130',  count:308},
+    {type:'I-485',  count:264},
+    {type:'I-765',  count:220},
+    {type:'H4-EAD', count:154},
+    {type:'RFE',    count:132},
+    {type:'NOID',   count:66},
+    {type:'I-797',  count:44},
+  ],
+  ytd: [
+    {type:'N-400',  count:2240},
+    {type:'I-130',  count:1750},
+    {type:'I-485',  count:1505},
+    {type:'I-765',  count:1260},
+    {type:'H4-EAD', count:875},
+    {type:'RFE',    count:770},
+    {type:'NOID',   count:385},
+    {type:'I-797',  count:595},
+  ],
+};
+const MIX_COLORS = ['var(--primary)', 'var(--green)', 'var(--amber)', 'var(--orange)', 'var(--accent)'];
+const MIX_OTHER_COLOR = 'var(--ink-faint)';
+const MIX_TOP_N = 5;
+const FRAMES = [['day','Day'], ['mtd','MTD'], ['ytd','YTD']];
+let MIX_FRAME = 'day';
+
+/** Collapse the long tail into a single "Other" bucket so the legend height stays fixed. */
+function topNWithOther(data, n){
+  const sorted = [...data].sort((a,b)=>b.count - a.count);
+  if(sorted.length <= n) return sorted.map((d,i)=>({...d, color:MIX_COLORS[i]}));
+  const head = sorted.slice(0, n).map((d,i)=>({...d, color:MIX_COLORS[i]}));
+  const tail = sorted.slice(n);
+  const otherCount = tail.reduce((a,d)=>a+d.count, 0);
+  if(otherCount > 0) head.push({type:'Other', count:otherCount, color:MIX_OTHER_COLOR, _members:tail.map(t=>t.type)});
+  return head;
+}
+
+/** Human-friendly date-range label for the active frame, e.g. "Jun 1 – Jun 24, 2026". */
+function frameRange(frame, now){
+  const d = now || new Date();
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const day = d.getDate(), mo = d.getMonth(), yr = d.getFullYear();
+  const fmt = (m, dd) => `${MONTHS[m]} ${dd}`;
+  if(frame === 'day') return `${fmt(mo, day)}, ${yr}`;
+  if(frame === 'mtd') return `${fmt(mo, 1)} – ${fmt(mo, day)}, ${yr}`;
+  return `${fmt(0, 1)} – ${fmt(mo, day)}, ${yr}`;
+}
+
+/** Build the SVG donut for the active frame. ariaLabel describes the breakdown. */
+function donut(data, size){
+  const S = size || 140, R = S/2, IN = R - 24, OUT = R - 2;
+  const total = data.reduce((a,d)=>a+d.count, 0) || 1;
+  let acc = -Math.PI/2;
+  const arcs = data.map((d,i)=>{
+    const a0 = acc;
+    const a1 = acc + (d.count/total)*Math.PI*2;
+    acc = a1;
+    const lg = (a1-a0) > Math.PI ? 1 : 0;
+    const x0o=R+OUT*Math.cos(a0), y0o=R+OUT*Math.sin(a0);
+    const x1o=R+OUT*Math.cos(a1), y1o=R+OUT*Math.sin(a1);
+    const x0i=R+IN*Math.cos(a1),  y0i=R+IN*Math.sin(a1);
+    const x1i=R+IN*Math.cos(a0),  y1i=R+IN*Math.sin(a0);
+    const path = `M ${x0o},${y0o} A ${OUT},${OUT} 0 ${lg} 1 ${x1o},${y1o} L ${x0i},${y0i} A ${IN},${IN} 0 ${lg} 0 ${x1i},${y1i} Z`;
+    const fill = d.color || MIX_COLORS[i % MIX_COLORS.length];
+    return `<path d="${path}" fill="${fill}"><title>${d.type}: ${d.count}</title></path>`;
+  }).join('');
+  return `<svg width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" role="img" aria-label="Notice mix breakdown">${arcs}</svg>`;
+}
+
+function renderMix(){
+  const host = document.getElementById('noticeMix');
+  if(!host) return;
+  const raw = NOTICE_MIX[MIX_FRAME];
+  const data = topNWithOther(raw, MIX_TOP_N);
+  const total = data.reduce((a,d)=>a+d.count, 0);
+  host.innerHTML = `
+    <div class="mix-top">
+      <div class="mix-donut-wrap">
+        <div class="mix-donut">
+          ${donut(data, 180)}
+          <div class="mix-center">
+            <div class="mix-center-val">${total.toLocaleString()}</div>
+            <div class="mix-center-lbl">Notices</div>
+          </div>
+        </div>
+        <div class="mix-range">${frameRange(MIX_FRAME)}</div>
+      </div>
+      <div class="mix-legend">
+        ${data.map(d=>{
+          const tip = d._members ? ` title="${d._members.join(', ')}"` : '';
+          return `<div class="mix-row"${tip}>
+            <span class="mix-swatch" style="background:${d.color};"></span>
+            <span class="mix-name">${d.type}</span>
+            <span class="mix-val">${d.count.toLocaleString()}</span>
+            <span class="mix-pct">${total ? Math.round(d.count/total*100) : 0}%</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function renderNav(){
+  let html = '', currentGroup = null;
+  NAV.filter(n=>n.visible).forEach(n=>{
+    const g = n.group || null;
+    if(g !== currentGroup){
+      currentGroup = g;
+      if(g) html += `<div class="nav-label lbl">${g}</div>`;
+    }
+    html += `<a class="nav-item ${n.id===ACTIVE_NAV?'active':''}" href="${n.href}" data-label="${n.label}" title="${n.label}">
+      <span class="ico">${n.icon}</span><span class="lbl">${n.label}</span>
+    </a>`;
+  });
+  document.getElementById('nav').innerHTML = html;
+}
+
+function pill(status){
+  const [cls,label,ic] = STATUS_LABEL[status];
+  return `<span class="pill ${cls}">${ic}${label}</span>`;
+}
+function confTone(c){ return c>=95?'var(--green)':c>=85?'var(--amber)':'var(--orange)'; }
+
+/** Render a tiny inline-SVG sparkline for the metric series. ariaLabel keeps it screen-reader-friendly. */
+function sparkline(series, color, w, h, ariaLabel){
+  const W = w || 70, H = h || 22, P = 2;
+  const lo = Math.min(...series), hi = Math.max(...series);
+  const span = hi - lo || 1;
+  const pts = series.map((v,i)=>{
+    const x = P + (i*(W-2*P))/(series.length-1);
+    const y = H - P - ((v-lo)/span)*(H-2*P);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  return `<svg class="a-tile-spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${ariaLabel||'trend sparkline'}">
+    <polyline fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" points="${pts}"/>
+  </svg>`;
+}
+
+/**
+ * Compute delta tone given the metric's directionality.
+ * Returns {cls, icon} — `good` (green) when movement helps, `bad` (orange) when it hurts, `flat` for zero.
+ */
+function deltaTone(deltaPts, directionality){
+  if(deltaPts === 0) return {cls:'flat', icon:ICONS.arrowFlat};
+  const moveUp = deltaPts > 0;
+  const isGood = directionality === 'higher-is-better' ? moveUp : !moveUp;
+  return {cls: isGood ? 'good' : 'bad', icon: moveUp ? ICONS.arrowUp : ICONS.arrowDown};
+}
+
+function dashboard(){
+  const kpis = [
+    {val:14, lbl:'Notices Processed',    delta:'Today',          dc:'var(--primary)',   ic:ICONS.file,  bg:'var(--primary-soft)', icol:'var(--primary)', life:'1,284'},
+    {val:9,  lbl:'Automated Processing', delta:'Hands-free',     dc:'var(--amber)',     ic:ICONS.bolt,  bg:'var(--amber-soft)',   icol:'var(--amber)',   life:'842'},
+    {val:6,  lbl:'Review Queue',         delta:'Awaiting review',dc:'var(--ink-faint)', ic:ICONS.dot,   bg:'var(--primary-soft)', icol:'var(--primary)', life:'—'},
+    {val:23, lbl:'Reviewed Notices',
+      delta:`<span style="color:var(--green);">18 Approved</span><span style="color:var(--ink-faint);margin:0 6px;">·</span><span style="color:var(--orange);">5 Rejected</span>`,
+      dc:'var(--ink-soft)', ic:ICONS.check, bg:'var(--green-soft)', icol:'var(--green)', life:'9,471'},
+  ];
+  return `
+  <div class="kpis">
+    ${kpis.map(k=>`<div class="kpi">
+      <div class="k-ico" style="background:${k.bg};color:${k.icol};">${k.ic}</div>
+      ${k.life ? `<span class="k-life" title="Lifetime total"><span class="k-life-val">${k.life}</span><span class="k-life-lbl">Lifetime</span></span>` : ''}
+      <div class="k-val">${k.val}</div>
+      <div class="k-lbl">${k.lbl}</div>
+      <div class="k-delta" style="color:${k.dc};">${k.delta}</div>
+    </div>`).join('')}
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Autonomy &amp; Quality</h3>
+        <span style="font-size:12px;color:var(--ink-faint);">Trailing 7 days</span>
+      </div>
+      <div class="autonomy-wrap">
+        <div class="ahero">
+          <div class="ahero-l">
+            <span class="ahero-tag">STP Rate · north star</span>
+            <div class="ahero-lbl">Straight-Through Processing</div>
+            <div class="ahero-val">${AUTONOMY.stp.value}${AUTONOMY.stp.unit}</div>
+            <div class="ahero-sub">
+              of ${AUTONOMY.stp.todayCount} today ·
+              <span class="delta" style="color:var(--green);">↑ from ${AUTONOMY.stp.baseline}${AUTONOMY.stp.unit}</span>
+              7-day avg
+            </div>
+          </div>
+          <div class="ahero-r">${sparkline(AUTONOMY.stp.series, 'var(--primary)', 180, 56, 'STP rate 7-day trend')}</div>
+        </div>
+
+        <div class="a-tiles">
+          ${AUTONOMY.tiles.map(t=>{
+            const tone = deltaTone(t.deltaPts, t.directionality);
+            const sparkColor = tone.cls==='good' ? 'var(--green)' : tone.cls==='bad' ? 'var(--orange)' : 'var(--ink-faint)';
+            return `<div class="a-tile">
+              <div class="a-tile-head">
+                <div class="a-tile-ico" style="background:${TINT_BG[t.tint]};color:${TINT_FG[t.tint]};">${ICONS[t.icon]}</div>
+                ${sparkline(t.series, sparkColor, 70, 22, `${t.label} 7-day trend`)}
+              </div>
+              <div class="a-tile-val">${t.value}</div>
+              <div class="a-tile-lbl">${t.label}</div>
+              <div class="a-tile-delta ${tone.cls}">${tone.icon}<span>${t.deltaLabel}</span></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px;height:100%;">
+      <div class="panel">
+        <div class="panel-head"><h3>Agent Status</h3><span style="font-size:12px;color:var(--ink-faint);">Live</span></div>
+        <div class="panel-body">
+          ${AGENTS.map(a=>`<div class="ag">
+            <div class="ag-ico" style="background:${a.bg};color:${a.icol};">${a.icon}</div>
+            <div class="ag-main">
+              <div class="ag-title">${a.name}</div>
+              <div class="ag-sub">${a.sub}</div>
+            </div>
+            <span class="ag-pill ${AGENT_STATUS_CLASS[a.status]}"><span class="ag-dot"></span>${AGENT_STATUS_LABEL[a.status]}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="panel" style="flex:1;display:flex;flex-direction:column;">
+        <div class="panel-head">
+          <h3>Notice Mix <span style="font-weight:500;color:var(--ink-faint);font-size:13px;">— Top 5</span></h3>
+          <div class="tabs" id="mixTabs" role="tablist" aria-label="Time frame">
+            ${FRAMES.map(([k,lbl])=>`<button class="tab ${k===MIX_FRAME?'active':''}" data-frame="${k}" role="tab" aria-selected="${k===MIX_FRAME}">${lbl}</button>`).join('')}
+          </div>
+        </div>
+        <div class="mix-wrap" id="noticeMix"></div>
+      </div>
+
+    </div>
+  </div>`;
+}
+
+function renderPage(){
+  document.getElementById('content').innerHTML = dashboard();
+  const tabs = document.getElementById('mixTabs');
+  if(tabs){
+    tabs.addEventListener('click', e=>{
+      const btn = e.target.closest('.tab');
+      if(!btn) return;
+      MIX_FRAME = btn.dataset.frame;
+      tabs.querySelectorAll('.tab').forEach(t=>{
+        const on = t.dataset.frame === MIX_FRAME;
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on);
+      });
+      renderMix();
+    });
+  }
+  renderMix();
+}
+
+// collapse toggle
+document.getElementById('collapseBtn').onclick = ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+};
+document.getElementById('brandIcon').onclick = ()=>{
+  document.getElementById('sidebar').classList.remove('collapsed');
+};
+
+// user popout
+(function(){
+  const btn = document.getElementById('userBtn');
+  const pop = document.getElementById('userPop');
+  if(!btn || !pop) return;
+  const close = ()=>{ pop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const open = pop.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', e=>{
+    if(!pop.classList.contains('open')) return;
+    if(!pop.contains(e.target) && !btn.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+})();
+
+// date
+document.getElementById('pageDate').textContent =
+  new Date().toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
+
+renderNav();
+renderFoot();
+renderPage();
+</script>
+</body>
+</html>

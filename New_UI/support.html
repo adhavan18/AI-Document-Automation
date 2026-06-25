@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GIP Reviewer — Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* GIP palette */
+    --primary:#204496; --primary-2:#2e57b8; --primary-soft:#e8edf8;
+    --bg:#f3f5fa; --card:#ffffff;
+    --ink:#1a1f2e; --ink-soft:#5b6376; --ink-faint:#9aa1b2;
+    --line:#e6e9f0; --line-soft:#eef1f7;
+    --green:#1f8a52; --green-soft:#e4f3ea;
+    --amber:#b8791a; --amber-soft:#fbf0db;
+    --orange:#e14a28; --orange-soft:#fbe8e2;
+    /* dark sidebar (mosaic structure, GIP-tinted navy) */
+    --side-bg:#0e1326; --side-bg-2:#111733;
+    --side-text:#aab2c6; --side-text-hi:#ffffff;
+    --side-line:#222a45;
+    --accent:#4d82f0; --accent-soft:rgba(77,130,240,.14);
+    --font:'Inter',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .spin{animation:spin 1s linear infinite;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#d3d8e4;border-radius:9px;}
+  button{font-family:var(--font);cursor:pointer;}
+  .shell{display:flex;height:100vh;}
+
+  /* ═══ SIDEBAR ═══ */
+  .sidebar{width:252px;flex-shrink:0;background:linear-gradient(180deg,var(--side-bg),var(--side-bg-2));
+    display:flex;flex-direction:column;transition:width .22s ease;border-right:1px solid var(--side-line);}
+  .sidebar.collapsed{width:74px;}
+
+  .side-head{display:flex;align-items:center;gap:11px;padding:18px 16px 16px;}
+  .brand-logo{height:44px;width:auto;max-width:180px;object-fit:contain;flex-shrink:0;display:block;}
+  .brand-icon{width:30px;height:30px;border-radius:8px;flex-shrink:0;
+    background:transparent;border:none;padding:0;cursor:pointer;
+    color:var(--side-text);display:none;align-items:center;justify-content:center;
+    transition:background .15s, color .15s;}
+  .brand-icon:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .brand-logo{display:none;}
+  .sidebar.collapsed .brand-icon{display:flex;margin:0 auto;}
+  .collapse-btn{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;
+    background:transparent;color:var(--side-text);display:flex;align-items:center;justify-content:center;
+    transition:background .15s;}
+  .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sidebar.collapsed .side-head{justify-content:center;padding:18px 0 16px;}
+  .sidebar.collapsed .collapse-btn{display:none;}
+
+  .nav{flex:1;overflow-y:auto;padding:6px 12px;}
+  .nav-label{font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.12em;
+    text-transform:uppercase;padding:14px 10px 7px;}
+  .sidebar.collapsed .nav-label{display:none;}
+  .nav-item{position:relative;width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;
+    border-radius:10px;border:none;background:transparent;color:var(--side-text);font-size:12px;
+    font-weight:500;text-align:left;margin-bottom:3px;transition:all .15s;white-space:nowrap;overflow:hidden;
+    text-decoration:none;}
+  a.nav-item,a.nav-item:hover,a.nav-item:focus{text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:var(--side-text-hi);}
+  .nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600;}
+  .nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--accent);box-shadow:0 0 10px var(--accent);}
+  .nav-item .ico{flex-shrink:0;display:flex;}
+  .nav-item.active .ico{color:var(--accent);}
+  .nav-item .lbl{overflow:hidden;text-overflow:ellipsis;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding:11px 0;}
+  .sidebar.collapsed .nav-item .lbl{display:none;}
+  /* collapsed tooltip */
+  .sidebar.collapsed .nav-item:hover::after{content:attr(data-label);position:absolute;left:calc(100% + 10px);
+    top:50%;transform:translateY(-50%);background:#1c2340;color:#fff;font-size:12px;font-weight:500;
+    padding:6px 10px;border-radius:7px;white-space:nowrap;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+
+  .side-foot{padding:10px 12px 14px;border-top:1px solid var(--side-line);}
+  .foot-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;
+    border:none;background:transparent;color:var(--side-text);font-size:12px;font-weight:500;
+    margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;}
+  .foot-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+  a.foot-item{text-decoration:none;}
+  .foot-item .badge{margin-left:auto;background:var(--orange);color:#fff;font-size:9.5px;font-weight:700;
+    min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+  .sidebar.collapsed .foot-item{justify-content:center;padding:9px 0;}
+  .sidebar.collapsed .foot-item .lbl,.sidebar.collapsed .foot-item .badge{display:none;}
+  .user{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-top:6px;border-radius:10px;
+    background:rgba(255,255,255,.04);border:1px solid var(--side-line);
+    transition:background .15s, border-color .15s;}
+  .user:hover{background:transparent;border-color:transparent;}
+  .avatar{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--orange);color:#fff;
+    font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .user-txt{overflow:hidden;white-space:nowrap;}
+  .user-name{font-size:13px;font-weight:600;color:#fff;line-height:1.1;}
+  .user-role{font-size:11px;color:var(--ink-faint);}
+  .sidebar.collapsed .user{justify-content:center;padding:10px 0;}
+  .sidebar.collapsed .user-txt,.sidebar.collapsed .user-caret{display:none;}
+  .user{cursor:pointer;width:100%;text-align:left;border:none;font:inherit;}
+  .user-caret{margin-left:auto;color:var(--ink-faint);display:flex;align-items:center;transition:transform .15s;}
+  .user-wrap{position:relative;}
+  .user-pop{position:absolute;left:12px;right:12px;bottom:calc(100% + 6px);
+    background:#1a2236;border:1px solid var(--side-line);border-radius:10px;
+    box-shadow:0 12px 28px rgba(0,0,0,.45);padding:5px;display:none;z-index:50;}
+  .user-pop.open{display:block;}
+  .user-pop-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+    border:none;background:transparent;color:var(--side-text);font-size:12.5px;font-weight:500;
+    border-radius:7px;cursor:pointer;text-align:left;text-decoration:none;}
+  .user-pop-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .user-pop-item .ico{display:flex;align-items:center;color:var(--ink-faint);}
+  .user-pop-sep{height:1px;background:var(--side-line);margin:4px 6px;}
+  .sidebar.collapsed .user-pop{left:auto;right:-216px;bottom:6px;width:200px;}
+
+  /* ═══ MAIN ═══ */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 30px;
+    background:var(--card);border-bottom:1px solid var(--line);}
+  .topbar h1{font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em;}
+  .topbar .date{font-size:12.5px;color:var(--ink-faint);margin-top:2px;}
+  .top-actions{display:flex;align-items:center;gap:10px;}
+  .top-search{position:relative;}
+  .top-search input{width:230px;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font);font-size:13px;outline:none;}
+  .top-search input:focus{border-color:var(--primary);background:#fff;}
+  .top-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
+  .btn-primary{padding:9px 16px;border-radius:9px;border:none;background:var(--primary);color:#fff;
+    font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 2px 10px rgba(32,68,150,.22);}
+  .icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);position:relative;}
+  .icon-btn .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;
+    background:var(--orange);border:1.5px solid #fff;}
+
+  .content{flex:1;overflow-y:auto;padding:26px 30px 40px;}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;
+    position:relative;overflow:hidden;}
+  .kpi .k-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:13px;}
+  .kpi .k-val{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1;}
+  .kpi .k-lbl{font-size:12.5px;color:var(--ink-soft);font-weight:500;margin-top:6px;}
+  .kpi .k-delta{font-size:11.5px;font-weight:600;margin-top:9px;display:inline-flex;align-items:center;gap:4px;}
+
+  /* layout grid */
+  .grid{display:grid;grid-template-columns:1.7fr 1fr;gap:18px;margin-top:18px;}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+    border-bottom:1px solid var(--line-soft);}
+  .panel-head h3{font-size:15px;font-weight:700;margin:0;}
+  .panel-head a{font-size:12.5px;color:var(--primary);font-weight:600;text-decoration:none;}
+  .panel-body{padding:8px 12px 12px;}
+
+  /* doc row */
+  .doc-row{display:flex;align-items:center;gap:14px;padding:12px 12px;border-radius:10px;transition:background .15s;}
+  .doc-row:hover{background:var(--bg);}
+  .doc-ico{width:36px;height:36px;border-radius:9px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .doc-main{flex:1;min-width:0;}
+  .doc-title{font-size:13.5px;font-weight:600;}
+  .doc-sub{font-size:12px;color:var(--ink-faint);margin-top:1px;}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 7px;border-radius:999px;
+    font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;}
+  .pill.ready{background:var(--primary-soft);color:var(--primary);}
+  .pill.processing{background:var(--amber-soft);color:var(--amber);}
+  .pill.completed{background:var(--green-soft);color:var(--green);}
+  .conf{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;width:42px;text-align:right;}
+
+  /* deadlines */
+  .dl{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;transition:background .15s;}
+  .dl:hover{background:var(--bg);}
+  .dl-bar{width:3px;align-self:stretch;border-radius:3px;}
+  .dl-main{flex:1;min-width:0;}
+  .dl-title{font-size:13px;font-weight:600;}
+  .dl-sub{font-size:11.5px;color:var(--ink-faint);margin-top:1px;}
+  .dl-date{font-size:12px;font-weight:600;text-align:right;white-space:nowrap;}
+
+  /* mini chart */
+  .chart{display:flex;align-items:flex-end;gap:12px;height:120px;padding:14px 18px 6px;}
+  .bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end;}
+  .bar{width:100%;max-width:34px;border-radius:7px 7px 0 0;background:linear-gradient(180deg,var(--accent),var(--primary));
+    transition:height .4s ease;}
+  .bar-lbl{font-size:11px;color:var(--ink-faint);font-weight:600;}
+
+  .section-label{font-size:13px;font-weight:700;color:var(--ink-soft);margin:24px 4px 12px;}
+
+  /* support page */
+  .sup-intro{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:22px 24px;display:flex;align-items:center;gap:18px;}
+  .sup-intro-ico{width:48px;height:48px;border-radius:12px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sup-intro-main h2{font-size:17px;font-weight:700;margin:0 0 4px;letter-spacing:-.01em;}
+  .sup-intro-main p{font-size:13px;color:var(--ink-soft);margin:0;line-height:1.5;}
+  .sup-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:18px;}
+  .sup-tier-tag{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;}
+  .sup-tier-tag.l1{background:var(--primary-soft);color:var(--primary);}
+  .sup-tier-tag.esc{background:var(--orange-soft);color:var(--orange);}
+  .sup-card-body{padding:18px 20px 20px;}
+  .sup-card-desc{font-size:13px;color:var(--ink-soft);margin:0 0 16px;line-height:1.55;}
+  .sup-contact{display:flex;flex-direction:column;gap:10px;padding-top:14px;border-top:1px solid var(--line-soft);}
+  .sup-name{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+  .sup-line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft);}
+  .sup-line a{color:var(--ink-soft);text-decoration:none;}
+  .sup-line a:hover{color:var(--primary);}
+  .sup-line .sup-line-ico{width:28px;height:28px;border-radius:8px;background:var(--bg);color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sup-hours{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .sup-hours-ico{width:34px;height:34px;border-radius:9px;background:var(--amber-soft);color:var(--amber);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sup-hours-txt{font-size:13px;color:var(--ink-soft);line-height:1.5;}
+  .sup-hours-txt strong{color:var(--ink);font-weight:600;}
+  @media (max-width:880px){ .sup-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <img class="brand-logo" src="assets/logo_white.png" alt="GIP" />
+      <button class="brand-icon" id="brandIcon" title="Expand menu" aria-label="Expand menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+      <button class="collapse-btn" id="collapseBtn" title="Collapse">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+    </div>
+
+    <nav class="nav" id="nav"></nav>
+
+    <div class="side-foot">
+      <div id="footItems"></div>
+      <div class="user-wrap">
+        <button class="user" id="userBtn" data-label="Austin" title="Austin · admin" aria-haspopup="true" aria-expanded="false">
+          <div class="avatar">A</div>
+          <div class="user-txt">
+            <div class="user-name">Austin</div>
+            <div class="user-role">admin</div>
+          </div>
+          <span class="user-caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+        </button>
+        <div class="user-pop" id="userPop" role="menu" aria-labelledby="userBtn">
+          <a class="user-pop-item" href="help.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
+            Help
+          </a>
+          <a class="user-pop-item" href="support.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+            Support
+          </a>
+          <div class="user-pop-sep"></div>
+          <a class="user-pop-item" href="gip-login.html" role="menuitem">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+            Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle">Support</h1>
+        <div class="date" id="pageDate">Reach our team for help with cases or the platform</div>
+      </div>
+      <div class="top-actions">
+        <div class="top-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Search cases, notices…" />
+        </div>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<script>
+const ICONS = {
+  dashboard:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>',
+  notice:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>',
+  compliance:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>',
+  filing:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+  agentops:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
+  email:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  assistant:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+  file:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  spin:'<svg class="spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
+  dot:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
+  check:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+};
+
+const NAV = [
+  {id:'dashboard',   label:'Dashboard',                icon:ICONS.dashboard, href:'dashboard.html',                          visible:1},
+  {id:'assistant',   label:'AI Assistant',             icon:ICONS.assistant, href:'gip-ai-assistant.html', group:'Agents',       visible:0},
+  {id:'notice',      label:'Notice Processing',        icon:ICONS.notice,    href:'notice_review.html',  group:'Agents',       visible:1},
+  {id:'compliance',  label:'Compliance Doc (PAF)',     icon:ICONS.compliance,href:'gip-compliance.html',   group:'Agents',       visible:0},
+  {id:'filing',      label:'Automate Filing (H4 EAD)', icon:ICONS.filing,    href:'gip-autofiling.html',   group:'Agents',       visible:0},
+  {id:'email',       label:'Email Templates',          icon:ICONS.email,     href:'#',                     group:'Tools',        visible:0},
+  {id:'agentops',    label:'Agent Ops',                icon:ICONS.agentops,  href:'gip-agent-ops.html',    group:'Insights',     visible:0},
+];
+
+const ACTIVE_NAV = null;
+
+const FOOT_ICONS = {
+  settings:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  status:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>',
+  notifications:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+};
+/* TODO: replace with auth-derived role (e.g. from session/JWT). Reviewers see no Settings entry. */
+const CURRENT_USER_ROLE = 'admin';
+const FOOT = [
+  {id:'settings',      label:'Settings',      icon:FOOT_ICONS.settings,      href:'gip-settings.html', visible:(CURRENT_USER_ROLE==='admin'?1:0)},
+  {id:'status',        label:'Status',        icon:FOOT_ICONS.status,                                   visible:0},
+  {id:'notifications', label:'Notifications', icon:FOOT_ICONS.notifications, badge:'0',                 visible:0},
+];
+
+function renderFoot(){
+  document.getElementById('footItems').innerHTML = FOOT.filter(f=>f.visible).map(f=>{
+    const tag = f.href ? 'a' : 'button';
+    const href = f.href ? ` href="${f.href}"` : '';
+    const badge = f.badge ? `<span class="badge">${f.badge}</span>` : '';
+    return `<${tag} class="foot-item"${href} data-label="${f.label}" title="${f.label}">
+      <span class="ico">${f.icon}</span><span class="lbl">${f.label}</span>${badge}
+    </${tag}>`;
+  }).join('');
+}
+
+const DOCS = [
+  {type:'N-400',  applicant:'Elena Rodriguez', status:'ready',      conf:97, time:'10 min ago'},
+  {type:'I-130',  applicant:'Marcus Chen',     status:'processing', conf:null,time:'now'},
+  {type:'H4-EAD', applicant:'Priya Nair',      status:'ready',      conf:91, time:'1 hr ago'},
+  {type:'I-485',  applicant:'Ahmed Hassan',    status:'processing', conf:null,time:'now'},
+  {type:'I-765',  applicant:'David Okafor',    status:'completed',  conf:99, time:'Yesterday'},
+];
+const STATUS_LABEL = {ready:['ready','Ready',ICONS.dot], processing:['processing','Processing',ICONS.spin], completed:['completed','Completed',ICONS.check]};
+
+const DEADLINES = [
+  {title:'RFE Response Due', sub:'Marcus Chen · I-130',     date:'Jun 8',  level:'high'},
+  {title:'Biometrics Appt',  sub:'Elena Rodriguez · N-400',  date:'Jun 14', level:'med'},
+  {title:'EAD Expiry',       sub:'Priya Nair · H4-EAD',      date:'Jun 21', level:'med'},
+  {title:'Status Check',     sub:'Ahmed Hassan · I-485',     date:'Jun 30', level:'low'},
+];
+const LEVEL_COLOR = {high:'var(--orange)', med:'var(--amber)', low:'var(--ink-faint)'};
+
+const VOLUME = [['Mon',8],['Tue',12],['Wed',15],['Thu',9],['Fri',14]];
+
+function renderNav(){
+  let html = '', currentGroup = null;
+  NAV.filter(n=>n.visible).forEach(n=>{
+    const g = n.group || null;
+    if(g !== currentGroup){
+      currentGroup = g;
+      if(g) html += `<div class="nav-label lbl">${g}</div>`;
+    }
+    html += `<a class="nav-item ${n.id===ACTIVE_NAV?'active':''}" href="${n.href}" data-label="${n.label}" title="${n.label}">
+      <span class="ico">${n.icon}</span><span class="lbl">${n.label}</span>
+    </a>`;
+  });
+  document.getElementById('nav').innerHTML = html;
+}
+
+function pill(status){
+  const [cls,label,ic] = STATUS_LABEL[status];
+  return `<span class="pill ${cls}">${ic}${label}</span>`;
+}
+function confTone(c){ return c>=95?'var(--green)':c>=85?'var(--amber)':'var(--orange)'; }
+
+function dashboard(){
+  const kpis = [
+    {val:6,  lbl:'In Queue',         delta:'+2 today',   dc:'var(--ink-faint)', ic:ICONS.file,   bg:'var(--primary-soft)', icol:'var(--primary)'},
+    {val:3,  lbl:'Ready for Review', delta:'Needs action',dc:'var(--primary)',  ic:ICONS.dot,    bg:'var(--primary-soft)', icol:'var(--primary)'},
+    {val:2,  lbl:'Processing',       delta:'Live',        dc:'var(--amber)',     ic:ICONS.spin,   bg:'var(--amber-soft)',   icol:'var(--amber)'},
+    {val:12, lbl:'Completed Today',  delta:'+18% vs avg', dc:'var(--green)',     ic:ICONS.check,  bg:'var(--green-soft)',   icol:'var(--green)'},
+  ];
+  const max = Math.max(...VOLUME.map(v=>v[1]));
+  return `
+  <div class="kpis">
+    ${kpis.map(k=>`<div class="kpi">
+      <div class="k-ico" style="background:${k.bg};color:${k.icol};">${k.ic}</div>
+      <div class="k-val">${k.val}</div>
+      <div class="k-lbl">${k.lbl}</div>
+      <div class="k-delta" style="color:${k.dc};">${k.delta}</div>
+    </div>`).join('')}
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-head"><h3>Recent Documents</h3><a href="gip-notice-list.html">View queue →</a></div>
+      <div class="panel-body">
+        ${DOCS.map(d=>`<div class="doc-row">
+          <div class="doc-ico">${ICONS.file}</div>
+          <div class="doc-main">
+            <div class="doc-title">${d.type} — ${d.applicant}</div>
+            <div class="doc-sub">${d.time}</div>
+          </div>
+          ${pill(d.status)}
+          <div class="conf" style="color:${d.conf?confTone(d.conf):'var(--ink-faint)'};">${d.conf?d.conf+'%':'—'}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      <div class="panel">
+        <div class="panel-head"><h3>Upcoming Deadlines</h3></div>
+        <div class="panel-body">
+          ${DEADLINES.map(d=>`<div class="dl">
+            <span class="dl-bar" style="background:${LEVEL_COLOR[d.level]};"></span>
+            <div class="dl-main"><div class="dl-title">${d.title}</div><div class="dl-sub">${d.sub}</div></div>
+            <div class="dl-date" style="color:${LEVEL_COLOR[d.level]};">${d.date}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>Documents Processed</h3><span style="font-size:12px;color:var(--ink-faint);">This week</span></div>
+        <div class="chart">
+          ${VOLUME.map(([lbl,v])=>`<div class="bar-wrap">
+            <div class="bar" style="height:${Math.round(v/max*100)}%;"></div>
+            <div class="bar-lbl">${lbl}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+const SUPPORT_ICONS = {
+  life:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/></svg>',
+  phone:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+  mail:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  clock:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+};
+
+const SUPPORT_TIERS = [
+  {tier:'Level 1 Support', tag:'l1', tagLabel:'Level 1',
+   desc:'Available for general questions, access issues, and how-to guidance.',
+   name:'Joe Austin', phone:'(945) 399-0150', email:'austin.joe@nihishllc.com'},
+  {tier:'Escalation', tag:'esc', tagLabel:'Escalation',
+   desc:'For unresolved issues, outages, or urgent incidents.',
+   name:'Harshal Gaikwad', phone:'(714) 277-5341', email:'harshal.gaikwad@nihishllc.com'},
+];
+
+function renderPage(){
+  document.getElementById('content').innerHTML = `
+    <div class="sup-intro">
+      <div class="sup-intro-ico">${SUPPORT_ICONS.life}</div>
+      <div class="sup-intro-main">
+        <h2>Need Help?</h2>
+        <p>For assistance with this application, contact Nihish Support.</p>
+      </div>
+    </div>
+
+    <div class="sup-grid">
+      ${SUPPORT_TIERS.map(t=>`<div class="panel">
+        <div class="panel-head">
+          <h3>${t.tier}</h3>
+          <span class="sup-tier-tag ${t.tag}">${t.tagLabel}</span>
+        </div>
+        <div class="sup-card-body">
+          <p class="sup-card-desc">${t.desc}</p>
+          <div class="sup-contact">
+            <div class="sup-name">${t.name}</div>
+            <div class="sup-line"><span class="sup-line-ico">${SUPPORT_ICONS.phone}</span><span>${t.phone}</span></div>
+            <div class="sup-line"><span class="sup-line-ico">${SUPPORT_ICONS.mail}</span><span>${t.email}</span></div>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>
+
+    <div class="sup-hours">
+      <div class="sup-hours-ico">${SUPPORT_ICONS.clock}</div>
+      <div class="sup-hours-txt">
+        <strong>Support hours:</strong> [e.g., Mon–Fri, 8 AM–6 PM CT].
+        For after-hours emergencies, <a href="mailto:support@nihishllc.com" style="color:var(--primary);text-decoration:none;font-weight:600;">support@nihishllc.com</a>.
+      </div>
+    </div>`;
+}
+
+// collapse toggle
+document.getElementById('collapseBtn').onclick = ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+};
+document.getElementById('brandIcon').onclick = ()=>{
+  document.getElementById('sidebar').classList.remove('collapsed');
+};
+
+// user popout
+(function(){
+  const btn = document.getElementById('userBtn');
+  const pop = document.getElementById('userPop');
+  if(!btn || !pop) return;
+  const close = ()=>{ pop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const open = pop.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', e=>{
+    if(!pop.classList.contains('open')) return;
+    if(!pop.contains(e.target) && !btn.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+})();
+
+renderNav();
+renderFoot();
+renderPage();
+</script>
+</body>
+</html>
