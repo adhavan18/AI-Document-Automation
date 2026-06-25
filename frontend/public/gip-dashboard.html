@@ -120,6 +120,10 @@
   .topbar h1{font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em;}
   .topbar .date{font-size:12.5px;color:var(--ink-faint);margin-top:2px;}
   .top-actions{display:flex;align-items:center;gap:10px;}
+  .platform-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;
+    background:var(--primary-soft);color:var(--primary);font-size:11px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(32,68,150,.18);}
+  .platform-badge svg{flex-shrink:0;}
   .top-search{position:relative;}
   .top-search input{width:230px;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--line);
     background:var(--bg);font-family:var(--font);font-size:13px;outline:none;}
@@ -142,6 +146,62 @@
   .kpi .k-val{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1;}
   .kpi .k-lbl{font-size:12.5px;color:var(--ink-soft);font-weight:500;margin-top:6px;}
   .kpi .k-delta{font-size:11.5px;font-weight:600;margin-top:9px;display:inline-flex;align-items:center;gap:4px;}
+  .kpi .k-life{position:absolute;top:14px;right:14px;background:var(--bg);border:1px solid var(--line);
+    border-radius:999px;padding:3px 9px;display:inline-flex;align-items:center;gap:5px;
+    font-size:10.5px;font-weight:600;color:var(--ink-soft);}
+  .kpi .k-life-val{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:700;}
+  .kpi .k-life-lbl{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);}
+
+  /* autonomy KPI panel */
+  .autonomy-wrap{display:flex;flex-direction:column;gap:14px;padding:14px;}
+  .ahero{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+    padding:22px 22px 20px;border-radius:12px;background:var(--bg);border:1px solid var(--line-soft);}
+  .ahero-l{display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .ahero-tag{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--primary);background:var(--primary-soft);
+    padding:4px 9px;border-radius:999px;align-self:flex-start;}
+  .ahero-lbl{font-size:13px;font-weight:600;color:var(--ink-soft);margin-top:2px;}
+  .ahero-val{font-size:46px;font-weight:800;letter-spacing:-.025em;line-height:1;color:var(--ink);
+    font-variant-numeric:tabular-nums;}
+  .ahero-sub{font-size:12.5px;color:var(--ink-soft);margin-top:4px;}
+  .ahero-sub .delta{font-weight:700;}
+  .ahero-r{flex-shrink:0;}
+  .a-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .a-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px;
+    position:relative;display:flex;flex-direction:column;gap:6px;}
+  .a-tile-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .a-tile-ico{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .a-tile-spark{flex-shrink:0;opacity:.85;}
+  .a-tile-val{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.1;color:var(--ink);
+    font-variant-numeric:tabular-nums;margin-top:2px;}
+  .a-tile-lbl{font-size:12px;color:var(--ink-soft);font-weight:500;line-height:1.3;}
+  .a-tile-delta{font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:3px;margin-top:2px;}
+  .a-tile-delta.good{color:var(--green);}
+  .a-tile-delta.bad{color:var(--orange);}
+  .a-tile-delta.flat{color:var(--ink-faint);}
+  @media (max-width:980px){ .a-tiles{grid-template-columns:1fr;} .ahero{flex-direction:column;align-items:flex-start;gap:14px;} .ahero-r{width:100%;} }
+
+  /* notice mix donut */
+  .tabs{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px;}
+  .tab{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:5px 11px;border-radius:7px;border:none;background:transparent;color:var(--ink-soft);cursor:pointer;
+    transition:background .15s, color .15s;}
+  .tab:hover{color:var(--ink);}
+  .tab.active{background:var(--card);color:var(--primary);box-shadow:0 1px 3px rgba(15,25,55,.08);}
+  .mix-wrap{padding:18px 18px 16px;display:flex;flex-direction:column;gap:14px;flex:1;}
+  .mix-top{display:flex;align-items:center;gap:18px;flex:1;}
+  .mix-donut-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;}
+  .mix-donut{position:relative;width:180px;height:180px;flex-shrink:0;}
+  .mix-range{font-size:10.5px;color:var(--ink-faint);font-weight:500;letter-spacing:.01em;white-space:nowrap;}
+  .mix-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .mix-center-val{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .mix-center-lbl{font-size:10.5px;font-weight:600;color:var(--ink-faint);letter-spacing:.04em;text-transform:uppercase;margin-top:4px;}
+  .mix-legend{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;}
+  .mix-row{display:flex;align-items:center;gap:9px;font-size:12.5px;}
+  .mix-swatch{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+  .mix-name{flex:1;color:var(--ink);font-weight:600;}
+  .mix-val{font-variant-numeric:tabular-nums;color:var(--ink-soft);font-weight:600;}
+  .mix-pct{font-variant-numeric:tabular-nums;color:var(--ink-faint);font-size:11.5px;min-width:38px;text-align:right;}
 
   /* layout grid */
   .grid{display:grid;grid-template-columns:1.7fr 1fr;gap:18px;margin-top:18px;}
@@ -175,6 +235,33 @@
   .dl-title{font-size:13px;font-weight:600;}
   .dl-sub{font-size:11.5px;color:var(--ink-faint);margin-top:1px;}
   .dl-date{font-size:12px;font-weight:600;text-align:right;white-space:nowrap;}
+
+  /* agent status */
+  .ag{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;transition:background .15s;}
+  .ag:hover{background:var(--bg);}
+  .ag-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ag-ico svg{width:18px;height:18px;}
+  .ag-main{flex:1;min-width:0;}
+  .ag-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;}
+  .ag-sub{font-size:11.5px;color:var(--ink-faint);margin-top:1px;}
+  .ag-pill{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    padding:3px 8px 3px 7px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+  .ag-pill.run{background:var(--green-soft);color:var(--green);}
+  .ag-pill.stop{background:#eef1f7;color:var(--ink-soft);}
+  .ag-pill.warn{background:var(--amber-soft);color:var(--amber);}
+  .ag-dot{width:7px;height:7px;border-radius:50%;background:currentColor;position:relative;}
+  .ag-pill.run .ag-dot::after{content:'';position:absolute;inset:0;border-radius:50%;background:currentColor;
+    animation:pulse-ring 1.6s ease-out infinite;}
+  @keyframes pulse-ring{
+    0%  {transform:scale(1);   opacity:.55;}
+    80% {transform:scale(2.6); opacity:0;}
+    100%{transform:scale(2.6); opacity:0;}
+  }
+  .ag-pill.run .ag-dot{animation:pulse-core 1.6s ease-in-out infinite;}
+  @keyframes pulse-core{
+    0%,100%{opacity:1;}
+    50%    {opacity:.6;}
+  }
 
   /* mini chart */
   .chart{display:flex;align-items:flex-end;gap:12px;height:120px;padding:14px 18px 6px;}
@@ -241,10 +328,10 @@
         <div class="date" id="pageDate"></div>
       </div>
       <div class="top-actions">
-        <div class="top-search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input placeholder="Search cases, notices…" />
-        </div>
+        <span class="platform-badge" title="GCM AI Platform">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          GCM AI Platform
+        </span>
       </div>
     </div>
     <div class="content" id="content"></div>

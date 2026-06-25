@@ -462,6 +462,100 @@
   .s-card-head h3{font-size:15px;font-weight:700;margin:0;letter-spacing:-.005em;}
   .s-card-head .sub{font-size:11.5px;color:var(--ink-faint);margin-top:2px;font-weight:500;}
   .s-card-body{padding:22px;display:flex;flex-direction:column;gap:18px;}
+  .s-card-head .ico-wrap.team{background:var(--violet-soft);color:var(--violet);}
+
+  /* ═══ Reviewers tab ═══ */
+  .rv-head-actions{display:flex;align-items:center;gap:10px;margin-left:auto;}
+  .rv-search{position:relative;}
+  .rv-search input{height:32px;padding:0 12px 0 32px;border-radius:8px;border:1px solid var(--line);
+    background:#fff;font-family:var(--font);font-size:12.5px;outline:none;width:220px;transition:border-color .15s;}
+  .rv-search input:focus{border-color:var(--primary);}
+  .rv-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
+  .btn-invite{display:inline-flex;align-items:center;gap:6px;padding:0 14px;height:32px;border-radius:8px;
+    border:none;background:var(--primary);color:#fff;font-family:var(--font);font-size:12.5px;font-weight:600;
+    box-shadow:0 2px 6px rgba(32,68,150,.22);transition:filter .15s;}
+  .btn-invite:hover{filter:brightness(1.06);}
+  .rv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;}
+  .rv-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;
+    display:flex;flex-direction:column;gap:12px;transition:border-color .15s;}
+  .rv-card:hover{border-color:var(--primary-soft);}
+  .rv-card-head{display:flex;align-items:flex-start;gap:12px;}
+  .rv-avatar{width:42px;height:42px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;font-weight:700;font-size:15px;color:#fff;letter-spacing:.01em;}
+  .rv-avatar.c0{background:linear-gradient(135deg,#5b8def,var(--primary));}
+  .rv-avatar.c1{background:linear-gradient(135deg,#6dd49a,var(--green));}
+  .rv-avatar.c2{background:linear-gradient(135deg,#ee9a6a,var(--orange));}
+  .rv-avatar.c3{background:linear-gradient(135deg,#bda1f4,var(--violet));}
+  .rv-avatar.c4{background:linear-gradient(135deg,#e8b86b,var(--amber));}
+  .rv-info{flex:1;min-width:0;}
+  .rv-name{font-size:14px;font-weight:700;color:var(--ink);line-height:1.2;letter-spacing:-.005em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rv-email{font-size:12px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rv-role-pill{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    padding:3px 8px;border-radius:999px;white-space:nowrap;}
+  .rv-role-pill.admin{background:var(--primary-soft);color:var(--primary);}
+  .rv-role-pill.reviewer{background:var(--green-soft);color:var(--green);}
+  .rv-meta{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--line-soft);}
+  .rv-meta-row{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink-soft);min-width:0;}
+  .rv-meta-row svg{color:var(--ink-faint);flex-shrink:0;}
+  .rv-meta-row .v{flex:1;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rv-meta-row .v.mono{font-family:var(--mono);font-size:11px;letter-spacing:.01em;}
+  .rv-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .rv-status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--ink-soft);}
+  .rv-status .dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
+  .rv-status.pending .dot{background:var(--amber);}
+  .rv-status.pending{color:var(--amber);}
+  .rv-card-actions{display:flex;gap:4px;}
+  .rv-icon-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);transition:all .15s;}
+  .rv-icon-btn:hover{background:var(--bg);color:var(--ink);}
+  .rv-icon-btn.danger:hover{background:var(--orange-soft);color:var(--orange);border-color:var(--orange-soft);}
+  .rv-empty{text-align:center;padding:60px 20px;color:var(--ink-soft);font-size:13px;}
+
+  /* invite modal */
+  @keyframes inv-pop{from{transform:scale(.94) translateY(6px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+  .inv-overlay{position:fixed;inset:0;background:rgba(14,19,38,.42);z-index:140;
+    opacity:0;pointer-events:none;transition:opacity .18s ease;
+    display:flex;align-items:center;justify-content:center;padding:20px;}
+  .inv-overlay.open{opacity:1;pointer-events:auto;}
+  .inv-modal{width:480px;max-width:100%;background:#fff;border:1px solid var(--line);border-radius:14px;
+    box-shadow:0 18px 48px rgba(16,22,40,.22),0 4px 12px rgba(16,22,40,.08);overflow:hidden;animation:inv-pop .18s ease;}
+  .inv-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+    border-bottom:1px solid var(--line-soft);}
+  .inv-head-l{display:flex;align-items:center;gap:11px;}
+  .inv-head-ico{width:34px;height:34px;border-radius:9px;background:var(--primary-soft);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .inv-title{font-size:14.5px;font-weight:700;letter-spacing:-.005em;line-height:1.2;}
+  .inv-sub{font-size:11.5px;color:var(--ink-faint);margin-top:2px;font-weight:500;}
+  .inv-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);transition:all .15s;}
+  .inv-close:hover{background:var(--bg);color:var(--ink);}
+  .inv-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+  .inv-row{display:flex;flex-direction:column;gap:5px;}
+  .inv-row label{font-size:11.5px;font-weight:600;color:var(--ink-soft);}
+  .inv-row label .req{color:var(--orange);margin-left:2px;}
+  .inv-row input{height:36px;padding:0 12px;border-radius:9px;border:1px solid var(--line);
+    background:#fff;font-family:var(--font);font-size:13px;color:var(--ink);outline:none;transition:border-color .15s;}
+  .inv-row input:focus{border-color:var(--primary);}
+  .inv-row input.error{border-color:var(--orange);background:var(--orange-soft);}
+  .inv-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .inv-role{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .inv-role-btn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:11px 13px;
+    border-radius:9px;border:1.5px solid var(--line);background:#fff;cursor:pointer;text-align:left;transition:all .15s;}
+  .inv-role-btn:hover{border-color:var(--primary-soft);}
+  .inv-role-btn.active{border-color:var(--primary);background:var(--primary-soft);}
+  .inv-role-btn .r-name{font-size:13px;font-weight:700;color:var(--ink);}
+  .inv-role-btn.active .r-name{color:var(--primary);}
+  .inv-role-btn .r-desc{font-size:11px;color:var(--ink-faint);line-height:1.35;}
+  .inv-foot{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:14px 20px 18px;
+    border-top:1px solid var(--line-soft);}
+  .inv-btn{height:34px;padding:0 14px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    font-family:var(--font);font-size:12.5px;font-weight:600;color:var(--ink-soft);transition:all .15s;}
+  .inv-btn:hover{background:var(--bg);color:var(--ink);}
+  .inv-btn.primary{background:var(--primary);color:#fff;border-color:var(--primary);
+    box-shadow:0 2px 6px rgba(32,68,150,.22);}
+  .inv-btn.primary:hover{filter:brightness(1.06);background:var(--primary);}
+  .inv-btn:disabled{opacity:.55;cursor:not-allowed;}
 
   /* slider */
   .thr-row{display:flex;align-items:center;gap:18px;}
@@ -620,25 +714,30 @@
     <!-- settings -->
     <div class="workspace">
       <div class="settings-tabs" id="settingsTabs">
-        <button class="tab-btn active" data-pane="notice">
+        <!-- data-visible: 1 shows the tab, 0 hides it. TODO: drive from role/flag config. -->
+        <button class="tab-btn active" data-pane="notice" data-visible="1">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 1.5L13 12"/></svg>
           Notice Processing
         </button>
-        <button class="tab-btn" data-pane="compliance">
+        <button class="tab-btn" data-pane="compliance" data-visible="0">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11.5 11 13.5 15 9.5"/></svg>
           Compliance Doc
         </button>
-        <button class="tab-btn" data-pane="filing">
+        <button class="tab-btn" data-pane="filing" data-visible="0">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
           Automate Filing
         </button>
-        <button class="tab-btn" data-pane="assistant">
+        <button class="tab-btn" data-pane="assistant" data-visible="0">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
           AI Assistant
         </button>
-        <button class="tab-btn" data-pane="agentops">
+        <button class="tab-btn" data-pane="agentops" data-visible="0">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
           Agent Ops
+        </button>
+        <button class="tab-btn" data-pane="reviewers" data-visible="1">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Reviewers
         </button>
       </div>
 
@@ -1116,6 +1215,34 @@
 
         </div>
 
+        <!-- ═══ Reviewers pane ═══ -->
+        <div class="tab-pane" data-pane="reviewers">
+          <section class="s-card">
+            <div class="s-card-head">
+              <div class="ico-wrap team">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div>
+                <h3>Reviewers</h3>
+                <div class="sub">People with access to this application · invite new users by email</div>
+              </div>
+              <div class="rv-head-actions">
+                <div class="rv-search">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input id="rvFilter" placeholder="Search name or email…" />
+                </div>
+                <button class="btn-invite" id="rvInviteBtn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Invite User
+                </button>
+              </div>
+            </div>
+            <div class="s-card-body">
+              <div class="rv-grid" id="rvGrid"></div>
+            </div>
+          </section>
+        </div>
+
         <div class="save-bar" id="saveBar">
           <button class="btn-secondary" id="resetBtn">Reset to Defaults</button>
           <button class="btn-secondary primary" id="saveBtn">
@@ -1128,7 +1255,66 @@
   </main>
 </div>
 
-<script src="/env-config.js"></script>
+<!-- ═══ Invite Reviewer modal ═══ -->
+<div class="inv-overlay" id="invOverlay" role="dialog" aria-modal="true" aria-labelledby="invTitle">
+  <div class="inv-modal" role="document">
+    <div class="inv-head">
+      <div class="inv-head-l">
+        <div class="inv-head-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        </div>
+        <div>
+          <div class="inv-title" id="invTitle">Invite a new user</div>
+          <div class="inv-sub">They'll receive an email with a link to sign in</div>
+        </div>
+      </div>
+      <button class="inv-close" id="invClose" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="inv-body">
+      <div class="inv-row">
+        <label for="invName">Full Name <span class="req">*</span></label>
+        <input id="invName" type="text" placeholder="e.g. Priya Nair" autocomplete="off" />
+      </div>
+      <div class="inv-row">
+        <label for="invEmail">Email <span class="req">*</span></label>
+        <input id="invEmail" type="email" placeholder="priya.nair@nihishllc.com" autocomplete="off" />
+      </div>
+      <div class="inv-grid2">
+        <div class="inv-row">
+          <label for="invPhone">Phone</label>
+          <input id="invPhone" type="tel" placeholder="(555) 123-4567" autocomplete="off" />
+        </div>
+        <div class="inv-row">
+          <label for="invEntra">Azure Entra ID</label>
+          <input id="invEntra" type="text" placeholder="GUID or UPN" autocomplete="off" />
+        </div>
+      </div>
+      <div class="inv-row">
+        <label>Role <span class="req">*</span></label>
+        <div class="inv-role" id="invRole" role="radiogroup">
+          <button type="button" class="inv-role-btn active" data-role="reviewer" role="radio" aria-checked="true">
+            <span class="r-name">Reviewer</span>
+            <span class="r-desc">Reviews notices in queue. No access to Settings.</span>
+          </button>
+          <button type="button" class="inv-role-btn" data-role="admin" role="radio" aria-checked="false">
+            <span class="r-name">Administrator</span>
+            <span class="r-desc">Full access including platform Settings and user management.</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="inv-foot">
+      <button class="inv-btn" id="invCancel">Cancel</button>
+      <button class="inv-btn primary" id="invSend">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Send Invite
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ─── shared nav model (matches dashboard) ─── */
 const ICONS = {
@@ -1489,11 +1675,11 @@ async function _scanAndUpload(){
       const file = await entry.getFile();
       const fd = new FormData();
       fd.append('file', file, name);
-      fd.append('client_code', window.GIP_CONFIG.CLIENT_CODE);
-      fd.append('agent_key', window.GIP_CONFIG.AGENT_KEY);
+      fd.append('client_code', 'GCMNOTICEAI');
+      fd.append('agent_key', 'ps_ucwwlgNVHBP7-BbOy1w34Nze-CysWLaREP8ZehhHu8I');
       fd.append('notice_source_id', '');
       const token = localStorage.getItem('azure_access_token') || '';
-      const r = await fetch(`${window.GIP_CONFIG.API_BASE}/api/notice-agent/upload-document`, {
+      const r = await fetch('http://20.102.105.142:8000/api/notice-agent/upload-document', {
         method:'POST', body:fd,
         headers: token ? { Authorization: 'Bearer ' + token } : {}
       });
