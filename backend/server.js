@@ -3,6 +3,7 @@ import './lib/env.js';
 import express from 'express';
 import cors from 'cors';
 
+import authRouter      from './routes/auth.js';
 import uc1Router       from './routes/uc1.js';
 import uc2Router       from './routes/uc2.js';
 import uc3Router       from './routes/uc3.js';
@@ -34,7 +35,8 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.use('/api/uc1',       uc1Router);
+app.use('/api/auth',     authRouter);
+app.use('/api/uc1',      uc1Router);
 app.use('/api/uc2',       uc2Router);
 app.use('/api/uc3',       uc3Router);
 app.use('/api/dashboard', dashboardRouter);
