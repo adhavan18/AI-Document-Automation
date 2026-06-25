@@ -525,9 +525,13 @@ function renderNav(){
   document.getElementById('nav').innerHTML = html;
 }
 
-/* ─── notice review page — LIVE backend integration ─── */
-const API = '/legal';
-let CONF_THRESHOLD = 80; // operator threshold in whole-percent; loaded from /settings
+/* ─── notice review page — Azure Notice Processing API ─── */
+const API_BASE = 'http://20.102.105.142:8000';
+let CONF_THRESHOLD = 80;
+let _pageDocId = null; // company_document_id from ?doc= URL param
+
+function _gipToken(){ return localStorage.getItem('azure_access_token') || ''; }
+function _gipAuth(){ return { Authorization: 'Bearer ' + _gipToken() }; }
 
 const STATUS = {
   processing:{label:'Processing', color:'var(--amber)'},
@@ -582,26 +586,30 @@ const FORM_LABELS = {
 };
 
 function apiStatusToView(s){
-  if(s==='processing') return 'processing';
-  if(s==='approved'||s==='completed'||s==='rejected') return 'completed';
-  return 'ready'; // pending | in_review
+  if(s==='PROCESSING'||s==='processing') return 'processing';
+  if(s==='POSTED'||s==='approved'||s==='completed') return 'completed';
+  if(s==='FAILED'||s==='REJECTED'||s==='rejected') return 'completed';
+  return 'ready'; // REVIEW_NEEDED | READY_TO_POST | pending | in_review
 }
 
 function mapQueueCase(c){
-  const short = (c.case_id||'').replace(/-/g,'').slice(0,8);
+  const id = c.notice_flat_id || c.case_id || '';
+  const short = id.replace(/-/g,'').slice(0,8);
+  const rawTime = c.notice_date || c.uploaded_at || null;
   return {
-    id: c.case_id,
+    id: id,
+    doc_id: c.company_document_id || '',
     type: c.form_type || '—',
     label: FORM_LABELS[c.form_type] || 'USCIS Notice',
-    applicant: 'Case #' + short.toUpperCase(),
-    status: apiStatusToView(c.status),
-    raw_status: c.status,
+    applicant: c.beneficiary_name || ('Case #' + short.toUpperCase()),
+    status: apiStatusToView(c.validation_status || c.status),
+    raw_status: c.validation_status || c.status,
     priority: c.priority || 'normal',
     fields: c.field_count || 0,
     pages: c.page_count || 0,
-    time: c.uploaded_at ? new Date(c.uploaded_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '',
+    time: rawTime ? new Date(rawTime).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '',
     primary: c.priority === 'high',
-    progress: c.status==='processing' ? 60 : undefined,
+    progress: (c.validation_status||c.status)==='PROCESSING' ? 60 : undefined,
   };
 }
 
@@ -617,17 +625,20 @@ function toDateInput(v){
 
 function mapField(f){
   const cfg = FIELD_CONFIG[f.field_name] || {type:'text'};
-  let val = f.normalized_value ?? f.raw_value ?? '';
+  let val = f.value ?? f.normalized_value ?? f.raw_value ?? '';
   if(cfg.type==='date') val = toDateInput(val);
+  const rawConf = f.confidence || 0;
+  // New API: confidence is 0-100; Old API was 0.0-1.0
+  const conf = rawConf > 1 ? Math.round(rawConf) : Math.round(rawConf * 100);
   return {
     name: f.field_name,
     key: fieldLabel(f.field_name),
     value: val,
-    conf: Math.round((f.confidence||0)*100),
+    conf,
     src: (f.source==='llm'||f.source==='llm_fallback') ? 'llm' : 'native',
     type: cfg.type,
     options: cfg.options,
-    is_default: !!f.is_default,   // upstream flag: system default vs extracted value
+    is_default: !!f.is_default,
   };
 }
 
@@ -687,26 +698,30 @@ function renderList(){
   document.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{ selectCase(b.dataset.id); });
 }
 
-/* Load the full detail (fields) for a case from the backend, then render. */
+/* Load the full detail (fields) for a case from the API, then render. */
 async function selectCase(id){
   activeId = id;
   page = 1;
   renderList();
-  renderViewer();          // PDF shows immediately
-  // fetch fields
+  const qItem = QUEUE.find(x=>x.id===id);
+  const docId = (qItem && qItem.doc_id) || _pageDocId || '';
+  renderViewer(docId);   // PDF loads immediately
   try{
-    const r = await fetch(`${API}/queue/${encodeURIComponent(id)}`);
+    const r = await fetch(`${API_BASE}/api/notice-ui/${encodeURIComponent(id)}/detail`, {
+      headers: _gipAuth()
+    });
+    if(r.status===401){ window.location.href='login.html'; return; }
     if(!r.ok) throw new Error('HTTP '+r.status);
     DETAIL = await r.json();
-    FIELDS = (DETAIL.extracted_fields || [])
-      .filter(f => (f.normalized_value ?? f.raw_value ?? '') !== '' || FIELD_CONFIG[f.field_name])
+    const rawFields = DETAIL.fields || DETAIL.extracted_fields || [];
+    FIELDS = rawFields
+      .filter(f => (f.value ?? f.normalized_value ?? f.raw_value ?? '') !== '' || FIELD_CONFIG[f.field_name])
       .map(mapField);
   }catch(e){
     console.error('[GIP] case detail load failed', e);
     DETAIL = null; FIELDS = [];
   }
   renderFields();
-  // If this case is still processing, poll until fields are ready
   const d = QUEUE.find(x=>x.id===id);
   if(d && d.status==='processing') startPolling(id);
   else stopPolling();
@@ -716,18 +731,23 @@ function startPolling(id){
   stopPolling();
   pollTimer = setInterval(async ()=>{
     try{
-      const s = await fetch(`${API}/cases/${encodeURIComponent(id)}/status`).then(r=>r.json());
-      if(s.status !== 'processing'){
+      const r = await fetch(`${API_BASE}/api/notice-ui/${encodeURIComponent(id)}/detail`, {
+        headers: _gipAuth()
+      });
+      if(!r.ok) return;
+      const d = await r.json();
+      const s = d.validation_status || d.status || '';
+      if(s !== 'PROCESSING' && s !== 'processing'){
         stopPolling();
-        await loadQueue();          // refresh sidebar statuses
-        if(activeId===id) await selectCase(id);  // reload fields + PDF
+        await loadQueue();
+        if(activeId===id) await selectCase(id);
       }
     }catch(e){ /* keep polling */ }
   }, 5000);
 }
 function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
 
-function renderViewer(){
+async function renderViewer(docId){
   const d = QUEUE.find(x=>x.id===activeId) || QUEUE[0];
   if(!d){ return; }
   document.getElementById('vTitle').textContent = `${d.type} — ${(d.id||'').slice(0,8)}…`;
@@ -740,8 +760,7 @@ function renderViewer(){
   document.getElementById('nextPg').disabled = idx >= total-1;
 
   const canvas = document.getElementById('canvas');
-  // Always render the REAL uploaded PDF from the backend. While the case is
-  // still processing, overlay a small "extracting" badge on top of it.
+  const effectiveDocId = docId || (d && d.doc_id) || _pageDocId;
   const badge = d.status==='processing'
     ? `<div style="position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:5;
          display:flex;align-items:center;gap:8px;background:#1a1f2e;color:#fbf0db;
@@ -750,12 +769,32 @@ function renderViewer(){
          <svg class="spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b8791a" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
          Extracting fields… auto-updates when ready</div>`
     : '';
-  canvas.innerHTML = `<div style="position:relative;width:100%;height:100%;display:flex;">
-    ${badge}
-    <iframe title="notice pdf" src="${API}/queue/${encodeURIComponent(d.id)}/pdf#toolbar=1"
-      style="flex:1;width:100%;height:100%;min-height:520px;border:none;border-radius:6px;
-      background:#fff;box-shadow:0 8px 40px rgba(0,0,0,.32);"></iframe>
-  </div>`;
+
+  if(!effectiveDocId){
+    canvas.innerHTML = `<div style="position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${badge}<div style="color:var(--ink-faint);font-size:13px;">No document available</div></div>`;
+    return;
+  }
+
+  canvas.innerHTML = `<div style="position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${badge}<div style="color:var(--ink-faint);font-size:13px;">Loading PDF…</div></div>`;
+
+  try{
+    const r = await fetch(`${API_BASE}/api/company-documents/${encodeURIComponent(effectiveDocId)}/pdf-preview`, {
+      headers: _gipAuth()
+    });
+    if(r.status===401){ window.location.href='login.html'; return; }
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const blob = await r.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    canvas.innerHTML = `<div style="position:relative;width:100%;height:100%;display:flex;">
+      ${badge}
+      <iframe title="notice pdf" src="${blobUrl}#toolbar=1"
+        style="flex:1;width:100%;height:100%;min-height:520px;border:none;border-radius:6px;
+        background:#fff;box-shadow:0 8px 40px rgba(0,0,0,.32);"></iframe>
+    </div>`;
+  }catch(e){
+    console.error('[GIP] PDF load failed', e);
+    canvas.innerHTML = `<div style="position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${badge}<div style="color:var(--ink-faint);font-size:13px;">PDF preview unavailable</div></div>`;
+  }
 }
 
 function renderSummary(){
@@ -877,22 +916,28 @@ function refreshFieldFoot(i){
   if(newBtn){ newBtn.onclick = ()=>confirmSingleField(i, newBtn); }
 }
 
-/* Per-field confirm: save this one field, mark it verified (100%), keep the
-   reviewer on the case. The file only moves to processed on "Confirm All". */
+/* Per-field confirm: save current review state, mark field verified. */
 async function confirmSingleField(i, btn){
   const f = FIELDS[i];
   if(!f || !activeId) return;
   const input = document.querySelector(`#flist [data-fi="${i}"]`);
   if(input) f.value = input.value;
   btn.disabled = true; btn.innerHTML = `${ICON.spin}Confirming…`;
+  const fieldValues = {};
+  FIELDS.forEach((fld,j)=>{
+    const el = document.querySelector(`#flist [data-fi="${j}"]`);
+    if(fld.name) fieldValues[fld.name] = el ? el.value : (fld.value || '');
+  });
   try{
-    const r = await fetch(`${API}/queue/${encodeURIComponent(activeId)}/field`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({field_name:f.name, value:f.value})
+    const r = await fetch(`${API_BASE}/api/notices/${encodeURIComponent(activeId)}/review`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json', ...(_gipAuth())},
+      body: JSON.stringify({ validation_status:'REVIEW_NEEDED', validation_notes:'', ...fieldValues })
     });
+    if(r.status===401){ window.location.href='login.html'; return; }
     if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.detail||('HTTP '+r.status)); }
     f.conf = 100; f.verified = true; f.edited = false;
-    renderFields();   // refresh summary counts + clear the Manual Review flag
+    renderFields();
   }catch(e){
     console.error('[GIP] field confirm failed', e);
     alert('Field save failed: ' + e.message);
@@ -911,25 +956,25 @@ document.getElementById('nextPg').onclick=()=>{
   if(i<QUEUE.length-1) selectCase(QUEUE[i+1].id);
 };
 
-/* Confirm — collect current field values and POST to the backend, then advance. */
+/* Confirm All — save review with READY_TO_POST status, then advance to next. */
 document.getElementById('confirmBtn').onclick = async ()=>{
   if(!activeId) return;
   const btn = document.getElementById('confirmBtn');
   const orig = btn.innerHTML;
-  // Stay on the case, show "Confirming…", and save to the DB before advancing.
   btn.disabled = true; btn.innerHTML = `${ICON.spin}Confirming…`;
-  // pull the latest value straight from each rendered input (FIELDS order)
-  const fields = FIELDS.map((f,i)=>{
+  const fieldValues = {};
+  FIELDS.forEach((f,i)=>{
     const el = document.querySelector(`#flist [data-fi="${i}"]`);
-    return { field_name: f.name, confirmed_value: el && el.value != null ? el.value : (f.value||'') };
+    if(f.name) fieldValues[f.name] = el && el.value != null ? el.value : (f.value||'');
   });
   try{
-    const r = await fetch(`${API}/queue/${encodeURIComponent(activeId)}/confirm`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({fields})
+    const r = await fetch(`${API_BASE}/api/notices/${encodeURIComponent(activeId)}/review`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json', ...(_gipAuth())},
+      body: JSON.stringify({ validation_status:'READY_TO_POST', validation_notes:'', ...fieldValues })
     });
+    if(r.status===401){ window.location.href='login.html'; return; }
     if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.detail||('HTTP '+r.status)); }
-    // Saved. Now advance. Refresh the queue in the background so the jump is instant.
     const doneId = activeId;
     await loadQueue();
     const remaining = QUEUE.filter(x=>x.id!==doneId && x.status!=='completed' && x.status!=='approved');
@@ -956,12 +1001,18 @@ document.getElementById('qToggle').onclick = ()=>{
   document.getElementById('qToggle').title = collapsed ? 'Expand panel' : 'Collapse panel';
 };
 
-/* ─── Load the queue + the requested case from the backend ─── */
+/* ─── Load the queue from the Azure Notice Processing API ─── */
 async function loadQueue(){
   try{
-    const data = await fetch(`${API}/queue?status=all&limit=500`).then(r=>r.json());
-    let rows = (data.cases || []).map(mapQueueCase).filter(x=>x.status !== 'processing');
-    // If a batch subset was passed from the list page, restrict the queue to it
+    const r = await fetch(`${API_BASE}/api/notice-ui/queue?limit=200`, { headers: _gipAuth() });
+    if(r.status===401){ window.location.href='login.html'; return; }
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    const reviewItems = data.review_queue || [];
+    const processedItems = data.processed_notices || [];
+    let rows = [...reviewItems, ...processedItems]
+               .map(mapQueueCase)
+               .filter(x=>x.status !== 'processing');
     if(batchIds && batchIds.length){
       const set = new Set(batchIds);
       rows = rows.filter(x=>set.has(x.id));
@@ -976,27 +1027,22 @@ async function loadQueue(){
 }
 
 /* ─── auth guard ─── */
-if(!localStorage.getItem('access_token')) window.location.href = 'login.html';
+if(!localStorage.getItem('azure_access_token')) window.location.href = 'login.html';
 
 (async function init(){
   renderNav();
 
-  // Load operator threshold so "Need Review" flags match the auto-approve logic
-  try{
-    const s = await fetch(`${API}/settings`).then(r=>r.json());
-    const pct = s.confidence_threshold_pct ?? Math.round((s.confidence_threshold ?? 0.8) * 100);
-    CONF_THRESHOLD = pct;
-  }catch(e){ /* keep default 80 */ }
-
   const params = new URLSearchParams(window.location.search);
-  const caseParam = params.get('case');
+  const noticeParam = params.get('notice') || params.get('case');
+  const docParam = params.get('doc');
+  if(docParam) _pageDocId = docParam;
   const batchParam = params.get('batch');
   if(batchParam) batchIds = batchParam.split(',').filter(Boolean);
 
   await loadQueue();
 
-  // Pick the case to show: explicit ?case=, else first in queue
-  let target = caseParam && QUEUE.find(x=>x.id===caseParam) ? caseParam
+  // Pick the case to show: explicit ?notice=, else first in queue
+  let target = noticeParam && QUEUE.find(x=>x.id===noticeParam) ? noticeParam
              : (QUEUE[0] && QUEUE[0].id);
 
   if(target){

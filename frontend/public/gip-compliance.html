@@ -558,7 +558,7 @@ document.getElementById('brandIcon').onclick = ()=>{
 document.getElementById('pageDate').textContent =
   new Date().toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
 
-if(!localStorage.getItem('access_token')) window.location.href = 'login.html';
+if(!localStorage.getItem('azure_access_token')) window.location.href = 'login.html';
 renderAll();
 </script>
 </body>

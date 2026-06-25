@@ -1244,67 +1244,71 @@ function renderNav(){
   document.getElementById('nav').innerHTML = html;
 }
 
-/* ─── grid data — populated live from the backend (/legal/queue) ─── */
-const API = '/legal';
-let AUTO_QUE = [];       // Processed Notices  (approved / rejected / completed)
-let REVIEW_QUE = [];     // Review Que         (pending / in_review — low-conf fields)
-let PROCESSING_QUE = []; // Background only    (currently extracting — not shown in tabs)
-let PIPELINE_ACTIVE_ID = null;  // case_id the worker is currently running
-let PIPELINE_ACTIVE_STAGE = 0; // 1-4; 0 = idle
+/* ─── grid data — populated live from the Azure Notice Processing API ─── */
+const API_BASE = 'http://20.102.105.142:8000';
+const CLIENT_CODE = 'GCMNOTICEAI';
+const AGENT_KEY = 'ps_ucwwlgNVHBP7-BbOy1w34Nze-CysWLaREP8ZehhHu8I';
+let AUTO_QUE = [];       // Processed Notices  (POSTED / FAILED)
+let REVIEW_QUE = [];     // Review Que         (REVIEW_NEEDED / READY_TO_POST)
+let PROCESSING_QUE = []; // Currently processing — used by agent widget
+let PIPELINE_ACTIVE_ID = null;
+let PIPELINE_ACTIVE_STAGE = 0;
 const SELECTED = new Set(); // persistent selection — survives all re-renders
 const isSel = (row) => SELECTED.has(row.case_id);
 
-/* Map a backend case record → the row shape this grid renders. */
+function _gipToken(){ return localStorage.getItem('azure_access_token') || ''; }
+function _gipAuthHeaders(){ return { Authorization: 'Bearer ' + _gipToken() }; }
+
+/* Map a new API notice record → the row shape this grid renders. */
 function mapCase(c){
-  const fc = c.field_count || 0;
-  const low = c.low_confidence_count || 0;
-  const accuracy = (c.status === 'processing' || fc === 0)
-    ? null
-    : Math.round(((fc - low) / fc) * 100);
-  const d = c.uploaded_at ? new Date(c.uploaded_at) : null;
-  const dateStr = d ? d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
-  const shortId = (c.case_id || '').replace(/-/g,'').slice(0,8).toUpperCase();
+  const id = c.notice_flat_id || c.case_id || '';
+  const shortId = id.replace(/-/g,'').slice(0,8).toUpperCase();
+  const accuracy = c.confidence != null ? Math.round(Number(c.confidence)) : null;
+  const raw = c.notice_date || c.uploaded_at || null;
+  const d = raw ? new Date(raw) : null;
+  const dateStr = d && !isNaN(d) ? d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
   return {
-    case_id: c.case_id,
-    file: `${c.form_type || 'DOC'}_${shortId}.pdf`,
-    size: fc ? `${fc} fields` : 'Processing…',
+    case_id: id,
+    doc_id: c.company_document_id || '',
+    file: c.file_name || `Notice_${shortId}.pdf`,
+    size: '—',
     date: dateStr,
     form: c.form_type || '—',
-    fn: 'Case #' + shortId,
+    fn: c.beneficiary_name || ('Case #' + shortId),
     accuracy,
-    status: mapStatus(c.status),
-    raw_status: c.status,
-    progress: c.status === 'processing' ? 60 : undefined,
+    status: mapStatus(c.validation_status || c.status),
+    raw_status: c.validation_status || c.status,
+    progress: (c.validation_status || c.status) === 'PROCESSING' ? 60 : undefined,
   };
 }
 
-/* Backend status → grid status bucket */
+/* New API status → grid status bucket */
 function mapStatus(s){
-  if(s === 'processing')                   return 'processing';
-  if(s === 'pending' || s === 'in_review') return 'ready';
-  if(s === 'approved' || s === 'completed') return 'completed';
-  if(s === 'rejected')                     return 'failed';
+  if(s === 'PROCESSING' || s === 'processing')              return 'processing';
+  if(s === 'REVIEW_NEEDED' || s === 'READY_TO_POST')        return 'ready';
+  if(s === 'pending' || s === 'in_review')                  return 'ready';
+  if(s === 'POSTED' || s === 'approved' || s === 'completed') return 'completed';
+  if(s === 'FAILED' || s === 'REJECTED' || s === 'rejected') return 'failed';
   return 'queued';
 }
 
-/* Fetch all cases and split into the two tabs. */
+/* Fetch all notices and split into the two tabs. */
 async function loadQueue(){
+  const token = _gipToken();
+  if (!token) { window.location.href = 'login.html'; return; }
   try{
-    const [queueResp, pipelineResp] = await Promise.all([
-      fetch(`${API}/queue?status=all&limit=500`),
-      fetch(`${API}/pipeline/status`).catch(()=>null),
-    ]);
-    if(!queueResp.ok) throw new Error('HTTP ' + queueResp.status);
-    const data = await queueResp.json();
-    if(pipelineResp && pipelineResp.ok){
-      const ps = await pipelineResp.json();
-      PIPELINE_ACTIVE_ID    = ps.active_case_id || null;
-      PIPELINE_ACTIVE_STAGE = ps.active_stage   || 0;
-    }
-    const rows = (data.cases || []).map(mapCase);
-    PROCESSING_QUE = rows.filter(x => x.status === 'processing');
-    REVIEW_QUE     = rows.filter(x => x.status === 'ready');
-    AUTO_QUE       = rows.filter(x => x.status === 'completed' || x.status === 'failed');
+    const r = await fetch(`${API_BASE}/api/notice-ui/queue?limit=200`, {
+      headers: _gipAuthHeaders()
+    });
+    if(r.status === 401){ window.location.href = 'login.html'; return; }
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const reviewRows = (data.review_queue || []).map(mapCase);
+    const processedRows = (data.processed_notices || []).map(mapCase);
+    PROCESSING_QUE = [...reviewRows, ...processedRows].filter(x => x.status === 'processing');
+    REVIEW_QUE     = reviewRows.filter(x => x.status === 'ready');
+    AUTO_QUE       = processedRows.filter(x => x.status === 'completed' || x.status === 'failed')
+                     .concat(reviewRows.filter(x => x.status === 'completed' || x.status === 'failed'));
     renderGrids();
     renderAgent();
   }catch(e){
@@ -1375,9 +1379,10 @@ function statusCell(row){
 }
 
 function actionsCell(row){
-  const cid = row && row.case_id ? encodeURIComponent(row.case_id) : '';
+  const notice = row && row.case_id ? encodeURIComponent(row.case_id) : '';
+  const doc = row && row.doc_id ? encodeURIComponent(row.doc_id) : '';
   return `<div class="actions" style="justify-content:center;">
-    <a class="act-btn" href="gip-notice.html?case=${cid}" title="View">${ICON.eye}</a>
+    <a class="act-btn" href="gip-notice.html?notice=${notice}&doc=${doc}" title="View">${ICON.eye}</a>
   </div>`;
 }
 
@@ -1594,20 +1599,7 @@ document.getElementById('pageSize').onchange = (e)=>{
   renderGrids();
 };
 
-/* Poll pipeline/status every 2s independently so progress updates are fast
-   and we trigger an immediate loadQueue when a file finishes (stage goes 0). */
-let _prevActiveId = null;
-setInterval(async ()=>{
-  try{
-    const ps = await fetch(`${API}/pipeline/status`).then(r=>r.json());
-    const wasActive = _prevActiveId;
-    PIPELINE_ACTIVE_ID    = ps.active_case_id || null;
-    PIPELINE_ACTIVE_STAGE = ps.active_stage   || 0;
-    _prevActiveId = PIPELINE_ACTIVE_ID;
-    if(wasActive && !PIPELINE_ACTIVE_ID) loadQueue();
-    else renderAgent();
-  }catch(e){}
-}, 2000);
+/* Derive processing status from queue data — no separate pipeline polling needed. */
 
 /* ─── Processing Agent widget ─── */
 /* widget view-state: 'min' | 'med' | 'max' — defaults to medium */
@@ -1796,7 +1788,8 @@ menu.querySelectorAll('.menu-item').forEach(item=>{
       const first = targets[0];
       const ids = targets.map(t=>t.case_id).filter(Boolean).join(',');
       const params = new URLSearchParams();
-      if(first && first.case_id) params.set('case', first.case_id);
+      if(first && first.case_id) params.set('notice', first.case_id);
+      if(first && first.doc_id) params.set('doc', first.doc_id);
       if(ids) params.set('batch', ids);
       window.location.href = `gip-notice.html?${params.toString()}`;
       return;
@@ -1824,16 +1817,17 @@ if(_searchEl){
 document.querySelector('.icon-btn-sm[title="Refresh"]')?.addEventListener('click', loadQueue);
 
 /* ─── auth guard ─── */
-if(!localStorage.getItem('access_token')) window.location.href = 'login.html';
+if(!localStorage.getItem('azure_access_token')) window.location.href = 'login.html';
 
 /* ─── user info in header ─── */
 (function(){
   try{
     const u = JSON.parse(localStorage.getItem('gip_user') || '{}');
+    const name = u.full_name || u.name || u.email || '';
     const nameEl = document.getElementById('userDisplayName');
-    if(nameEl && u.full_name) nameEl.textContent = u.full_name;
+    if(nameEl && name) nameEl.textContent = name;
     const initEl = document.getElementById('userInitials');
-    if(initEl && u.full_name) initEl.textContent = u.full_name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+    if(initEl && name) initEl.textContent = name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
   }catch(_){}
 })();
 
@@ -2356,9 +2350,7 @@ document.addEventListener('keydown', (e)=>{
 });
 
 /* ─── Upload Drawer ─── */
-/* Point this at your real ingest endpoint. The folder is sent as a form field.
-   Example backend: POST /api/uploads (multipart: file, folder) → 200 OK */
-const UPLOAD_ENDPOINT = `${API}/upload`;
+const UPLOAD_ENDPOINT = `${API_BASE}/api/notice-agent/upload-document`;
 
 const drawer = document.getElementById('uploadDrawer');
 const overlay = document.getElementById('drawerOverlay');
@@ -2496,12 +2488,14 @@ dropZone.addEventListener('drop', e=>{
   });
 });
 
-/* ─ upload (real fetch with XHR-based progress; gracefully falls back to a simulated upload if the endpoint is unreachable, so the mock works without a backend) ─ */
+/* ─ upload with XHR-based progress tracking ─ */
 function uploadOne(item, folder){
   return new Promise(resolve=>{
     const fd = new FormData();
     fd.append('file', item.file);
-    fd.append('folder', folder);
+    fd.append('client_code', CLIENT_CODE);
+    fd.append('agent_key', AGENT_KEY);
+    fd.append('notice_source_id', '');
     const xhr = new XMLHttpRequest();
     let usedReal = false;
     xhr.upload.onprogress = e=>{
@@ -2532,7 +2526,9 @@ function uploadOne(item, folder){
       }
     };
     try {
+      const tok = _gipToken();
       xhr.open('POST', UPLOAD_ENDPOINT);
+      if(tok) xhr.setRequestHeader('Authorization', 'Bearer ' + tok);
       xhr.send(fd);
     } catch(_){
       simulateUpload(item).then(resolve);

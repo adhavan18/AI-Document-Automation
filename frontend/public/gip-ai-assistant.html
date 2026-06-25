@@ -1090,7 +1090,7 @@ document.getElementById('alertCount').textContent =
   state.chats.filter(c=>c.alert).length;
 
 /* init */
-if(!localStorage.getItem('access_token')) window.location.href = 'login.html';
+if(!localStorage.getItem('azure_access_token')) window.location.href = 'login.html';
 renderNav();
 renderFoot();
 renderChatList();
