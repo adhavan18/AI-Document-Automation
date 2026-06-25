@@ -1972,11 +1972,11 @@ function rvDocHTML(row){
 /* ─── Extracted fields (right pane) ─── */
 const rvFieldValMap = {};
 function rvFieldVal(rowId, key, fallback){
-  const k = rowId + ' ' + key;
+  const k = rowId + '' + key;
   return rvFieldValMap[k] === undefined ? fallback : rvFieldValMap[k];
 }
 function rvSetFieldVal(rowId, key, value){
-  rvFieldValMap[rowId + ' ' + key] = value;
+  rvFieldValMap[rowId + '' + key] = value;
 }
 
 function rvFieldsForCurrent(){
