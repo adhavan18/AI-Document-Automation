@@ -3444,7 +3444,7 @@ uploadStartBtn.onclick = async ()=>{
 </script>
 <script src="env-config.js"></script>
 <script type="module">
-import { auth, notices, noticeUi, review, noticeSources, isLoggedIn, setSourceId, getSourceId, mapNoticeToRow } from './gip-api.js';
+import { auth, review, noticeSources, isLoggedIn, setSourceId, getSourceId, mapNoticeToRow } from './gip-api.js';
 
 if (!isLoggedIn()) { window.location.href = 'gip-login.html'; }
 
@@ -3459,51 +3459,130 @@ async function ensureSourceId() {
   if (list[0]) setSourceId(list[0].id);
 }
 
+// Live reason catalog from API — replaces the hardcoded REVIEW_ERRORS dropdown
+async function loadReasonCatalog() {
+  try {
+    const r = await review.reasonCatalog(true);
+    const reasons = r?.reasons || r || [];
+    if (!reasons.length) return;
+    const sel = document.getElementById('rjErrorSel');
+    if (!sel) return;
+    let html = '<option value="">— Select an error —</option>';
+    reasons.forEach((rc, i) => {
+      html += `<option value="${rc.reason_code}" data-code="${rc.reason_code}">${rc.reason_code} — ${rc.reason_label}</option>`;
+    });
+    html += '<option value="OTHER">Not specified / Other</option>';
+    sel.innerHTML = html;
+    // Store catalog for info card rendering
+    window._GIP_REASONS = reasons;
+  } catch (e) {
+    console.warn('[notice_review] reason catalog load failed:', e.message);
+  }
+}
+
 async function loadQueues() {
   try {
     await ensureSourceId();
 
-    const [autoRes, reviewRes, reviewedRes] = await Promise.allSettled([
-      notices.autoPosted({ limit: 200 }),
-      notices.reviewQueue({ limit: 200 }),
-      review.queue({ limit: 200 }),
-    ]);
+    // Single call returns all three tabs + stats
+    const res = await review.allQueues({ limit: 200 });
+    if (!res) return;
 
-    if (autoRes.status === 'fulfilled' && autoRes.value) {
-      const items = autoRes.value.notices || autoRes.value.items || (Array.isArray(autoRes.value) ? autoRes.value : []);
-      window.AUTO_QUE.length = 0;
-      items.forEach(n => window.AUTO_QUE.push(mapNoticeToRow(n)));
-    }
+    const processedItems = res.processed_notices || [];
+    const reviewItems    = res.review_queue      || [];
+    const reviewedItems  = res.reviewed_notices  || [];
+    const stats          = res.stats             || {};
 
-    if (reviewRes.status === 'fulfilled' && reviewRes.value) {
-      const items = reviewRes.value.notices || reviewRes.value.items || (Array.isArray(reviewRes.value) ? reviewRes.value : []);
-      window.REVIEW_QUE.length = 0;
-      items.forEach(n => window.REVIEW_QUE.push(mapNoticeToRow(n)));
-    }
+    window.AUTO_QUE.length = 0;
+    processedItems.forEach(n => window.AUTO_QUE.push(mapNoticeToRow(n)));
 
-    if (reviewedRes.status === 'fulfilled' && reviewedRes.value) {
-      const items = reviewedRes.value.notices || reviewedRes.value.items || (Array.isArray(reviewedRes.value) ? reviewedRes.value : []);
-      window.REVIEWED_QUE.length = 0;
-      items.forEach(n => window.REVIEWED_QUE.push(mapNoticeToRow(n)));
-    }
+    window.REVIEW_QUE.length = 0;
+    reviewItems.forEach(n => window.REVIEW_QUE.push(mapNoticeToRow(n)));
+
+    window.REVIEWED_QUE.length = 0;
+    reviewedItems.forEach(n => window.REVIEWED_QUE.push(mapNoticeToRow(n)));
 
     const tabReview   = document.getElementById('tabReviewCount');
     const tabAuto     = document.getElementById('tabAutoCount');
     const tabReviewed = document.getElementById('tabReviewedCount');
-    if (tabReview)   tabReview.textContent   = window.REVIEW_QUE.length;
-    if (tabAuto)     tabAuto.textContent     = window.AUTO_QUE.length;
-    if (tabReviewed) tabReviewed.textContent = window.REVIEWED_QUE.length;
+    if (tabReview)   tabReview.textContent   = stats.review_count     ?? window.REVIEW_QUE.length;
+    if (tabAuto)     tabAuto.textContent     = stats.processed_count  ?? window.AUTO_QUE.length;
+    if (tabReviewed) tabReviewed.textContent = stats.reviewed_count   ?? window.REVIEWED_QUE.length;
 
     if (typeof renderRows     === 'function') renderRows();
     if (typeof renderPager    === 'function') renderPager();
     if (typeof renderPaWidget === 'function') renderPaWidget();
+    if (typeof renderGrids    === 'function') renderGrids();
 
   } catch (e) {
     console.warn('[notice_review] queue load failed:', e.message);
   }
 }
 
+// Patch rvApprove to call the real API
+const _origApprove = window.rvApprove;
+window._gipApproveNotice = async function(noticeId, comment) {
+  try {
+    await review.decision(noticeId, { decision: 'APPROVED', comment: comment || 'Approved' });
+  } catch (e) {
+    console.warn('[notice_review] approve API failed:', e.message);
+  }
+};
+
+// Patch rvSubmitReject to call the real API
+window._gipRejectNotice = async function(noticeId, reasonCode, reviewerDescription) {
+  try {
+    const issues = reasonCode && reasonCode !== 'OTHER'
+      ? [{ reason_code: reasonCode, reviewer_description: reviewerDescription || '' }]
+      : [];
+    await review.decision(noticeId, {
+      decision: 'REJECTED',
+      comment: reviewerDescription || 'Rejected by reviewer',
+      issues,
+    });
+  } catch (e) {
+    console.warn('[notice_review] reject API failed:', e.message);
+  }
+};
+
+// Hook into existing approve button to also call the API
+(function wireDecisionButtons() {
+  const approveBtn = document.getElementById('rvApproveBtn');
+  const rejectSubmitBtn = document.getElementById('rjSubmitBtn');
+
+  if (approveBtn) {
+    const origClick = approveBtn.onclick;
+    approveBtn.onclick = async function(e) {
+      // Get current notice ID before local state changes
+      const queue = typeof rvActiveQueue === 'function' ? rvActiveQueue() : window.REVIEW_QUE;
+      const rvIdx = typeof rvIndex !== 'undefined' ? rvIndex : 0;
+      const row = queue[rvIdx];
+      if (row?.id) await window._gipApproveNotice(row.id);
+      if (origClick) origClick.call(this, e);
+      else if (typeof rvApprove === 'function') rvApprove();
+    };
+  }
+
+  if (rejectSubmitBtn) {
+    const origClick = rejectSubmitBtn.onclick;
+    rejectSubmitBtn.onclick = async function(e) {
+      const sel = document.getElementById('rjErrorSel');
+      const reason = document.getElementById('rjReason');
+      const reasonCode = sel?.value || '';
+      const desc = reason?.value?.trim() || '';
+      if (!reasonCode) { sel?.focus(); return; }
+      const queue = typeof rvActiveQueue === 'function' ? rvActiveQueue() : window.REVIEW_QUE;
+      const rvIdx = typeof rvIndex !== 'undefined' ? rvIndex : 0;
+      const row = queue[rvIdx];
+      if (row?.id) await window._gipRejectNotice(row.id, reasonCode, desc);
+      if (origClick) origClick.call(this, e);
+      else if (typeof rvSubmitReject === 'function') rvSubmitReject();
+    };
+  }
+})();
+
 loadQueues();
+loadReasonCatalog();
 </script>
 </body>
 </html>

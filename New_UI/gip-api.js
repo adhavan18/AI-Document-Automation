@@ -152,9 +152,12 @@ export const companyDocuments = {
 
 // ── Review ────────────────────────────────────────────────────────────────────
 export const review = {
+  // Main queue — returns { review_queue, processed_notices, reviewed_notices, stats }
+  allQueues:       (p = {}) => G('/api/review/queue',   withSource(p)),
   queue:           (p = {}) => G('/api/review/queue',   withSource(p)),
   metrics:         (p = {}) => G('/api/review/metrics', withSource(p)),
-  reasonCatalog:   (activeOnly) => G('/api/review/reason-catalog', { active_only: activeOnly }),
+  reasonCatalog:   (activeOnly = true) => G('/api/review/reason-catalog', { active_only: activeOnly }),
+  // decision body: { decision: 'APPROVED'|'REJECTED', comment?, issues?: [{reason_code, reviewer_description?}] }
   decision:        (id, b)  => P(`/api/review/notices/${id}/decision`, b),
   gcmLinkedRecord: (id)     => G(`/api/review/notices/${id}/gcm-linked-record`),
 };
@@ -191,39 +194,53 @@ const STATUS_MAP = {
   REJECTED:         'rejected',
   RECEIVED:         'ready',
   PENDING:          'queued',
+  READY_TO_POST:    'ready',
+  EXTRACTED:        'ready',
 };
 
+// Maps a notice row from /api/review/queue response (review_queue, processed_notices, reviewed_notices)
 export function mapNoticeToRow(n) {
-  const rawStatus = n.validation_status || n.post_status || n.notice_status || n.status || '';
+  // Primary fields per API spec
+  const rawStatus = n.validation_status || n.review_decision || n.post_status || n.auto_post_status || n.notice_status || n.status || '';
+  const dateRaw   = n.display_date || n.notice_date || n.receipt_date || n.created_at || '';
+  let   dateStr   = '';
+  if (dateRaw) {
+    try { dateStr = new Date(dateRaw).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch {}
+  }
   return {
-    id:       n.notice_flat_id || n.id || '',
-    file:     n.source_file_name || n.file_name || n.original_filename || `Notice_${n.notice_flat_id || n.id}.pdf`,
-    size:     n.file_size_mb ? `${n.file_size_mb} MB` : '',
-    date:     n.notice_date || n.receipt_date || n.created_at
-                ? new Date(n.notice_date || n.receipt_date || n.created_at)
-                    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                : '',
-    form:     n.form_type || n.notice_type || '',
-    fn:       n.beneficiary_name || n.foreign_national_name || n.applicant_name || '',
-    accuracy: n.overall_extraction_confidence != null
-                ? Math.round(n.overall_extraction_confidence)
-                : n.extraction_accuracy != null
-                  ? Math.round(n.extraction_accuracy * 100)
-                  : null,
-    status:   STATUS_MAP[rawStatus.toUpperCase?.()] || rawStatus.toLowerCase() || 'ready',
-    raw:      n,
+    id:          n.notice_flat_id || n.id || '',
+    file:        n.file_name || n.source_file_name || n.original_filename || `Notice_${n.notice_flat_id || n.id}.pdf`,
+    size:        n.file_size_mb ? `${n.file_size_mb} MB` : '',
+    date:        dateStr,
+    form:        n.form_type || n.notice_type || '',
+    fn:          n.display_name || n.beneficiary_name || n.foreign_national_name || n.applicant_name || '',
+    receipt:     n.receipt_number || '',
+    noticeStatus:n.notice_status || '',
+    accuracy:    n.accuracy_percent != null
+                   ? Math.round(n.accuracy_percent)
+                   : n.overall_extraction_confidence != null
+                     ? Math.round(n.overall_extraction_confidence)
+                     : null,
+    status:      STATUS_MAP[rawStatus.toUpperCase?.()] || rawStatus.toLowerCase() || 'ready',
+    // Reviewed-tab extras
+    decision:    n.review_decision || '',
+    errorDetail: n.error_detail || n.primary_reason_label || n.reviewer_comment || '',
+    reviewedBy:  n.reviewed_by || '',
+    reviewedAt:  n.reviewed_at || '',
+    raw:         n,
   };
 }
 
+// Maps a notice for the card-based review page (gip-notice.html)
 export function mapNoticeToCard(n) {
-  const rawStatus = n.validation_status || n.notice_status || n.status || 'PENDING';
+  const rawStatus = n.validation_status || n.review_decision || n.notice_status || n.status || 'PENDING';
   return {
     id:       n.notice_flat_id || n.id || '',
     type:     n.form_type || n.notice_type || '',
     label:    n.form_type || '',
-    applicant:n.beneficiary_name || n.foreign_national_name || '',
+    applicant:n.display_name || n.beneficiary_name || n.foreign_national_name || '',
     status:   STATUS_MAP[rawStatus.toUpperCase?.()] || 'ready',
-    priority: n.match_confidence < 80 ? 'high' : 'normal',
+    priority: (n.gcm_match_confidence != null && n.gcm_match_confidence < 80) ? 'high' : 'normal',
     fields:   n.low_confidence_fields?.length ?? 0,
     pages:    n.page_count || 1,
     raw:      n,
