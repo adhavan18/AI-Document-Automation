@@ -534,31 +534,10 @@ const STATUS = {
   completed:{label:'Completed', color:'var(--green)'},
 };
 
-const QUEUE = [
-  {id:'0588250d',type:'N-400',label:'Application for Naturalization',applicant:'Elena Rodriguez',status:'ready',priority:'normal',fields:7,pages:14,time:'Jun 2, 2026 · 10:43 PM',primary:true},
-  {id:'0344f1a2',type:'I-130',label:'Petition for Alien Relative',applicant:'Marcus Chen',status:'processing',priority:'high',fields:4,pages:12,time:'Jun 3, 2026 · 11:04 AM',progress:62},
-  {id:'0991ccde',type:'H4-EAD',label:'Employment Authorization (H4)',applicant:'Priya Nair',status:'ready',priority:'high',fields:9,pages:6,time:'Jun 3, 2026 · 09:12 AM',primary:true},
-  {id:'07b3e810',type:'I-765',label:'Application for Employment Auth.',applicant:'David Okafor',status:'completed',priority:'normal',fields:11,pages:8,time:'Jun 1, 2026 · 04:30 PM'},
-  {id:'0c52a7fb',type:'N-400',label:'Application for Naturalization',applicant:'Sofia Mendez',status:'completed',priority:'normal',fields:7,pages:14,time:'Jun 1, 2026 · 02:15 PM'},
-  {id:'0ff19a34',type:'I-485',label:'Adjustment of Status',applicant:'Ahmed Hassan',status:'processing',priority:'normal',fields:2,pages:18,time:'Jun 3, 2026 · 11:20 AM',progress:28},
-];
+window.QUEUE  = [];
+window.FIELDS = [];
 
-const FIELDS = [
-  {key:'Primary Flag',value:'True',conf:96,src:'native',type:'select',options:['True','False']},
-  {key:'Sent Government Agency',value:'2026-05-28',conf:94,src:'native',type:'date'},
-  {key:'Receipt For',value:'Elena Rodriguez',conf:95,src:'native',type:'text'},
-  {key:'Receipt Type',value:'USCIS Receipt Number',conf:92,src:'native',type:'select',
-    options:['USCIS Receipt Number','J Visa Application Number','NVC Matter Number','PERM Receipt','Others']},
-  {key:'Receipt Date',value:'2026-05-30',conf:95,src:'native',type:'date'},
-  {key:'Receipt Notice Date',value:'2026-06-01',conf:93,src:'native',type:'date'},
-  {key:'Receipt Number',value:'MSC2190123456',conf:88,src:'native',type:'number'},
-  {key:'Receipt Status',value:'Pending',conf:90,src:'llm',type:'select',
-    options:['Pending','Approved','Denied','RFE','Withdrawn','Shipped']},
-  {key:'Expiration Notice',value:'Yes',conf:74,src:'llm',type:'select',options:['Yes','No']},
-  {key:'Receipt Notes',value:'',conf:0,src:'llm',type:'textarea'},
-];
-
-let activeId = '0588250d';
+var activeId = '';
 let filter = 'all';
 let page = 1;
 
@@ -852,13 +831,12 @@ function mapFields(detail) {
 async function loadQueue() {
   try {
     await ensureSourceId();
-    // Use review/queue which has all notices including review_queue items
     const res = await review.allQueues({ limit: 200 });
     const items = res?.review_queue || [];
     if (!items.length) return;
-    QUEUE.length = 0;
-    items.forEach(n => QUEUE.push(mapNoticeToCard(n)));
-    if (!QUEUE.find(d => d.id === activeId)) activeId = QUEUE[0]?.id || activeId;
+    window.QUEUE.length = 0;
+    items.forEach(n => window.QUEUE.push(mapNoticeToCard(n)));
+    if (!window.QUEUE.find(d => d.id === window.activeId)) window.activeId = window.QUEUE[0]?.id || '';
     if (typeof renderAll === 'function') renderAll();
   } catch (e) {
     console.warn('[gip-notice] queue load failed:', e.message);
@@ -872,8 +850,8 @@ async function loadDetail(noticeId) {
     if (!detail) return;
     const mapped = mapFields(detail);
     if (mapped.length) {
-      FIELDS.length = 0;
-      mapped.forEach(f => FIELDS.push(f));
+      window.FIELDS.length = 0;
+      mapped.forEach(f => window.FIELDS.push(f));
       if (typeof renderFields === 'function') renderFields();
     }
   } catch (e) {
@@ -899,11 +877,11 @@ if (confirmBtn) {
 }
 
 // Load queue, then detail for the active notice
-loadQueue().then(() => loadDetail(activeId));
+loadQueue().then(() => loadDetail(window.activeId));
 
 // Reload detail when user clicks a different notice card
 document.getElementById('qlist')?.addEventListener('click', () => {
-  setTimeout(() => loadDetail(activeId), 50);
+  setTimeout(() => loadDetail(window.activeId), 50);
 });
 </script>
 </body>
