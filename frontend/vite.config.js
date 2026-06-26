@@ -4,8 +4,8 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
-  const API_BASE    = env.API_BASE    || 'http://20.245.101.64:8000';
-  const CLIENT_CODE = env.CLIENT_CODE || '';
+  const API_BASE    = env.NOTICE_API_BASE || env.API_BASE || 'http://20.245.101.64:8000';
+  const CLIENT_CODE = env.CLIENT_CODE || 'GCMNOTICEAI';
   const AGENT_KEY   = env.AGENT_KEY   || '';
 
   const envConfigJs = `window.GIP_CONFIG = ${JSON.stringify({ API_BASE: '', CLIENT_CODE, AGENT_KEY })};`;
