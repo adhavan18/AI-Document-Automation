@@ -1245,27 +1245,8 @@ function renderNav(){
 }
 
 /* ─── grid data ─── */
-const AUTO_QUE = [
-  {file:'I130_Chen_Marcus_2026-06-03.pdf', size:'2.4 MB', date:'Jun 3, 2026', form:'I-130', fn:'Marcus Chen', accuracy:94, status:'completed'},
-  {file:'I485_Hassan_Ahmed_2026-06-03.pdf', size:'3.1 MB', date:'Jun 3, 2026', form:'I-485', fn:'Ahmed Hassan', accuracy:97, status:'completed'},
-  {file:'N400_Tanaka_Yuki_2026-06-03.pdf', size:'1.8 MB', date:'Jun 3, 2026', form:'N-400', fn:'Yuki Tanaka', accuracy:99, status:'completed'},
-  {file:'I765_Silva_Paulo_2026-06-03.pdf', size:'2.0 MB', date:'Jun 3, 2026', form:'I-765', fn:'Paulo Silva', accuracy:96, status:'completed'},
-  {file:'H4EAD_Kapoor_Riya_2026-06-03.pdf', size:'1.5 MB', date:'Jun 3, 2026', form:'H4-EAD', fn:'Riya Kapoor', accuracy:93, status:'completed'},
-  {file:'I140_Volkov_Anton_2026-06-02.pdf', size:'2.6 MB', date:'Jun 2, 2026', form:'I-140', fn:'Anton Volkov', accuracy:95, status:'completed'},
-  {file:'N400_Dubois_Camille_2026-06-02.pdf', size:'2.2 MB', date:'Jun 2, 2026', form:'N-400', fn:'Camille Dubois', accuracy:98, status:'completed'},
-  {file:'I539_Wong_Mei_2026-06-01.pdf', size:'1.7 MB', date:'Jun 1, 2026', form:'I-539', fn:'Mei Wong', accuracy:94, status:'completed'},
-];
-
-const REVIEW_QUE = [
-  {file:'N400_Rodriguez_Elena_2026-06-02.pdf', size:'2.7 MB', date:'Jun 2, 2026', form:'N-400', fn:'Elena Rodriguez', accuracy:91, status:'ready'},
-  {file:'H4EAD_Nair_Priya_2026-06-03.pdf', size:'1.9 MB', date:'Jun 3, 2026', form:'H4-EAD', fn:'Priya Nair', accuracy:88, status:'ready'},
-  {file:'I765_Okafor_David_2026-06-01.pdf', size:'2.2 MB', date:'Jun 1, 2026', form:'I-765', fn:'David Okafor', accuracy:84, status:'ready'},
-  {file:'N400_Mendez_Sofia_2026-06-01.pdf', size:'2.5 MB', date:'Jun 1, 2026', form:'N-400', fn:'Sofia Mendez', accuracy:78, status:'ready'},
-  {file:'I130_Bauer_Klaus_2026-05-31.pdf', size:'3.0 MB', date:'May 31, 2026', form:'I-130', fn:'Klaus Bauer', accuracy:73, status:'ready'},
-  {file:'I485_Park_Jiwoo_2026-05-31.pdf', size:'2.8 MB', date:'May 31, 2026', form:'I-485', fn:'Jiwoo Park', accuracy:68, status:'ready'},
-  {file:'I140_Costa_Mariana_2026-05-30.pdf', size:'2.3 MB', date:'May 30, 2026', form:'I-140', fn:'Mariana Costa', accuracy:89, status:'ready'},
-  {file:'I539_Al-Sayed_Omar_2026-05-30.pdf', size:'2.1 MB', date:'May 30, 2026', form:'I-539', fn:'Omar Al-Sayed', accuracy:82, status:'ready'},
-];
+window.AUTO_QUE   = [];
+window.REVIEW_QUE = [];
 
 const STATUS = {
   processing:{label:'Processing'},
@@ -2500,16 +2481,18 @@ async function loadQueues() {
     ]);
     if (autoRes.status === 'fulfilled' && autoRes.value) {
       const items = autoRes.value.notices || autoRes.value.items || (Array.isArray(autoRes.value) ? autoRes.value : []);
-      if (typeof AUTO_QUE !== 'undefined') { AUTO_QUE.length = 0; items.forEach(n => AUTO_QUE.push(mapNoticeToRow(n))); }
+      window.AUTO_QUE.length = 0;
+      items.forEach(n => window.AUTO_QUE.push(mapNoticeToRow(n)));
     }
     if (reviewRes.status === 'fulfilled' && reviewRes.value) {
       const items = reviewRes.value.notices || reviewRes.value.items || (Array.isArray(reviewRes.value) ? reviewRes.value : []);
-      if (typeof REVIEW_QUE !== 'undefined') { REVIEW_QUE.length = 0; items.forEach(n => REVIEW_QUE.push(mapNoticeToRow(n))); }
+      window.REVIEW_QUE.length = 0;
+      items.forEach(n => window.REVIEW_QUE.push(mapNoticeToRow(n)));
     }
     const tabReview = document.getElementById('tabReviewCount');
     const tabAuto   = document.getElementById('tabAutoCount');
-    if (tabReview && typeof REVIEW_QUE !== 'undefined') tabReview.textContent = REVIEW_QUE.length;
-    if (tabAuto   && typeof AUTO_QUE   !== 'undefined') tabAuto.textContent   = AUTO_QUE.length;
+    if (tabReview) tabReview.textContent = window.REVIEW_QUE.length;
+    if (tabAuto)   tabAuto.textContent   = window.AUTO_QUE.length;
     if (typeof renderRows  === 'function') renderRows();
     if (typeof renderPager === 'function') renderPager();
   } catch (e) {
