@@ -1691,9 +1691,7 @@ function rowHTML(row, opts){
   const leading = selectable
     ? `<td class="col-chk"><input type="checkbox" class="chk row-chk" data-idx="${idx}" ${row._sel?'checked':''}/></td>`
     : '';
-  return `<tr class="${selectable && row._sel ? 'selected':''}">
-    ${leading}
-    <td>
+  const fileCell = `<td>
       <div class="file-cell">
         <div>
           <div class="file-name">${row.file}</div>
@@ -1703,7 +1701,21 @@ function rowHTML(row, opts){
           </div>
         </div>
       </div>
-    </td>
+    </td>`;
+  if(activeTab === 'reviewed'){
+    return `<tr class="${selectable && row._sel ? 'selected':''}">
+      ${leading}
+      ${fileCell}
+      <td>${statusCell(row)}</td>
+      <td><span class="err-detail">${row.error_detail || '—'}</span></td>
+      <td><span class="fn-name">${row.reviewed_by || '—'}</span></td>
+      <td><span class="col-date">${row.reviewed_at ? _nrDate(row.reviewed_at) : '—'}</span></td>
+      <td>${actionsCell(idx)}</td>
+    </tr>`;
+  }
+  return `<tr class="${selectable && row._sel ? 'selected':''}">
+    ${leading}
+    ${fileCell}
     <td><span class="col-date">${row.date}</span></td>
     <td><span class="fn-name">${row.fn}</span></td>
     <td>${accuracyCell(row.accuracy)}</td>
@@ -1744,6 +1756,22 @@ const REVIEWED_QUE = [];
 const _NR_BASE = window.GIP_CONFIG ? window.GIP_CONFIG.API_BASE : '';
 function _nrAuth(){ const t=localStorage.getItem('azure_access_token'); return t?{Authorization:'Bearer '+t}:{}; }
 function _nrUser(){ try{ const u=JSON.parse(localStorage.getItem('gip_user')||'{}'); return u.username||u.display_name||''; }catch(e){ return ''; } }
+
+async function checkSession(){
+  if(!_NR_BASE) return;
+  try{
+    const r = await fetch(`${_NR_BASE}/api/auth/me`, { headers:_nrAuth() });
+    if(r.status===401){ window.location.href='login.html'; return; }
+    if(r.ok){
+      const u = await r.json();
+      localStorage.setItem('gip_user', JSON.stringify(u));
+      const nameEl = document.querySelector('.user-name');
+      const roleEl = document.querySelector('.user-role');
+      if(nameEl) nameEl.textContent = u.display_name || u.username || '';
+      if(roleEl) roleEl.textContent = u.role || '';
+    }
+  }catch(e){ /* ignore network errors — session stays as-is */ }
+}
 
 /* Format an ISO/date-ish string for the grid Date column */
 function _nrDate(s){
@@ -1832,13 +1860,12 @@ function activeData(){
 }
 
 function renderHead(){
+  const cols = activeTab === 'reviewed'
+    ? `<th>File Name</th><th>Decision</th><th>Rejection Reason</th><th>Reviewed By</th><th>Reviewed At</th>`
+    : `<th>File Name</th><th>Date</th><th>FN Name</th><th>Accuracy</th><th>Status</th>`;
   document.getElementById('gridHead').innerHTML = `<tr>
     <th class="col-chk"><input type="checkbox" class="chk" id="selAll" /></th>
-    <th>File Name</th>
-    <th>Date</th>
-    <th>FN Name</th>
-    <th>Accuracy</th>
-    <th>Status</th>
+    ${cols}
     <th style="text-align:center;">Action</th>
   </tr>`;
   document.getElementById('selAll').onchange = (e)=>{
@@ -2215,6 +2242,7 @@ renderNav();
 renderFoot();
 renderGrids();
 loadQueue();
+checkSession();
 
 /* ═══════════════════════════════════════════════════════════════ */
 /*  REVIEW MODE — fullscreen workspace                             */
