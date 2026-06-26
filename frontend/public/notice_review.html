@@ -2950,7 +2950,8 @@ async function openGcm(){
 function closeGcm(){ gcmOverlay.classList.remove('open'); }
 
 /* ─── Wire up controls ─── */
-document.getElementById('reviewModeBtn').onclick = ()=>openReviewMode(0);
+const _rvModeBtn = document.getElementById('reviewModeBtn');
+if(_rvModeBtn) _rvModeBtn.onclick = ()=>openReviewMode(0);
 document.getElementById('rvClose').onclick = closeReviewMode;
 document.getElementById('rvPrev').onclick  = ()=>rvGoto(-1);
 document.getElementById('rvNext').onclick  = ()=>rvGoto(1);
