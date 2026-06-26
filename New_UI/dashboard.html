@@ -809,7 +809,7 @@ renderPage();
 </script>
 <script src="env-config.js"></script>
 <script type="module">
-import { auth, notices, noticeAgent, review, isLoggedIn } from './gip-api.js';
+import { auth, notices, noticeAgent, review, noticeSources, isLoggedIn, setSourceId, getSourceId } from './gip-api.js';
 
 if (!isLoggedIn()) window.location.href = 'gip-login.html';
 
@@ -829,33 +829,76 @@ document.querySelectorAll('a[href="gip-login.html"]').forEach(a => {
   a.addEventListener('click', e => { e.preventDefault(); auth.logout(); });
 });
 
-// Live KPI counts from review queue + agent status
+async function ensureSourceId() {
+  if (getSourceId()) return;
+  const r = await noticeSources.list();
+  const list = r?.notice_sources || r || [];
+  if (list[0]) setSourceId(list[0].id);
+}
+
 async function loadLiveData() {
   try {
-    const [queue, agentStatus] = await Promise.allSettled([
+    await ensureSourceId();
+
+    const [autoRes, reviewQRes, reviewedRes, agentRes] = await Promise.allSettled([
+      notices.autoPosted({ limit: 200 }),
       notices.reviewQueue({ limit: 200 }),
+      review.metrics(),
       noticeAgent.status(),
     ]);
 
-    // Patch KPI cards with real queue count
-    if (queue.status === 'fulfilled' && queue.value) {
-      const items = Array.isArray(queue.value) ? queue.value : (queue.value.items || queue.value.notices || []);
-      const kpiVals = document.querySelectorAll('.kpi .k-val');
+    const kpiVals   = document.querySelectorAll('.kpi .k-val');
+    const kpiDeltas = document.querySelectorAll('.kpi .k-delta');
+
+    // KPI 0 — Notices Processed (auto-posted = processed without human touch)
+    if (autoRes.status === 'fulfilled' && autoRes.value) {
+      const auto = autoRes.value.notices || autoRes.value.items || (Array.isArray(autoRes.value) ? autoRes.value : []);
+      if (kpiVals[0]) kpiVals[0].textContent = auto.length;
+    }
+
+    // KPI 1 — Automated Processing (same set, hands-free)
+    if (autoRes.status === 'fulfilled' && autoRes.value) {
+      const auto = autoRes.value.notices || autoRes.value.items || (Array.isArray(autoRes.value) ? autoRes.value : []);
+      if (kpiVals[1]) kpiVals[1].textContent = auto.length;
+    }
+
+    // KPI 2 — Review Queue
+    if (reviewQRes.status === 'fulfilled' && reviewQRes.value) {
+      const items = reviewQRes.value.notices || reviewQRes.value.items || (Array.isArray(reviewQRes.value) ? reviewQRes.value : []);
       if (kpiVals[2]) kpiVals[2].textContent = items.length;
     }
 
-    // Patch agent status pills from live agent status
-    if (agentStatus.status === 'fulfilled' && agentStatus.value) {
-      const s = agentStatus.value;
-      const agPills = document.querySelectorAll('.ag-pill');
-      if (agPills.length) {
-        const online = s.status === 'online' || s.is_running;
-        agPills.forEach(p => {
-          p.className = `ag-pill ${online ? 'run' : 'stop'}`;
-          p.innerHTML = `<span class="ag-dot"></span>${online ? 'Running' : 'Stopped'}`;
-        });
-      }
+    // KPI 3 — Reviewed Notices (approved + rejected from metrics)
+    if (reviewedRes.status === 'fulfilled' && reviewedRes.value) {
+      const m = reviewedRes.value;
+      const approved = m.approved_count ?? m.approved ?? 0;
+      const rejected = m.rejected_count ?? m.rejected ?? 0;
+      const total    = m.total_reviewed  ?? m.total    ?? (approved + rejected);
+      if (kpiVals[3])   kpiVals[3].textContent = total;
+      if (kpiDeltas[3]) kpiDeltas[3].innerHTML =
+        `<span style="color:var(--green);">${approved} Approved</span>` +
+        `<span style="color:var(--ink-faint);margin:0 6px;">·</span>` +
+        `<span style="color:var(--orange);">${rejected} Rejected</span>`;
     }
+
+    // Agent status pills
+    if (agentRes.status === 'fulfilled' && agentRes.value) {
+      const s = agentRes.value;
+      // s may be array of agents or single agent
+      const agents = Array.isArray(s) ? s : (s.agents || [s]);
+      const agRows = document.querySelectorAll('.ag-row');
+      agRows.forEach((row, i) => {
+        const agent  = agents[i] || agents[0];
+        const online = agent?.connection_status === 'ONLINE' || agent?.service_status === 'RUNNING'
+                    || agent?.status === 'online' || agent?.is_running;
+        const pill = row.querySelector('.ag-pill');
+        if (pill) {
+          pill.className = `ag-pill ${online ? 'run' : 'stop'}`;
+          pill.innerHTML = `<span class="ag-dot"></span>${online ? 'Running' : 'Stopped'}`;
+        }
+      });
+    }
+
   } catch (e) {
     console.warn('[dashboard] live data load failed:', e.message);
   }
