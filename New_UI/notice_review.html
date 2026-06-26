@@ -2475,6 +2475,10 @@ function rvSetFieldVal(rowId, key, value){
 function rvFieldsForCurrent(){
   const row = rvCurrent();
   if(!row) return [];
+  // Use live API fields from detail cache when available
+  const cached = (window._rvDetailCache || {})[row.id];
+  if(cached && cached.length) return cached;
+  // Fallback: template with applicant name substituted
   const receiptType = rvFieldVal(row.id, 'Receipt Type', RV_FIELDS_TEMPLATE.find(f=>f.key==='Receipt Type').value);
   return RV_FIELDS_TEMPLATE
     .filter(f=> !f.condShow || (f.condShow.key==='Receipt Type' && f.condShow.value===receiptType))
@@ -2725,6 +2729,8 @@ function openReviewMode(startIdx, opts){
   if(!document.fullscreenElement && document.documentElement.requestFullscreen){
     document.documentElement.requestFullscreen().catch(()=>{});
   }
+  const cur = rvCurrent();
+  if(cur?.id && typeof window.loadRvDetail === 'function') window.loadRvDetail(cur.id);
 }
 
 function openSingleReview(row, opts){
@@ -2741,6 +2747,7 @@ function openSingleReview(row, opts){
   if(!rvPreviewMode && !document.fullscreenElement && document.documentElement.requestFullscreen){
     document.documentElement.requestFullscreen().catch(()=>{});
   }
+  if(row.id && typeof window.loadRvDetail === 'function') window.loadRvDetail(row.id);
 }
 
 function closeReviewMode(){
@@ -2764,6 +2771,8 @@ function rvGoto(delta){
   rvIndex = next;
   rvPage = 1;
   rvRenderAll();
+  const cur = rvCurrent();
+  if(cur?.id && typeof window.loadRvDetail === 'function') window.loadRvDetail(cur.id);
 }
 
 /* ─── PDF tools ─── */
@@ -3444,7 +3453,7 @@ uploadStartBtn.onclick = async ()=>{
 </script>
 <script src="env-config.js"></script>
 <script type="module">
-import { auth, review, noticeSources, isLoggedIn, setSourceId, getSourceId, mapNoticeToRow } from './gip-api.js';
+import { auth, review, noticeUi, noticeSources, isLoggedIn, setSourceId, getSourceId, mapNoticeToRow } from './gip-api.js';
 
 if (!isLoggedIn()) { window.location.href = 'gip-login.html'; }
 
@@ -3580,6 +3589,74 @@ window._gipRejectNotice = async function(noticeId, reasonCode, reviewerDescripti
     };
   }
 })();
+
+// ── Detail cache: keyed by notice_flat_id → mapped field array ──────────────
+window._rvDetailCache = window._rvDetailCache || {};
+
+const DETAIL_LABEL = {
+  file_name:            'File Name',
+  form_type:            'Form Type',
+  notice_status:        'Notice Status',
+  receipt_number:       'Receipt Number',
+  notice_date:          'Notice Date',
+  receipt_date:         'Receipt Date',
+  sent_government_agency:'Sent Government Agency',
+  beneficiary_name:     'Receipt For',
+  petitioner_name:      'Petitioner',
+  alien_number:         'A-Number',
+  matter_pending_at:    'Matter Pending at',
+  receipt_type:         'Receipt Type',
+  gov_form:             'Gov Form',
+  receipt_notice_date:  'Receipt Notice Date',
+  receipt_status:       'Receipt Status',
+  expiration_notice:    'Expiration Notice',
+  classification:       'Classification',
+  approval_valid_from:  'Valid From',
+  approval_valid_to:    'Valid To',
+};
+
+function mapDetailToFields(detail) {
+  if (!detail) return null;
+  const summary = detail.extracted_summary;
+  if (summary && typeof summary === 'object') {
+    const conf = summary.overall_extraction_confidence != null
+      ? Math.round(summary.overall_extraction_confidence) : 80;
+    return Object.entries(summary)
+      .filter(([k]) => k !== 'overall_extraction_confidence')
+      .map(([k, v]) => ({
+        key:   DETAIL_LABEL[k] || k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        value: v != null ? String(v) : '',
+        conf,
+        src:   'native',
+        type:  'text',
+      }));
+  }
+  const raw = detail.fields || detail.extracted_fields || [];
+  if (Array.isArray(raw) && raw.length) {
+    return raw.map(f => ({
+      key:   f.field_name || f.label || f.key || '',
+      value: f.confirmed_value ?? f.extracted_value ?? f.value ?? '',
+      conf:  f.confidence != null ? Math.round(f.confidence * 100) : 80,
+      src:   f.source || 'native',
+      type:  'text',
+    }));
+  }
+  return null;
+}
+
+window.loadRvDetail = async function(noticeId) {
+  if (!noticeId) return;
+  try {
+    const detail = await noticeUi.detail(noticeId);
+    const fields = mapDetailToFields(detail);
+    if (fields && fields.length) {
+      window._rvDetailCache[noticeId] = fields;
+      if (typeof rvRenderFields === 'function') rvRenderFields();
+    }
+  } catch (e) {
+    console.warn('[notice_review] detail load failed:', e.message);
+  }
+};
 
 loadQueues();
 loadReasonCatalog();
