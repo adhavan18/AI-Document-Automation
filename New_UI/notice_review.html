@@ -3461,5 +3461,59 @@ uploadStartBtn.onclick = async ()=>{
   renderUploadList();
 };
 </script>
+<script src="env-config.js"></script>
+<script type="module">
+import { auth, notices, noticeUi, noticeSources, isLoggedIn, setSourceId, getSourceId, mapNoticeToRow } from './gip-api.js';
+
+if (!isLoggedIn()) { window.location.href = 'gip-login.html'; }
+
+document.querySelectorAll('a[href="gip-login.html"]').forEach(a => {
+  a.addEventListener('click', e => { e.preventDefault(); auth.logout(); });
+});
+
+async function ensureSourceId() {
+  if (getSourceId()) return;
+  const r = await noticeSources.list();
+  const list = r?.notice_sources || r || [];
+  if (list[0]) setSourceId(list[0].id);
+}
+
+async function loadQueues() {
+  try {
+    await ensureSourceId();
+
+    const [autoRes, reviewRes] = await Promise.allSettled([
+      notices.autoPosted({ limit: 200 }),
+      notices.reviewQueue({ limit: 200 }),
+    ]);
+
+    if (autoRes.status === 'fulfilled' && autoRes.value) {
+      const items = autoRes.value.notices || autoRes.value.items || (Array.isArray(autoRes.value) ? autoRes.value : []);
+      AUTO_QUE.length = 0;
+      items.forEach(n => AUTO_QUE.push(mapNoticeToRow(n)));
+    }
+
+    if (reviewRes.status === 'fulfilled' && reviewRes.value) {
+      const items = reviewRes.value.notices || reviewRes.value.items || (Array.isArray(reviewRes.value) ? reviewRes.value : []);
+      REVIEW_QUE.length = 0;
+      items.forEach(n => REVIEW_QUE.push(mapNoticeToRow(n)));
+    }
+
+    const tabReview = document.getElementById('tabReviewCount');
+    const tabAuto   = document.getElementById('tabAutoCount');
+    if (tabReview) tabReview.textContent = REVIEW_QUE.length;
+    if (tabAuto)   tabAuto.textContent   = AUTO_QUE.length;
+
+    if (typeof renderRows     === 'function') renderRows();
+    if (typeof renderPager    === 'function') renderPager();
+    if (typeof renderPaWidget === 'function') renderPaWidget();
+
+  } catch (e) {
+    console.warn('[notice_review] queue load failed:', e.message);
+  }
+}
+
+loadQueues();
+</script>
 </body>
 </html>

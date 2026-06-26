@@ -805,5 +805,58 @@ document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',(
 window.addEventListener('storage', e=>{ if(e.key===AO_STORE_KEY) compute(); });
 compute();
 </script>
+<script src="env-config.js"></script>
+<script type="module">
+import { auth, noticeAgent, platform, isLoggedIn } from './gip-api.js';
+
+if (!isLoggedIn()) window.location.href = 'gip-login.html';
+
+document.querySelectorAll('a[href="gip-login.html"]').forEach(a => {
+  a.addEventListener('click', e => { e.preventDefault(); auth.logout(); });
+});
+
+async function loadAgentData() {
+  try {
+    const [statusRes, logsRes] = await Promise.allSettled([
+      noticeAgent.status(),
+      noticeAgent.getLogs({ limit: 50 }),
+    ]);
+
+    // Patch agent status badge if present
+    if (statusRes.status === 'fulfilled' && statusRes.value) {
+      const s = statusRes.value;
+      const online = s.status === 'online' || s.is_running || s.connected;
+      // Update any status indicators visible on page
+      document.querySelectorAll('.agent-status-pill, .status-pill').forEach(el => {
+        el.textContent = online ? 'Online' : 'Offline';
+        el.style.color = online ? 'var(--green)' : 'var(--orange)';
+      });
+      // Patch last heartbeat if shown
+      const hbEl = document.getElementById('lastHeartbeat');
+      if (hbEl && s.last_heartbeat) {
+        hbEl.textContent = new Date(s.last_heartbeat).toLocaleString();
+      }
+    }
+
+    // Patch recent logs into log table/list if it exists
+    if (logsRes.status === 'fulfilled' && logsRes.value) {
+      const logs = Array.isArray(logsRes.value) ? logsRes.value : (logsRes.value.items || logsRes.value.logs || []);
+      const logEl = document.getElementById('agentLogBody') || document.getElementById('agentLogs');
+      if (logEl && logs.length) {
+        logEl.innerHTML = logs.map(l => `<tr>
+          <td style="font-size:11px;color:var(--ink-faint);white-space:nowrap;">${l.created_at ? new Date(l.created_at).toLocaleTimeString() : ''}</td>
+          <td style="font-size:12px;">${l.message || l.log_message || ''}</td>
+          <td style="font-size:11px;color:var(--ink-soft);">${l.level || l.log_level || ''}</td>
+        </tr>`).join('');
+      }
+    }
+  } catch (e) {
+    console.warn('[agent-ops] data load failed:', e.message);
+  }
+}
+
+loadAgentData();
+setInterval(loadAgentData, 30000); // refresh every 30s
+</script>
 </body>
 </html>
