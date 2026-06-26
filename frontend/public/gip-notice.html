@@ -437,7 +437,7 @@
         <div class="f-head">
           <div class="f-head-row">
             <div class="f-title">Extracted Fields</div>
-            <a class="icon-btn-sm" href="gip-notice-list.html" title="Close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></a>
+            <a class="icon-btn-sm" href="notice_review.html" title="Close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></a>
           </div>
           <div class="conf-card">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f8a52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
@@ -481,7 +481,7 @@ const ICONS = {
 const NAV = [
   {id:'dashboard',  label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard,                        visible:1},
   {id:'assistant',  label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:0},
-  {id:'notice',     label:'Notice Processing',        href:'gip-notice-list.html',icon:ICONS.notice,    group:'Agents',         visible:1},
+  {id:'notice',     label:'Notice Processing',        href:'notice_review.html',icon:ICONS.notice,    group:'Agents',         visible:1},
   {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:0},
   {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:0},
   {id:'email',      label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:0},
@@ -973,7 +973,7 @@ document.getElementById('confirmBtn').onclick = async ()=>{
     await loadQueue();
     const remaining = QUEUE.filter(x=>x.id!==doneId && x.status!=='completed' && x.status!=='approved');
     if(remaining.length){ await selectCase(remaining[0].id); }
-    else { window.location.href = 'gip-notice-list.html'; return; }
+    else { window.location.href = 'notice_review.html'; return; }
     btn.disabled = false; btn.innerHTML = orig;
   }catch(e){
     console.error('[GIP] confirm failed', e);
