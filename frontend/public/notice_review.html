@@ -1754,7 +1754,7 @@ const TAB_META = {
 const REVIEWED_QUE = [];
 
 /* ═══ V5 Review API wiring ═══ */
-const _NR_BASE = window.GIP_CONFIG ? window.GIP_CONFIG.API_BASE : '';
+const _NR_BASE = (window.GIP_CONFIG?.API_BASE) || '/';
 function _nrAuth(){ const t=localStorage.getItem('azure_access_token'); return t?{Authorization:'Bearer '+t}:{}; }
 function _nrUser(){ try{ const u=JSON.parse(localStorage.getItem('gip_user')||'{}'); return u.username||u.display_name||''; }catch(e){ return ''; } }
 
