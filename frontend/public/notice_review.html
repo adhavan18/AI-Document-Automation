@@ -1566,7 +1566,7 @@ const ICONS = {
 const NAV = [
   {id:'dashboard',  label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard,                        visible:1},
   {id:'assistant',  label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:0},
-  {id:'notice',     label:'Notice Processing',        href:'gip-notice-list.html', icon:ICONS.notice,    group:'Agents',         visible:1},
+  {id:'notice',     label:'Notice Processing',        href:'notice_review.html', icon:ICONS.notice,    group:'Agents',         visible:1},
   {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:0},
   {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:0},
   {id:'email',      label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:0},
@@ -1611,28 +1611,9 @@ function renderNav(){
   document.getElementById('nav').innerHTML = html;
 }
 
-/* ─── grid data ─── */
-const AUTO_QUE = [
-  {file:'I130_Chen_Marcus_2026-06-03.pdf', size:'2.4 MB', date:'Jun 3, 2026', form:'I-130', fn:'Marcus Chen', accuracy:94, status:'completed'},
-  {file:'I485_Hassan_Ahmed_2026-06-03.pdf', size:'3.1 MB', date:'Jun 3, 2026', form:'I-485', fn:'Ahmed Hassan', accuracy:97, status:'completed'},
-  {file:'N400_Tanaka_Yuki_2026-06-03.pdf', size:'1.8 MB', date:'Jun 3, 2026', form:'N-400', fn:'Yuki Tanaka', accuracy:99, status:'completed'},
-  {file:'I765_Silva_Paulo_2026-06-03.pdf', size:'2.0 MB', date:'Jun 3, 2026', form:'I-765', fn:'Paulo Silva', accuracy:96, status:'completed'},
-  {file:'H4EAD_Kapoor_Riya_2026-06-03.pdf', size:'1.5 MB', date:'Jun 3, 2026', form:'H4-EAD', fn:'Riya Kapoor', accuracy:93, status:'completed'},
-  {file:'I140_Volkov_Anton_2026-06-02.pdf', size:'2.6 MB', date:'Jun 2, 2026', form:'I-140', fn:'Anton Volkov', accuracy:95, status:'completed'},
-  {file:'N400_Dubois_Camille_2026-06-02.pdf', size:'2.2 MB', date:'Jun 2, 2026', form:'N-400', fn:'Camille Dubois', accuracy:98, status:'completed'},
-  {file:'I539_Wong_Mei_2026-06-01.pdf', size:'1.7 MB', date:'Jun 1, 2026', form:'I-539', fn:'Mei Wong', accuracy:94, status:'completed'},
-];
-
-const REVIEW_QUE = [
-  {file:'N400_Rodriguez_Elena_2026-06-02.pdf', size:'2.7 MB', date:'Jun 2, 2026', form:'N-400', fn:'Elena Rodriguez', accuracy:91, status:'ready'},
-  {file:'H4EAD_Nair_Priya_2026-06-03.pdf', size:'1.9 MB', date:'Jun 3, 2026', form:'H4-EAD', fn:'Priya Nair', accuracy:88, status:'ready'},
-  {file:'I765_Okafor_David_2026-06-01.pdf', size:'2.2 MB', date:'Jun 1, 2026', form:'I-765', fn:'David Okafor', accuracy:84, status:'ready'},
-  {file:'N400_Mendez_Sofia_2026-06-01.pdf', size:'2.5 MB', date:'Jun 1, 2026', form:'N-400', fn:'Sofia Mendez', accuracy:78, status:'ready'},
-  {file:'I130_Bauer_Klaus_2026-05-31.pdf', size:'3.0 MB', date:'May 31, 2026', form:'I-130', fn:'Klaus Bauer', accuracy:73, status:'ready'},
-  {file:'I485_Park_Jiwoo_2026-05-31.pdf', size:'2.8 MB', date:'May 31, 2026', form:'I-485', fn:'Jiwoo Park', accuracy:68, status:'ready'},
-  {file:'I140_Costa_Mariana_2026-05-30.pdf', size:'2.3 MB', date:'May 30, 2026', form:'I-140', fn:'Mariana Costa', accuracy:89, status:'ready'},
-  {file:'I539_Al-Sayed_Omar_2026-05-30.pdf', size:'2.1 MB', date:'May 30, 2026', form:'I-539', fn:'Omar Al-Sayed', accuracy:82, status:'ready'},
-];
+/* ─── grid data (populated from /api/review/queue) ─── */
+const AUTO_QUE = [];
+const REVIEW_QUE = [];
 
 const STATUS = {
   processing:{label:'Processing'},
@@ -1759,39 +1740,89 @@ const TAB_META = {
 
 const REVIEWED_QUE = [];
 
-/* ─── Reviewer Activity: populate REVIEWED_QUE from API ─── */
+/* ═══ V5 Review API wiring ═══ */
 const _NR_BASE = window.GIP_CONFIG ? window.GIP_CONFIG.API_BASE : '';
 function _nrAuth(){ const t=localStorage.getItem('azure_access_token'); return t?{Authorization:'Bearer '+t}:{}; }
+function _nrUser(){ try{ const u=JSON.parse(localStorage.getItem('gip_user')||'{}'); return u.username||u.display_name||''; }catch(e){ return ''; } }
 
-function _mapReviewedRow(q){
-  const s = (q.reviewer_status||'').toLowerCase().replace('_for_post','').replace('approved','approved').replace('rejected','rejected') || 'reviewed';
+/* Format an ISO/date-ish string for the grid Date column */
+function _nrDate(s){
+  if(!s) return '—';
+  const d = new Date(s);
+  return isNaN(d) ? String(s) : d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+
+/* Map a Review Queue row → grid row shape used by rowHTML */
+function _mapReviewRow(q){
   return {
-    id:   q.notice_flat_id,
-    file: q.file_name || '—',
-    form: q.form_type  || '—',
-    size: '—',
-    date: q.display_date || '—',
-    fn:   q.display_name || '—',
-    accuracy: q.match_confidence ?? 0,
-    status: s,
-    reviewer_notes: q.gcm_reviewer_notes || q.reviewer_notes || '',
+    id:        q.notice_flat_id,
+    doc_id:    q.company_document_id,
+    file:      q.file_name || '—',
+    form:      q.form_type || '—',
+    size:      '—',
+    date:      _nrDate(q.display_date),
+    fn:        q.display_name || '—',
+    accuracy:  q.accuracy_percent ?? null,
+    status:    'ready',
+    receipt:   q.receipt_number || '',
+    notice_status: q.notice_status || '',
     _sel: false,
   };
 }
 
-async function loadReviewedQueue(){
+/* Map a Processed row → grid row shape */
+function _mapProcessedRow(q){
+  return {
+    id:        q.notice_flat_id,
+    doc_id:    q.company_document_id,
+    file:      q.file_name || '—',
+    form:      q.form_type || '—',
+    size:      '—',
+    date:      _nrDate(q.display_date),
+    fn:        q.display_name || '—',
+    accuracy:  q.accuracy_percent ?? null,
+    status:    'completed',
+    receipt:   q.receipt_number || '',
+    post_status: q.post_status || q.auto_post_status || '',
+    _sel: false,
+  };
+}
+
+/* Map a Reviewed row → grid row shape (Decision + error detail columns) */
+function _mapReviewedRow(q){
+  const dec = (q.review_decision || '').toUpperCase();
+  return {
+    id:        q.notice_flat_id,
+    doc_id:    q.company_document_id,
+    file:      q.file_name || '—',
+    form:      q.form_type || '—',
+    size:      '—',
+    date:      _nrDate(q.display_date),
+    fn:        q.display_name || '—',
+    accuracy:  q.accuracy_percent ?? null,
+    status:    dec === 'REJECTED' ? 'rejected' : 'approved',
+    decision:  dec,
+    error_detail: q.error_detail || q.primary_reason_label || q.reviewer_comment || '',
+    reviewed_by:  q.reviewed_by || '',
+    reviewed_at:  q.reviewed_at || '',
+    _sel: false,
+  };
+}
+
+/* Load all three queues + stats from /api/review/queue */
+async function loadQueue(){
   if(!_NR_BASE) return;
   try{
-    const r = await fetch(`${_NR_BASE}/api/notice-ui/queue?limit=200`, { headers:_nrAuth() });
+    const r = await fetch(`${_NR_BASE}/api/review/queue`, { headers:_nrAuth() });
     if(r.status===401){ window.location.href='login.html'; return; }
     if(!r.ok) return;
     const d = await r.json();
-    const all = [...(d.review_queue||[]), ...(d.processed_notices||[])];
-    const reviewed = all.filter(q => q.reviewer_status && q.reviewer_status !== 'PENDING_REVIEW');
-    REVIEWED_QUE.splice(0, REVIEWED_QUE.length, ...reviewed.map(_mapReviewedRow));
+    REVIEW_QUE.splice(0,   REVIEW_QUE.length,   ...(d.review_queue     || []).map(_mapReviewRow));
+    AUTO_QUE.splice(0,     AUTO_QUE.length,     ...(d.processed_notices|| []).map(_mapProcessedRow));
+    REVIEWED_QUE.splice(0, REVIEWED_QUE.length, ...(d.reviewed_notices || []).map(_mapReviewedRow));
     renderTabs();
-    if(activeTab==='reviewed') renderGrids();
-  }catch(e){ /* keep static UI on error */ }
+    renderGrids();
+  }catch(e){ /* leave grids empty on network error */ }
 }
 
 function activeData(){
@@ -2183,7 +2214,7 @@ if(!localStorage.getItem('azure_access_token')) window.location.href = 'login.ht
 renderNav();
 renderFoot();
 renderGrids();
-loadReviewedQueue();
+loadQueue();
 
 /* ═══════════════════════════════════════════════════════════════ */
 /*  REVIEW MODE — fullscreen workspace                             */
@@ -2232,18 +2263,6 @@ const RV_FIELDS_TEMPLATE = [
   {key:'Receipt Notes',          value:'',                    conf:0,  src:'llm',    type:'textarea'},
 ];
 
-/* GCM mock — keyed by FN (applicant) name; falls back to a generic stub */
-const GCM_BY_FN = {
-  'Elena Rodriguez':{caseId:'GCM-2026-04812', client:'Elena M. Rodriguez', a:'A-201-948-376', dob:'1988-03-14', country:'Mexico', attorney:'J. Patel', team:'Naturalization', status:'matched', dest:'/Clients/Rodriguez_Elena/N-400/Notices/'},
-  'Priya Nair':     {caseId:'GCM-2026-04519', client:'Priya R. Nair',      a:'A-198-552-118', dob:'1991-07-22', country:'India',  attorney:'M. Chen',  team:'EAD',         status:'matched', dest:'/Clients/Nair_Priya/H4-EAD/Notices/'},
-  'David Okafor':   {caseId:'GCM-2026-04388', client:'David T. Okafor',    a:'A-216-704-009', dob:'1985-11-02', country:'Nigeria', attorney:'S. Wu',    team:'EAD',         status:'matched', dest:'/Clients/Okafor_David/I-765/Notices/'},
-  'Sofia Mendez':   {caseId:'GCM-2026-04207', client:'Sofia A. Mendez',    a:'A-207-118-554', dob:'1979-02-19', country:'Colombia',attorney:'J. Patel', team:'Naturalization', status:'matched', dest:'/Clients/Mendez_Sofia/N-400/Notices/'},
-  'Klaus Bauer':    {caseId:'GCM-2026-04019', client:'Klaus W. Bauer',     a:'A-192-018-664', dob:'1972-05-08', country:'Germany', attorney:'L. Rao',   team:'Family',      status:'partial', dest:'/Clients/Bauer_Klaus/I-130/Notices/'},
-  'Jiwoo Park':     {caseId:'GCM-2026-03997', client:'Jiwoo Park',         a:'A-228-664-220', dob:'1990-09-30', country:'S. Korea',attorney:'M. Chen',  team:'AOS',         status:'matched', dest:'/Clients/Park_Jiwoo/I-485/Notices/'},
-  'Mariana Costa':  {caseId:'GCM-2026-03781', client:'Mariana B. Costa',   a:'A-204-008-118', dob:'1986-12-11', country:'Brazil',  attorney:'S. Wu',    team:'EB',          status:'matched', dest:'/Clients/Costa_Mariana/I-140/Notices/'},
-  'Omar Al-Sayed':  {caseId:'GCM-2026-03654', client:'Omar Al-Sayed',      a:'A-218-441-009', dob:'1982-04-06', country:'Jordan',  attorney:'L. Rao',   team:'NIV',         status:'partial', dest:'/Clients/AlSayed_Omar/I-539/Notices/'},
-};
-
 let rvIndex = 0;     /* which row in REVIEW_QUE we are reviewing */
 let rvZoom = 100;
 let rvPage = 1;
@@ -2253,7 +2272,55 @@ const rvRoot = document.getElementById('rvRoot');
 
 function rvCurrent(){ return rvSingleRow ? rvSingleRow : (REVIEW_QUE[rvIndex] || null); }
 function rvIsSingleMode(){ return rvSingleRow !== null; }
-function rvTotalPages(){ return 14; /* mock fixed page count for preview */ }
+function rvTotalPages(){ return 1; }
+
+/* ─── Detail + PDF loading from the V5 API ─── */
+let DETAIL = null;          /* GET /api/notice-ui/{id}/detail response, tagged with _forId */
+let rvPdfUrl = null;        /* object URL for the current PDF blob */
+
+async function rvLoadDetail(row){
+  if(!row || !row.id || !_NR_BASE) return;
+  DETAIL = null;
+  rvRenderFields();         /* clear/placeholder while loading */
+  rvRenderCanvas();
+  try{
+    const r = await fetch(`${_NR_BASE}/api/notice-ui/${encodeURIComponent(row.id)}/detail`, { headers:_nrAuth() });
+    if(r.status===401){ window.location.href='login.html'; return; }
+    if(!r.ok) return;
+    const d = await r.json();
+    d._forId = row.id;
+    DETAIL = d;
+    if(rvCurrent() && rvCurrent().id === row.id){
+      rvRenderFields();
+      rvLoadPdf(row, d.pdf_preview_path);
+    }
+  }catch(e){ /* leave placeholder doc on error */ }
+}
+
+async function rvLoadPdf(row, previewPath){
+  const canvas = document.getElementById('rvCanvas');
+  if(!canvas) return;
+  /* derive PDF path: prefer detail.pdf_preview_path, else build from doc_id */
+  let path = previewPath;
+  if(!path && row.doc_id) path = `/api/company-documents/${encodeURIComponent(row.doc_id)}/pdf-preview`;
+  if(!path){ return; }
+  const url = path.startsWith('http') ? path : `${_NR_BASE}${path}`;
+  canvas.innerHTML = `<div style="color:#aab2c6;font-family:var(--font);padding:60px 30px;text-align:center;">Loading PDF…</div>`;
+  try{
+    const r = await fetch(url, { headers:_nrAuth() });
+    if(!r.ok) throw new Error('pdf '+r.status);
+    const blob = await r.blob();
+    if(rvPdfUrl) URL.revokeObjectURL(rvPdfUrl);
+    rvPdfUrl = URL.createObjectURL(blob);
+    if(rvCurrent() && rvCurrent().id === row.id){
+      canvas.innerHTML = `<iframe src="${rvPdfUrl}" title="Source notice PDF"
+        style="width:100%;height:100%;border:none;background:#fff;"></iframe>`;
+    }
+  }catch(e){
+    canvas.innerHTML = `<div style="color:var(--orange);font-family:var(--font);padding:60px 30px;text-align:center;">
+      Could not load PDF preview.</div>`;
+  }
+}
 
 function rvIcon(name){
   const M = {
@@ -2335,18 +2402,46 @@ function rvSetFieldVal(rowId, key, value){
   rvFieldValMap[rowId + ' ' + key] = value;
 }
 
+/* Pretty-print an extracted_summary key e.g. receipt_number → "Receipt Number" */
+function _nrLabel(k){
+  return String(k).replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+}
+
+/* Normalize a confidence value to a 0–100 integer */
+function _nrConf(c){
+  if(c==null) return 0;
+  const n = Number(c);
+  if(isNaN(n)) return 0;
+  return Math.round(n <= 1 ? n*100 : n);
+}
+
+/* Build the field-card list from the loaded API detail (fields[] or extracted_summary) */
 function rvFieldsForCurrent(){
   const row = rvCurrent();
   if(!row) return [];
-  const receiptType = rvFieldVal(row.id, 'Receipt Type', RV_FIELDS_TEMPLATE.find(f=>f.key==='Receipt Type').value);
-  return RV_FIELDS_TEMPLATE
-    .filter(f=> !f.condShow || (f.condShow.key==='Receipt Type' && f.condShow.value===receiptType))
-    .map(f=> ({
-      ...f,
-      value: f.key==='Receipt For' ? row.fn
-           : f.custom ? rvFieldVal(row.id, f.key, f.value)
-           : f.value,
-    }));
+  if(!DETAIL || DETAIL._forId !== row.id) return [];
+
+  const arr = Array.isArray(DETAIL.fields) ? DETAIL.fields : [];
+  if(arr.length){
+    return arr.map(f=>{
+      const key = f.field_label || f.label || f.field_name || f.name || f.key || '—';
+      const value = f.value ?? f.normalized_value ?? f.raw_value ?? '';
+      return {
+        key,
+        value: value == null ? '' : String(value),
+        conf: _nrConf(f.confidence ?? f.conf),
+        src: (f.source || f.src || 'llm').toString().toLowerCase().includes('nat') ? 'native' : (f.source || 'llm'),
+        type: 'text',
+      };
+    });
+  }
+
+  /* Fallback: render extracted_summary as read-only-ish text fields */
+  const sum = DETAIL.extracted_summary || {};
+  const overall = _nrConf(sum.overall_extraction_confidence);
+  return Object.keys(sum)
+    .filter(k => k !== 'overall_extraction_confidence' && sum[k] != null && sum[k] !== '')
+    .map(k => ({ key:_nrLabel(k), value:String(sum[k]), conf:overall || 90, src:'native', type:'text' }));
 }
 
 const rvPrimaryMap = {};
@@ -2539,10 +2634,14 @@ function rvRenderHeader(){
 /* ─── PDF pane render ─── */
 function rvRenderCanvas(){
   const row = rvCurrent();
-  document.getElementById('rvCanvas').innerHTML = row ? rvDocHTML(row)
-    : `<div style="color:#aab2c6;font-family:var(--font);padding:60px 30px;text-align:center;">
-         No notice selected.
-       </div>`;
+  const canvas = document.getElementById('rvCanvas');
+  if(!row){
+    canvas.innerHTML = `<div style="color:#aab2c6;font-family:var(--font);padding:60px 30px;text-align:center;">No notice selected.</div>`;
+  } else if(rvPdfUrl && DETAIL && DETAIL._forId === row.id){
+    canvas.innerHTML = `<iframe src="${rvPdfUrl}" title="Source notice PDF" style="width:100%;height:100%;border:none;background:#fff;"></iframe>`;
+  } else {
+    canvas.innerHTML = `<div style="color:#aab2c6;font-family:var(--font);padding:60px 30px;text-align:center;">Loading PDF…</div>`;
+  }
   const titleEl = document.getElementById('rvPdfTitle');
   titleEl.textContent = row ? row.file : 'Source Notice';
   titleEl.title = row ? row.file : '';
@@ -2568,9 +2667,11 @@ function openReviewMode(startIdx){
   rvIndex = (typeof startIdx==='number' && startIdx>=0 && startIdx<REVIEW_QUE.length) ? startIdx : 0;
   rvPage = 1;
   rvZoom = 100;
+  rvPdfUrl = null; DETAIL = null;
   rvRoot.classList.add('open');
   document.body.style.overflow = 'hidden';
   rvRenderAll();
+  rvLoadDetail(rvCurrent());
   setTimeout(()=>rvRoot.focus(), 30);
   if(!document.fullscreenElement && document.documentElement.requestFullscreen){
     document.documentElement.requestFullscreen().catch(()=>{});
@@ -2583,10 +2684,12 @@ function openSingleReview(row, opts){
   rvPreviewMode = !!(opts && opts.preview);
   rvPage = 1;
   rvZoom = 100;
+  rvPdfUrl = null; DETAIL = null;
   rvRoot.classList.toggle('rv-preview', rvPreviewMode);
   rvRoot.classList.add('open');
   document.body.style.overflow = 'hidden';
   rvRenderAll();
+  rvLoadDetail(row);
   setTimeout(()=>rvRoot.focus(), 30);
   if(!rvPreviewMode && !document.fullscreenElement && document.documentElement.requestFullscreen){
     document.documentElement.requestFullscreen().catch(()=>{});
@@ -2610,7 +2713,9 @@ function rvGoto(delta){
   if(next<0 || next>=REVIEW_QUE.length) return;
   rvIndex = next;
   rvPage = 1;
+  rvPdfUrl = null; DETAIL = null;
   rvRenderAll();
+  rvLoadDetail(rvCurrent());
 }
 
 /* ─── PDF tools ─── */
@@ -2640,80 +2745,127 @@ function rvContinueAfterArchive(){
   renderGrids();
 }
 
-function rvApprove(){
-  if(rvIsSingleMode()){ closeReviewMode(); renderGrids(); return; }
-  rvArchiveCurrent('approved');
-  rvContinueAfterArchive();
+/* POST a decision (APPROVED / REJECTED) for a notice */
+async function postDecision(row, body){
+  const r = await fetch(`${_NR_BASE}/api/review/notices/${encodeURIComponent(row.id)}/decision`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json', ..._nrAuth()},
+    body: JSON.stringify(body),
+  });
+  if(r.status===401){ window.location.href='login.html'; return false; }
+  if(!r.ok){
+    const e = await r.json().catch(()=>({}));
+    alert('Could not save decision: ' + (e.detail || e.message || ('HTTP '+r.status)));
+    return false;
+  }
+  return true;
 }
 
-/* ─── Reject modal ─── */
+/* Refresh queues from server, then continue or close review mode */
+async function rvAfterDecision(){
+  await loadQueue();
+  if(rvIsSingleMode() || REVIEW_QUE.length===0){ closeReviewMode(); return; }
+  rvIndex = Math.min(rvIndex, REVIEW_QUE.length-1);
+  rvPage = 1;
+  rvPdfUrl = null; DETAIL = null;
+  rvRenderAll();
+  rvLoadDetail(rvCurrent());
+}
+
+async function rvApprove(){
+  const row = rvCurrent();
+  if(!row || !row.id) return;
+  const btn = document.getElementById('rvApproveBtn');
+  if(btn) btn.disabled = true;
+  const ok = await postDecision(row, { decision:'APPROVED', review_comment:'' });
+  if(btn) btn.disabled = false;
+  if(ok) rvAfterDecision();
+}
+
+/* ─── Reject modal (reasons from /api/review/reason-catalog) ─── */
 const rjOverlay = document.getElementById('rjOverlay');
 const rjReason  = document.getElementById('rjReason');
-const rvRejections = {}; /* keyed by row.id → reason string */
+let RJ_REASONS = null;
 
-function rvOpenRejectModal(){
+async function loadReasonCatalog(){
+  const sel = document.getElementById('rjErrorSel');
+  if(RJ_REASONS){ return RJ_REASONS; }
+  try{
+    const r = await fetch(`${_NR_BASE}/api/review/reason-catalog`, { headers:_nrAuth() });
+    if(r.status===401){ window.location.href='login.html'; return []; }
+    if(r.ok){ const d = await r.json(); RJ_REASONS = d.reasons || []; }
+  }catch(e){ RJ_REASONS = RJ_REASONS || []; }
+  if(sel){
+    sel.multiple = true;
+    sel.size = Math.min(8, Math.max(4, (RJ_REASONS||[]).length || 4));
+    sel.innerHTML = (RJ_REASONS||[]).map(x =>
+      `<option value="${_esc(x.reason_code)}">${_esc(x.reason_label)}</option>`).join('');
+  }
+  return RJ_REASONS;
+}
+
+async function rvOpenRejectModal(){
   const row = rvCurrent();
   if(!row) return;
-  rjReason.value = rvRejections[row.id] || '';
+  await loadReasonCatalog();
+  const sel = document.getElementById('rjErrorSel');
+  if(sel) Array.from(sel.options).forEach(o => o.selected = false);
+  rjReason.value = '';
   rjOverlay.classList.add('open');
-  setTimeout(()=>rjReason.focus(), 30);
+  setTimeout(()=>{ if(sel) sel.focus(); }, 30);
 }
 function rvCloseRejectModal(){
   rjOverlay.classList.remove('open');
 }
-function rvSubmitReject(){
+async function rvSubmitReject(){
   const row = rvCurrent();
-  if(!row) return;
-  const reason = (rjReason.value || '').trim();
-  if(!reason){
-    rjReason.focus();
+  if(!row || !row.id) return;
+  const sel = document.getElementById('rjErrorSel');
+  const codes = sel ? Array.from(sel.selectedOptions).map(o => o.value) : [];
+  const comment = (rjReason.value || '').trim();
+  if(codes.length === 0){
+    if(sel) sel.focus();
+    alert('Select at least one reason for rejection.');
     return;
   }
-  rvRejections[row.id] = reason;
+  const issues = codes.map(c => ({ reason_code:c, reviewer_description:comment }));
+  const btn = document.getElementById('rjSubmitBtn');
+  if(btn) btn.disabled = true;
+  const ok = await postDecision(row, { decision:'REJECTED', review_comment:comment, issues });
+  if(btn) btn.disabled = false;
+  if(!ok) return;
   rvCloseRejectModal();
-  if(rvIsSingleMode()){ closeReviewMode(); renderGrids(); return; }
-  rvArchiveCurrent('rejected', {rejectReason:reason});
-  rvContinueAfterArchive();
+  rvAfterDecision();
 }
 
-/* ─── GCM modal ─── */
+/* ─── GCM modal (live: /api/review/notices/{id}/gcm-linked-record) ─── */
 const gcmOverlay = document.getElementById('gcmOverlay');
-function gcmDataFor(row){
-  if(!row) return null;
-  const hit = GCM_BY_FN[row.fn];
-  if(hit) return hit;
-  /* generic stub for any FN not in the mock map */
-  const safe = (row.fn||'Client').split(' ');
-  return {
-    caseId:'GCM-2026-09999',
-    client:row.fn||'Client',
-    a:'A-200-000-000',
-    dob:'1990-01-01',
-    country:'—',
-    attorney:'Unassigned',
-    team:row.form,
-    status:'partial',
-    dest:`/Clients/${(safe[1]||safe[0])}_${safe[0]}/${row.form}/Notices/`,
-  };
+function _esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function gcmRenderLoading(row){
+  document.getElementById('gcmBody').innerHTML =
+    `<div style="padding:48px 24px;text-align:center;color:var(--ink-faint);font-size:13px;">Loading GCM match…</div>`;
 }
 
-function openGcm(){
-  const row = rvCurrent();
-  const g = gcmDataFor(row);
-  if(!g) return;
-  const initials = (g.client||'').split(/\s+/).map(s=>s[0]).slice(0,2).join('').toUpperCase() || '?';
-  const statusCls = g.status==='matched' ? 'matched' : 'partial';
-  const statusTxt = g.status==='matched' ? 'Auto-matched' : 'Partial match';
+function gcmRenderData(row, d){
+  const ns = (d && d.notice_summary) || {};
+  const lr = (d && d.linked_record) || {};
+  const matched = !!(d && d.has_gcm_match);
+  const clientName = ns.beneficiary_name || row.fn || '—';
+  const initials = clientName.split(/\s+/).map(s=>s[0]).slice(0,2).join('').toUpperCase() || '?';
+  const statusCls = matched ? 'matched' : 'partial';
+  const statusTxt = matched ? 'Matched' : 'Not matched';
+  const conf = lr.match_confidence != null ? `${lr.match_confidence}%` : '—';
 
   document.getElementById('gcmBody').innerHTML = `
     <div class="gcm-hero">
-      <div class="gcm-avatar">${initials}</div>
+      <div class="gcm-avatar">${_esc(initials)}</div>
       <div class="gcm-hero-main">
-        <div class="gcm-hero-name">${g.client}</div>
+        <div class="gcm-hero-name">${_esc(clientName)}</div>
         <div class="gcm-hero-meta">
-          <span class="gcm-form-tag">${row.form}</span>
+          <span class="gcm-form-tag">${_esc(ns.form_type || row.form || '—')}</span>
           <span class="sep">·</span>
-          <span>Case <b style="color:var(--ink);">${g.caseId}</b></span>
+          <span>${_esc(ns.notice_status || '')}</span>
         </div>
       </div>
     </div>
@@ -2722,32 +2874,49 @@ function openGcm(){
       <div class="gcm-section-head">
         <div class="gcm-section-title">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
-          Client Record
+          GCM Match
         </div>
         <span class="gcm-status ${statusCls}">${statusTxt}</span>
       </div>
       <div class="gcm-kv">
-        <div class="gcm-row"><div class="gcm-k">Client Name</div><div class="gcm-v">${g.client}</div></div>
-        <div class="gcm-row"><div class="gcm-k">A-Number</div><div class="gcm-v mono">${g.a}</div></div>
-        <div class="gcm-row"><div class="gcm-k">Date of Birth</div><div class="gcm-v mono">${g.dob}</div></div>
-        <div class="gcm-row"><div class="gcm-k">Country of Birth</div><div class="gcm-v">${g.country}</div></div>
-        <div class="gcm-row"><div class="gcm-k">Attorney</div><div class="gcm-v">${g.attorney}</div></div>
-        <div class="gcm-row"><div class="gcm-k">Team</div><div class="gcm-v muted">${g.team}</div></div>
+        <div class="gcm-row"><div class="gcm-k">Match Confidence</div><div class="gcm-v">${_esc(conf)}</div></div>
+        <div class="gcm-row"><div class="gcm-k">Duplicate Check</div><div class="gcm-v">${_esc(lr.duplicate_status || '—')}</div></div>
+        <div class="gcm-row"><div class="gcm-k">Proposed Action</div><div class="gcm-v">${_esc(lr.proposed_action || '—')}</div></div>
+        <div class="gcm-row"><div class="gcm-k">Match Status</div><div class="gcm-v muted">${_esc(lr.match_status || (matched?'MATCHED':'UNMATCHED'))}</div></div>
       </div>
     </div>
 
-    <div class="gcm-dest" title="${g.dest}">
-      <div class="gcm-dest-ico">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+    <div class="gcm-section">
+      <div class="gcm-section-head">
+        <div class="gcm-section-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+          Notice Summary
+        </div>
       </div>
-      <div class="gcm-dest-txt">
-        <div class="gcm-dest-lbl">Destination Folder</div>
-        <div class="gcm-dest-path" title="${g.dest}">${g.dest}</div>
+      <div class="gcm-kv">
+        <div class="gcm-row"><div class="gcm-k">Beneficiary</div><div class="gcm-v">${_esc(ns.beneficiary_name || '—')}</div></div>
+        <div class="gcm-row"><div class="gcm-k">Petitioner</div><div class="gcm-v">${_esc(ns.petitioner_name || '—')}</div></div>
+        <div class="gcm-row"><div class="gcm-k">Receipt Number</div><div class="gcm-v mono">${_esc(ns.receipt_number || '—')}</div></div>
       </div>
     </div>
   `;
+}
 
+async function openGcm(){
+  const row = rvCurrent();
+  if(!row || !row.id){ return; }
+  gcmRenderLoading(row);
   gcmOverlay.classList.add('open');
+  try{
+    const r = await fetch(`${_NR_BASE}/api/review/notices/${encodeURIComponent(row.id)}/gcm-linked-record`, { headers:_nrAuth() });
+    if(r.status===401){ window.location.href='login.html'; return; }
+    if(!r.ok) throw new Error('gcm '+r.status);
+    const d = await r.json();
+    if(rvCurrent() && rvCurrent().id === row.id) gcmRenderData(row, d);
+  }catch(e){
+    document.getElementById('gcmBody').innerHTML =
+      `<div style="padding:48px 24px;text-align:center;color:var(--orange);font-size:13px;">Could not load GCM match.</div>`;
+  }
 }
 function closeGcm(){ gcmOverlay.classList.remove('open'); }
 
