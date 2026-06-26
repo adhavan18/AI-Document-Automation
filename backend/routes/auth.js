@@ -1,7 +1,7 @@
 import express from 'express';
 
 const router = express.Router();
-const GIP_API_BASE = process.env.GIP_API_BASE || 'http://20.102.105.142:8000';
+const GIP_API_BASE = process.env.GIP_API_BASE || 'http://20.245.101.64:8000';
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
