@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -1198,12 +1198,12 @@ const ICONS = {
 };
 const NAV = [
   {id:'dashboard',  label:'Dashboard',                href:'gip-dashboard.html',  icon:ICONS.dashboard,                        visible:1},
-  {id:'assistant',  label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:0},
+  {id:'assistant',  label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:1},
   {id:'notice',     label:'Notice Processing',        href:'gip-notice-list.html',icon:ICONS.notice,    group:'Agents',         visible:1},
-  {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:0},
-  {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:0},
-  {id:'email',      label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:0},
-  {id:'agentops',   label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights',       visible:0},
+  {id:'compliance', label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:1},
+  {id:'filing',     label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:1},
+  {id:'email',      label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:1},
+  {id:'agentops',   label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights',       visible:1},
 ];
 const ACTIVE_NAV = 'notice';
 
@@ -2383,12 +2383,16 @@ dropZone.addEventListener('drop', e=>{
   });
 });
 
-/* ─ upload (real fetch with XHR-based progress; gracefully falls back to a simulated upload if the endpoint is unreachable, so the mock works without a backend) ─ */
+/* ─ upload: multipart POST to /api/notice-agent/upload-document with auth headers ─ */
 function uploadOne(item, folder){
   return new Promise(resolve=>{
+    const token    = localStorage.getItem('gip_token') || '';
+    const cfg      = window.GIP_CONFIG || {};
+    const sourceId = localStorage.getItem('gip_source_id') || '';
     const fd = new FormData();
     fd.append('file', item.file);
-    fd.append('folder', folder);
+    if(folder)   fd.append('folder', folder);
+    if(sourceId) fd.append('notice_source_id', sourceId);
     const xhr = new XMLHttpRequest();
     let usedReal = false;
     xhr.upload.onprogress = e=>{
@@ -2400,8 +2404,10 @@ function uploadOne(item, folder){
       }
     };
     xhr.onload = ()=>{
+      if(xhr.status===401){ localStorage.clear(); window.location.href='gip-login.html'; return; }
       if(xhr.status>=200 && xhr.status<300){
         item.status='done'; item.progress=100;
+        setTimeout(()=>{ if(typeof loadQueues==='function') loadQueues(); }, 2000);
       } else {
         item.status='error'; item.error = 'HTTP '+xhr.status;
       }
@@ -2409,7 +2415,6 @@ function uploadOne(item, folder){
       resolve();
     };
     xhr.onerror = ()=>{
-      /* No backend wired up — simulate progress so the UX is demonstrable. */
       if(!usedReal){
         simulateUpload(item).then(resolve);
       } else {
@@ -2419,7 +2424,11 @@ function uploadOne(item, folder){
       }
     };
     try {
-      xhr.open('POST', UPLOAD_ENDPOINT);
+      const base = cfg.API_BASE || '';
+      xhr.open('POST', base + '/api/notice-agent/upload-document');
+      if(token)           xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+      if(cfg.CLIENT_CODE) xhr.setRequestHeader('X-Client-Code', cfg.CLIENT_CODE);
+      if(cfg.AGENT_KEY)   xhr.setRequestHeader('X-Agent-Key', cfg.AGENT_KEY);
       xhr.send(fd);
     } catch(_){
       simulateUpload(item).then(resolve);
@@ -2455,7 +2464,7 @@ uploadStartBtn.onclick = async ()=>{
   renderUploadList();
 };
 </script>
-<script src="env-config.js"></script>
+<script src="env-config.js?v=2"></script>
 <script type="module">
 import { auth, review, noticeSources, isLoggedIn, setSourceId, getSourceId, mapNoticeToRow } from './gip-api.js';
 

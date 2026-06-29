@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -448,12 +448,12 @@ const ICONS = {
 };
 const NAV = [
   {id:'dashboard', label:'Dashboard',                href:'dashboard.html',  icon:ICONS.dashboard,                        visible:1},
-  {id:'assistant', label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:0},
+  {id:'assistant', label:'AI Assistant',             href:'gip-ai-assistant.html',icon:ICONS.assistant,group:'Agents',         visible:1},
   {id:'notice',    label:'Notice Processing',        href:'notice_review.html',icon:ICONS.notice,    group:'Agents',         visible:1},
-  {id:'compliance',label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:0},
-  {id:'filing',    label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:0},
-  {id:'email',     label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:0},
-  {id:'agentops',  label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights',       visible:0},
+  {id:'compliance',label:'Compliance Doc (PAF)',     href:'gip-compliance.html', icon:ICONS.compliance,group:'Agents',         visible:1},
+  {id:'filing',    label:'Automate Filing (H4 EAD)', href:'gip-autofiling.html', icon:ICONS.filing,    group:'Agents',         visible:1},
+  {id:'email',     label:'Email Templates',          href:'#',                   icon:ICONS.email,     group:'Tools',          visible:1},
+  {id:'agentops',  label:'Agent Ops',                href:'gip-agent-ops.html',  icon:ICONS.agentops,  group:'Insights',       visible:1},
 ];
 const ACTIVE_NAV = 'agentops';
 
@@ -805,7 +805,7 @@ document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',(
 window.addEventListener('storage', e=>{ if(e.key===AO_STORE_KEY) compute(); });
 compute();
 </script>
-<script src="env-config.js"></script>
+<script src="env-config.js?v=2"></script>
 <script type="module">
 import { auth, noticeAgent, platform, isLoggedIn } from './gip-api.js';
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -365,12 +365,12 @@ const ICONS = {
 
 const NAV = [
   {id:'dashboard',   label:'Dashboard',                icon:ICONS.dashboard, href:'dashboard.html',                          visible:1},
-  {id:'assistant',   label:'AI Assistant',             icon:ICONS.assistant, href:'gip-ai-assistant.html', group:'Agents',       visible:0},
+  {id:'assistant',   label:'AI Assistant',             icon:ICONS.assistant, href:'gip-ai-assistant.html', group:'Agents',       visible:1},
   {id:'notice',      label:'Notice Processing',        icon:ICONS.notice,    href:'notice_review.html',  group:'Agents',       visible:1},
-  {id:'compliance',  label:'Compliance Doc (PAF)',     icon:ICONS.compliance,href:'gip-compliance.html',   group:'Agents',       visible:0},
-  {id:'filing',      label:'Automate Filing (H4 EAD)', icon:ICONS.filing,    href:'gip-autofiling.html',   group:'Agents',       visible:0},
-  {id:'email',       label:'Email Templates',          icon:ICONS.email,     href:'#',                     group:'Tools',        visible:0},
-  {id:'agentops',    label:'Agent Ops',                icon:ICONS.agentops,  href:'gip-agent-ops.html',    group:'Insights',     visible:0},
+  {id:'compliance',  label:'Compliance Doc (PAF)',     icon:ICONS.compliance,href:'gip-compliance.html',   group:'Agents',       visible:1},
+  {id:'filing',      label:'Automate Filing (H4 EAD)', icon:ICONS.filing,    href:'gip-autofiling.html',   group:'Agents',       visible:1},
+  {id:'email',       label:'Email Templates',          icon:ICONS.email,     href:'#',                     group:'Tools',        visible:1},
+  {id:'agentops',    label:'Agent Ops',                icon:ICONS.agentops,  href:'gip-agent-ops.html',    group:'Insights',     visible:1},
 ];
 
 const ACTIVE_NAV = 'dashboard';
@@ -807,7 +807,7 @@ renderNav();
 renderFoot();
 renderPage();
 </script>
-<script src="env-config.js"></script>
+<script src="env-config.js?v=2"></script>
 <script type="module">
 import { auth, notices, noticeAgent, review, noticeSources, isLoggedIn, setSourceId, getSourceId } from './gip-api.js';
 

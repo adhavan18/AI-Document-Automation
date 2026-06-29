@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -604,12 +604,12 @@ const ICONS = {
 
 const NAV = [
   {id:'dashboard',  label:'Dashboard',                icon:ICONS.dashboard, href:'dashboard.html',                          visible:1},
-  {id:'assistant',  label:'AI Assistant',             icon:ICONS.assistant, href:'gip-ai-assistant.html', group:'Agents',       visible:0},
+  {id:'assistant',  label:'AI Assistant',             icon:ICONS.assistant, href:'gip-ai-assistant.html', group:'Agents',       visible:1},
   {id:'notice',     label:'Notice Processing',        icon:ICONS.notice,    href:'notice_review.html',  group:'Agents',       visible:1},
-  {id:'compliance', label:'Compliance Doc (PAF)',     icon:ICONS.compliance,href:'gip-compliance.html',   group:'Agents',       visible:0},
-  {id:'filing',     label:'Automate Filing (H4 EAD)', icon:ICONS.filing,    href:'gip-autofiling.html',   group:'Agents',       visible:0},
-  {id:'email',      label:'Email Templates',          icon:ICONS.email,     href:'#',                     group:'Tools',        visible:0},
-  {id:'agentops',   label:'Agent Ops',                icon:ICONS.agentops,  href:'gip-agent-ops.html',    group:'Insights',     visible:0},
+  {id:'compliance', label:'Compliance Doc (PAF)',     icon:ICONS.compliance,href:'gip-compliance.html',   group:'Agents',       visible:1},
+  {id:'filing',     label:'Automate Filing (H4 EAD)', icon:ICONS.filing,    href:'gip-autofiling.html',   group:'Agents',       visible:1},
+  {id:'email',      label:'Email Templates',          icon:ICONS.email,     href:'#',                     group:'Tools',        visible:1},
+  {id:'agentops',   label:'Agent Ops',                icon:ICONS.agentops,  href:'gip-agent-ops.html',    group:'Insights',     visible:1},
 ];
 const ACTIVE_NAV = 'assistant';
 
@@ -1098,5 +1098,22 @@ renderChatList();
 renderThread();
 renderCitations();
 </script>
-</body>
-</html>
+  <script src="env-config.js?v=2"></script>
+  <script type="module">
+  import { auth, isLoggedIn, getUser } from './gip-api.js';
+  if (!isLoggedIn()) { window.location.href = 'gip-login.html'; }
+  const u = getUser();
+  if (u) {
+    const name = u.full_name || u.username || u.name || '';
+    const role = u.role || u.user_type || '';
+    document.querySelectorAll('.user-name').forEach(el => { if(name) el.textContent = name; });
+    document.querySelectorAll('.user-role').forEach(el => { if(role) el.textContent = role; });
+    const btn = document.getElementById('userBtn');
+    if(btn && name) { btn.dataset.label = name; btn.title = name + (role ? ' · ' + role : ''); }
+  }
+  document.querySelectorAll('a[href="gip-login.html"]').forEach(el => {
+    el.addEventListener('click', e => { e.preventDefault(); auth.logout(); });
+  });
+  </script>
+  </body>
+  </html>
